@@ -30,6 +30,9 @@ class SiteController extends Controller
 
 		var_dump(Yii::app()->mongodb);
 
+		$u = new User();
+		var_dump($u->onCheese);
+
 		// renders the view file 'protected/views/site/index.php'
 		// using the default layout 'protected/views/layouts/main.php'
 		$this->render('index');

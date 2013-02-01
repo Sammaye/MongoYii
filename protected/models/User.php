@@ -1,6 +1,6 @@
 <?php
 
-class User extends EMongoDocument{
+class User extends EMongoModel{
 
 
 
@@ -8,9 +8,13 @@ class User extends EMongoDocument{
 	 * Returns the static model of the specified AR class.
 	 * @return User the static model class
 	 */
-	public static function model($className=__CLASS__)
-	{
-		return parent::model($className);
+//	public static function model($className=__CLASS__)
+//	{
+//		return parent::model($className);
+//	}
+
+	function onCheese(){
+
 	}
 
 }

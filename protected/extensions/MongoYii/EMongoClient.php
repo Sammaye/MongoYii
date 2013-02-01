@@ -188,7 +188,7 @@ class EMongoClient extends CApplicationComponent{
 	}
 
 	/**
-	 * Provides a method by which to set some sort of cache for a Document to
+	 * Provides a method by which to set some sort of cache for a model to
 	 * remember things such as reflection of fields
 	 * @param string $name
 	 * @param array $virtualFields
@@ -204,7 +204,7 @@ class EMongoClient extends CApplicationComponent{
 	}
 
 	/**
-	 * Gets the virtual fields of a Document from cache
+	 * Gets the virtual fields of a model from cache
 	 * @param string $name
 	 * @return NULL|array
 	 */
@@ -213,7 +213,7 @@ class EMongoClient extends CApplicationComponent{
 	}
 
 	/**
-	 * Gets the field of a Document from cache
+	 * Gets the field of a model from cache
 	 * @param string $name
 	 * @return NULL|array
 	 */
@@ -222,7 +222,7 @@ class EMongoClient extends CApplicationComponent{
 	}
 
 	/**
-	 * Just gets the object cache for a Document
+	 * Just gets the object cache for a model
 	 * @param string $name
 	 * @return NULL|array
 	 */
