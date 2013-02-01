@@ -16,6 +16,7 @@ return array(
 	'import'=>array(
 		'application.models.*',
 		'application.components.*',
+		'application.extensions.MongoYii.*'
 	),
 
 	'modules'=>array(
@@ -49,6 +50,11 @@ return array(
 		*/
 		'db'=>array(
 			'connectionString' => 'sqlite:'.dirname(__FILE__).'/../data/testdrive.db',
+		),
+		'mongodb' => array(
+			'class' => 'EMongoClient',
+			'server' => 'mongodb://localhost:27017',
+			'db' => 'test'
 		),
 		// uncomment the following to use a MySQL database
 		/*

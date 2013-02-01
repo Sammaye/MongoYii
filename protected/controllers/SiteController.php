@@ -27,6 +27,9 @@ class SiteController extends Controller
 	 */
 	public function actionIndex()
 	{
+
+		var_dump(Yii::app()->mongodb);
+
 		// renders the view file 'protected/views/site/index.php'
 		// using the default layout 'protected/views/layouts/main.php'
 		$this->render('index');

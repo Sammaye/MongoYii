@@ -1,6 +1,6 @@
 <?php
 
-class EMongoDocument extends CModel{
+class EMongoDocument extends EMongoModel{
 
 
 	function getAttributes(){
