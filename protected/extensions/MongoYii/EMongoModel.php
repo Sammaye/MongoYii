@@ -19,43 +19,84 @@ class EMongoModel extends CModel{
 	 * (non-PHPdoc)
 	 * @see yii/framework/CComponent::__get()
 	 */
-	public function __get($name)
-	{
-		var_dump($name);
-		//var_dump(method_exists($this,$name)); exit();
-		$getter='get'.$name;
-		if(method_exists($this,$getter))
-			return $this->$getter();
-		elseif(strncasecmp($name,'on',2)===0 && method_exists($this,$name)){
-			parent::__get($name);
-		}elseif(isset($this->_related[$name])){
+	public function __get($name){
+		
+		if(isset($this->_related[$name])){
 			return $this->_related[$name];
 		}elseif(array_key_exists($name, $this->relations())){
 			return $this->_related[$name]=$this->getRelated($name);
-		}else{
-			exit();
+		}elseif(isset($this->attributes[$name])){
 			return $this->_attributes[$name];
+		}else{
+			return parent::__get($name);
 		}
+		
 	}
 
-	public function __set($name,$value)
-	{
-		$setter='set'.$name;
-		if(method_exists($this,$setter))
-			return $this->$setter($value);
-		elseif(strncasecmp($name,'on',2)===0 && method_exists($this,$name))
+	/**
+	 * (non-PHPdoc)
+	 * @see CComponent::__set()
+	 */
+	public function __set($name,$value){
+		
+		if($this->setAttribute($name,$value)===false)
 		{
-			// duplicating getEventHandlers() here for performance
-			$name=strtolower($name);
-			if(!isset($this->_e[$name]))
-				$this->_e[$name]=new CList;
-			return $this->_e[$name]->add($value);
-		}elseif(isset($this->_related[$name]) || array_key_exists($name, $this->relations())){
-			return $this->_related[$name] = $value;
-		}else{
-			return $this->_attributes[$name] = $value;
-		}
+			if(isset($this->_related[$name]) || array_key_exists($name, $this->relations()))
+				$this->_related[$name]=$value;
+			else
+				parent::__set($name,$value);
+		}		
+		
 	}
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see CComponent::__isset()
+	 */
+	public function __isset($name){
+		
+		if(isset($this->_attributes[$name]))
+			return true;
+		elseif(isset($this->_related[$name]))
+			return true;
+		elseif(array_key_exists($name, $this->relations()))
+			return $this->getRelated($name)!==null;
+		else
+			return parent::__isset($name);		
+		
+	}	
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see CComponent::__unset()
+	 */
+	public function __unset($name){
+		
+		if(isset($this->_attributes[$name]))
+			unset($this->_attributes[$name]);
+		elseif(isset($this->_related[$name]))
+			unset($this->_related[$name]);
+		else
+			parent::__unset($name);
+		
+	}	
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see CComponent::__call()
+	 */
+	public function __call($name,$parameters)
+	{
+		if(array_key_exists($name, $this->relations()))
+		{
+			if(empty($parameters))
+				return $this->getRelated($name,false);
+			else
+				return $this->getRelated($name,false,$parameters[0]);
+		}
+	
+		return parent::__call($name,$parameters);
+	}	
 
 	function __construct($scenario = 'insert'){
 
@@ -73,6 +114,10 @@ class EMongoModel extends CModel{
 			$class_vars = $reflect->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED); // Pre-defined doc attributes
 
 			foreach ($class_vars as $prop) {
+				
+				if($prop->isStatic())
+					continue;
+					
 				$docBlock = $prop->getDocComment();
 
 				// If it is not public and it is not marked as virtual then assume it is document field
@@ -101,11 +146,99 @@ class EMongoModel extends CModel{
 	 * You may override this method to provide code that is needed to initialize the model (e.g. setting
 	 * initial property values.)
 	 */
-	public function init(){  }
+	public function init(){ return true; }
 
-	function attributeNames(){ return array(); }
+	/**
+	 * (non-PHPdoc)
+	 * @see CModel::attributeNames()
+	 */
+	function attributeNames(){
+		
+		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
+		$virtuals = $this->getDbConnection()->getVirtualObjCache(get_class($this));
+		
+		$cols = array_merge(is_array($fields) ? $fields : array(), is_array($virtuals) ? $virtuals : array());
+		return array_keys($cols!==null ? $cols : array());
+	}
 
+	/**
+	 * 
+	 * @return multitype:
+	 */
 	function relations(){ return array(); }
+	
+	/**
+	 * Sets the attribute of the model
+	 * @param string $name
+	 * @param mixed $value
+	 */
+	public function setAttribute($name,$value){
+		
+		if(property_exists($this,$name))
+			$this->$name=$value;
+		elseif(isset($this->_attributes[$name]))
+			$this->_attributes[$name]=$value;
+		else
+			return false;
+		return true;
+		
+	}	
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see CModel::getAttributes()
+	 */
+	public function getAttributes($names=true)
+	{
+		$attributes=$this->_attributes;
+		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
+		
+		if(is_array($fields)){	
+			foreach($fields as $name=>$column)
+			{
+				if(property_exists($this,$name))
+					$attributes[$name]=$this->$name;
+				elseif($names===true && !isset($attributes[$name]))
+					$attributes[$name]=null;
+			}
+		}
+		if(is_array($names))
+		{
+			$attrs=array();
+			foreach($names as $name)
+			{
+				if(property_exists($this,$name))
+					$attrs[$name]=$this->$name;
+				else
+					$attrs[$name]=isset($attributes[$name])?$attributes[$name]:null;
+			}
+			return $attrs;
+		}
+		else
+			return $attributes;
+	}
+
+	/**
+	 * (non-PHPdoc)
+	 * @see CModel::validate()
+	 */
+	public function validate($attributes=null, $clearErrors=true)
+	{
+		// We copy this function to add the subdocument validator as a built in validator
+		CValidator::$builtInValidators['subdocument'] = 'ESubdocumentValidator';
+		
+		if($clearErrors)
+			$this->clearErrors();
+		if($this->beforeValidate())
+		{
+			foreach($this->getValidators() as $validator)
+				$validator->validate($this,$attributes);
+			$this->afterValidate();
+			return !$this->hasErrors();
+		}
+		else
+			return false;
+	}	
 
 	/**
 	 * Returns the database connection used by active record.
@@ -126,13 +259,39 @@ class EMongoModel extends CModel{
 				throw new EMongoException(Yii::t('yii','MongoDB Active Record requires a "mongodb" EMongoClient application component.'));
 		}
 	}
-
-	function getModel(){
-
+	
+	function getDocument(){
+		
+		$attributes = $this->getDbConnection()->getFieldObjCache(get_class($this));
+		$doc = array();
+		
+		foreach($attributes as $field)
+			$doc[$field] = $this->$field;
+		return array_merge($doc, $this->_attributes);
 	}
-
-	function getRawModel(){
-
+	
+	function getRawDocument(){
+		return $this->filterRawDocument($this->getDocument());
 	}
-
+	
+	function filterRawDocument($doc){
+		if(is_array($doc)){
+			foreach($doc as $k => $v){
+				if(is_array($v)){
+					$doc[$k] = $this->{__FUNCTION__}($doc[$k]);
+				}elseif($v instanceof EMongoModel || $v instanceof EMongoDocument){
+					$doc[$k] = $doc[$k]->getRawDocument();
+				}
+			}
+		}
+		return $doc;
+	}	
+	
+	function getJSONDocument(){
+		return json_encode($this->getRawDocument());
+	}
+	
+	function getBSONDocument(){
+		return bson_encode($this->getRawDocument());	
+	}
 }

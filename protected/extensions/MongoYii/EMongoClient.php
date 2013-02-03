@@ -115,7 +115,7 @@ class EMongoClient extends CApplicationComponent{
 				$const = $this->RP[0];
 				$opts = $this->RP[1];
 
-				if(!empty($opts))
+				if(!empty($opts)) // I do this due to a bug that exists in some PHP driver versions
 					$this->_mongo->setReadPreference(constant('MongoClient::'.$const), $opts);
 				else
 					$this->_mongo->setReadPreference(constant('MongoClient::'.$const));
@@ -250,3 +250,5 @@ class EMongoClient extends CApplicationComponent{
 		return array();
 	}
 }
+
+class EMongoException extends CException {}

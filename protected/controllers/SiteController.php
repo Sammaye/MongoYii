@@ -31,7 +31,18 @@ class SiteController extends Controller
 		var_dump(Yii::app()->mongodb);
 
 		$u = new User();
-		var_dump($u->onCheese);
+		$u->username = 'd';
+		//var_dump($u->username);
+		
+		$model->attributes=array(
+			array(
+				'road' => 'elm',
+				'town' => 'b'		
+			)
+		);
+		// validate user input and redirect to the previous page if valid
+		if($u->validate())
+			echo "valid";
 
 		// renders the view file 'protected/views/site/index.php'
 		// using the default layout 'protected/views/layouts/main.php'

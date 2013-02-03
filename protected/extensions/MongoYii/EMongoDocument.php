@@ -6,105 +6,24 @@ class EMongoDocument extends CModel{
 
 	private $_md;								// meta data
 	private $_new=false;						// whether this instance is new or not
-	private $_attributes=array();				// attribute name => attribute value
-	private $_related=array();					// attribute name => related objects
 	private $_pk;								// old primary key value
 
-	/**
-	 * PHP getter magic method.
-	 * This method is overridden so that AR attributes can be accessed like properties.
-	 * @param string $name property name
-	 * @return mixed property value
-	 * @see getAttribute
-	 */
-	public function __get($name)
+	public function scopes()
 	{
-		if(isset($this->_attributes[$name]))
-			return $this->_attributes[$name];
-		elseif(isset($this->_related[$name]))
-			return $this->_related[$name];
-		elseif(array_key_exists($name, $this->relations()))
-			return $this->getRelated($name);
-		else
-			return parent::__get($name);
+		return array();
+	}
+	
+	public function defaultScope()
+	{
+		return array();
 	}
 
-	/**
-	 * PHP setter magic method.
-	 * This method is overridden so that AR attributes can be accessed like properties.
-	 * @param string $name property name
-	 * @param mixed $value property value
-	 */
-	public function __set($name,$value)
+	public function resetScope()
 	{
-		if(array_key_exists($name, $this->relations())){
-			$this->_related[$name] = $value;
-		}else{
-			parent::__set($name, $value);
-		}
-	}
-
-	/**
-	 * Checks if a property value is null.
-	 * This method overrides the parent implementation by checking
-	 * if the named attribute is null or not.
-	 * @param string $name the property name or the event name
-	 * @return boolean whether the property value is null
-	 */
-	public function __isset($name)
-	{
-		if(isset($this->_attributes[$name]) || isset($this->_related[$name]))
-			return true;
-		elseif(array_key_exists($name, $this->relations()))
-			return $this->getRelated($name)!==null;
-		else
-			return parent::__isset($name);
-	}
-
-	/**
-	 * Sets a component property to be null.
-	 * This method overrides the parent implementation by clearing
-	 * the specified attribute value.
-	 * @param string $name the property name or the event name
-	 */
-	public function __unset($name)
-	{
-		if(isset($this->_attributes[$name]))
-			unset($this->_attributes[$name]);
-		elseif(isset($this->_related[$name]))
-			unset($this->_related[$name]);
-		else
-			parent::__unset($name);
-	}
-
-	/**
-	 * Calls the named method which is not a class method.
-	 * Do not call this method. This is a PHP magic method that we override
-	 * to implement the named scope feature.
-	 * @param string $name the method name
-	 * @param array $parameters method parameters
-	 * @return mixed the method return value
-	 */
-	public function __call($name,$parameters)
-	{
-		if(isset($this->getMetaData()->relations[$name]))
-		{
-			if(empty($parameters))
-				return $this->getRelated($name,false);
-			else
-				return $this->getRelated($name,false,$parameters[0]);
-		}
-
-		$scopes=$this->scopes();
-		if(isset($scopes[$name]))
-		{
-			$this->getDbCriteria()->mergeWith($scopes[$name]);
-			return $this;
-		}
-
-		return parent::__call($name,$parameters);
-	}
-
+		//$this->_criteria
+		return $this;
+	}	
+	
 	function getAttributes(){
 
 	}
