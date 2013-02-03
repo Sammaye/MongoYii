@@ -115,7 +115,10 @@ class EMongoClient extends CApplicationComponent{
 				$const = $this->RP[0];
 				$opts = $this->RP[1];
 
-				$this->_mongo->setReadPreference(MongoClient::$const, $opts);
+				if(!empty($opts))
+					$this->_mongo->setReadPreference(constant('MongoClient::'.$const), $opts);
+				else
+					$this->_mongo->setReadPreference(constant('MongoClient::'.$const));
 			}
 		}
 	}
