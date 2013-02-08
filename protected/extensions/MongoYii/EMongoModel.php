@@ -168,6 +168,13 @@ class EMongoModel extends CModel{
 	 */
 	function relations(){ return array(); }
 
+	public function hasAttribute($name)
+	{
+		$attrs = $this->_attributes;
+		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
+		return isset($attrs[$name])||isset($fields[$name])?true:false;
+	}
+
 	/**
 	 * Sets the attribute of the model
 	 * @param string $name
@@ -183,6 +190,13 @@ class EMongoModel extends CModel{
 			return false;
 		return true;
 
+	}
+
+	public function getAttribute($name){
+		if(property_exists($this,$name))
+			return $this->$name;
+		elseif(isset($this->_attributes[$name]))
+			return $this->_attributes[$name];
 	}
 
 	/**
@@ -217,6 +231,131 @@ class EMongoModel extends CModel{
 		}
 		else
 			return $attributes;
+	}
+
+	/**
+	 * Returns the text label for the specified attribute.
+	 * This method overrides the parent implementation by supporting
+	 * returning the label defined in relational object.
+	 * In particular, if the attribute name is in the form of "post.author.name",
+	 * then this method will derive the label from the "author" relation's "name" attribute.
+	 * @param string $attribute the attribute name
+	 * @return string the attribute label
+	 * @see generateAttributeLabel
+	 * @since 1.1.4
+	 */
+	public function getAttributeLabel($attribute)
+	{
+		$labels=$this->attributeLabels();
+		if(isset($labels[$attribute]))
+			return $labels[$attribute];
+		elseif(strpos($attribute,'.')!==false)
+		{
+			$segs=explode('.',$attribute);
+			$name=array_pop($segs);
+			$model=$this;
+			foreach($segs as $seg)
+			{
+				$relations=$model->getMetaData()->relations;
+				if(isset($relations[$seg]))
+					$model=CActiveRecord::model($relations[$seg]->className);
+				else
+					break;
+			}
+			return $model->getAttributeLabel($name);
+		}
+		else
+			return $this->generateAttributeLabel($attribute);
+	}
+
+	/**
+	 * Returns the related record(s).
+	 * This method will return the related record(s) of the current record.
+	 * If the relation is HAS_ONE or BELONGS_TO, it will return a single object
+	 * or null if the object does not exist.
+	 * If the relation is HAS_MANY or MANY_MANY, it will return an array of objects
+	 * or an empty array.
+	 * @param string $name the relation name (see {@link relations})
+	 * @param boolean $refresh whether to reload the related objects from database. Defaults to false.
+	 * @param mixed $params array or CDbCriteria object with additional parameters that customize the query conditions as specified in the relation declaration.
+	 * @return mixed the related object(s).
+	 * @throws CDbException if the relation is not specified in {@link relations}.
+	 */
+	public function getRelated($name,$refresh=false,$params=array())
+	{
+		if(!$refresh && $params===array() && (isset($this->_related[$name]) || array_key_exists($name,$this->_related)))
+			return $this->_related[$name];
+
+		$md=$this->getMetaData();
+		if(!isset($md->relations[$name]))
+			throw new CDbException(Yii::t('yii','{class} does not have relation "{name}".',
+				array('{class}'=>get_class($this), '{name}'=>$name)));
+
+		Yii::trace('lazy loading '.get_class($this).'.'.$name,'system.db.ar.CActiveRecord');
+		$relation=$md->relations[$name];
+		if($this->getIsNewRecord() && !$refresh && ($relation instanceof CHasOneRelation || $relation instanceof CHasManyRelation))
+			return $relation instanceof CHasOneRelation ? null : array();
+
+		if($params!==array()) // dynamic query
+		{
+			$exists=isset($this->_related[$name]) || array_key_exists($name,$this->_related);
+			if($exists)
+				$save=$this->_related[$name];
+
+			if($params instanceof CDbCriteria)
+				$params = $params->toArray();
+
+			$r=array($name=>$params);
+		}
+		else
+			$r=$name;
+		unset($this->_related[$name]);
+
+		$finder=new CActiveFinder($this,$r);
+		$finder->lazyFind($this);
+
+		if(!isset($this->_related[$name]))
+		{
+			if($relation instanceof CHasManyRelation)
+				$this->_related[$name]=array();
+			elseif($relation instanceof CStatRelation)
+				$this->_related[$name]=$relation->defaultValue;
+			else
+				$this->_related[$name]=null;
+		}
+
+		if($params!==array())
+		{
+			$results=$this->_related[$name];
+			if($exists)
+				$this->_related[$name]=$save;
+			else
+				unset($this->_related[$name]);
+			return $results;
+		}
+		else
+			return $this->_related[$name];
+	}
+
+	/**
+	 * Returns a value indicating whether the named related object(s) has been loaded.
+	 * @param string $name the relation name
+	 * @return boolean a value indicating whether the named related object(s) has been loaded.
+	 */
+	public function hasRelated($name)
+	{
+		return isset($this->_related[$name]) || array_key_exists($name,$this->_related);
+	}
+
+	/**
+	 * Compares current active record with another one.
+	 * The comparison is made by comparing table name and the primary key values of the two active records.
+	 * @param CActiveRecord $record record to compare to
+	 * @return boolean whether the two active records refer to the same row in the database table.
+	 */
+	public function equals($record)
+	{
+		return $this->collectionName()===$record->collectionName() && $this->{$this->primaryKey()}===$record->{$this->primaryKey()};
 	}
 
 	/**

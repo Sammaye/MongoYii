@@ -66,18 +66,30 @@ class EMongoDocument extends EMongoModel{
 		return $this;
 	}
 
-	function getAttributes(){
-
-	}
-
-	function setAttributes($values){
-
-	}
-
 	function collectionName(){  }
 
 	function primaryKey(){
 		return '_id';
+	}
+
+	/**
+	 * Returns if the current record is new.
+	 * @return boolean whether the record is new and should be inserted when calling {@link save}.
+	 * This property is automatically set in constructor and {@link populateRecord}.
+	 * Defaults to false, but it will be set to true if the instance is created using
+	 * the new operator.
+	 */
+	public function getIsNewRecord(){
+		return $this->_new;
+	}
+
+	/**
+	 * Sets if the record is new.
+	 * @param boolean $value whether the record is new and should be inserted when calling {@link save}.
+	 * @see getIsNewRecord
+	 */
+	public function setIsNewRecord($value){
+		$this->_new=$value;
 	}
 
 	/**
@@ -96,20 +108,17 @@ class EMongoDocument extends EMongoModel{
 	 * @param string $className active record class name.
 	 * @return CActiveRecord active record model instance.
 	 */
-	public static function model($className=__CLASS__)
-	{
+	public static function model($className=__CLASS__){
 		if(isset(self::$_models[$className]))
 			return self::$_models[$className];
-		else
-		{
+		else{
 			$model=self::$_models[$className]=new $className(null);
 			$model->attachBehaviors($model->behaviors());
 			return $model;
 		}
 	}
 
-    protected function instantiate($document)
-    {
+    protected function instantiate($document){
 		$class=get_class($this);
 		$model=new $class(null);
 		return $model;
@@ -142,36 +151,6 @@ class EMongoDocument extends EMongoModel{
 		}
 		else
 			return null;
-	}
-
-	public function save($runValidation=true,$attributes=null)
-	{
-		if(!$runValidation || $this->validate($attributes))
-			return $this->getIsNewRecord() ? $this->insert($attributes) : $this->update($attributes);
-		else
-			return false;
-	}
-
-	/**
-	 * Returns if the current record is new.
-	 * @return boolean whether the record is new and should be inserted when calling {@link save}.
-	 * This property is automatically set in constructor and {@link populateRecord}.
-	 * Defaults to false, but it will be set to true if the instance is created using
-	 * the new operator.
-	 */
-	public function getIsNewRecord()
-	{
-		return $this->_new;
-	}
-
-	/**
-	 * Sets if the record is new.
-	 * @param boolean $value whether the record is new and should be inserted when calling {@link save}.
-	 * @see getIsNewRecord
-	 */
-	public function setIsNewRecord($value)
-	{
-		$this->_new=$value;
 	}
 
 	public function onBeforeSave($event){ $this->raiseEvent('onBeforeSave',$event); }
@@ -239,6 +218,40 @@ class EMongoDocument extends EMongoModel{
 			$this->onAfterFind(new CEvent($this));
 	}
 
+	public function save($runValidation=true,$attributes=null){
+		if(!$runValidation || $this->validate($attributes))
+			return $this->getIsNewRecord() ? $this->insert($attributes) : $this->update($attributes);
+		else
+			return false;
+	}
+
+	public function saveAttributes($attributes)
+	{
+		if(!$this->getIsNewRecord())
+		{
+			Yii::trace(get_class($this).'.saveAttributes()','system.db.ar.CActiveRecord');
+			$values=array();
+			foreach($attributes as $name=>$value)
+			{
+				if(is_integer($name))
+					$values[$value]=$this->$value;
+				else
+					$values[$name]=$this->$name=$value;
+			}
+			if($this->_pk===null)
+				$this->_pk=$this->getPrimaryKey();
+			if($this->updateByPk($this->getOldPrimaryKey(),$values)>0)
+			{
+				$this->_pk=$this->getPrimaryKey();
+				return true;
+			}
+			else
+				return false;
+		}
+		else
+			throw new CDbException(Yii::t('yii','The active record cannot be updated because it is new.'));
+	}
+
 	public function insert($attributes=null){
 		if(!$this->getIsNewRecord())
 			throw new CDbException(Yii::t('yii','The active record cannot be inserted to database because it is not new.'));
@@ -266,12 +279,27 @@ class EMongoDocument extends EMongoModel{
 			if($this->_id===null)
 				throw new CDbException(Yii::t('yii','The active record cannot be updated because it has no _id.'));
 
-			$this->updateByPk($this->_id,$this->getAttributes($attributes));
+			$this->updateByPk($this->{$this->primaryKey()},$this->getAttributes($attributes));
 			$this->afterSave();
 			return true;
 		}
 		else
 			return false;
+	}
+
+	public function delete(){
+		if(!$this->getIsNewRecord()){
+			$this->trace(__FUNCTION__);
+			if($this->beforeDelete()){
+				$result=$this->deleteBy_id($this->{$this->primaryKey()});
+				$this->afterDelete();
+				return $result;
+			}
+			else
+				return false;
+		}
+		else
+			throw new CDbException(Yii::t('yii','The active record cannot be deleted because it is new.'));
 	}
 
 	public function exists($criteria=array()){
@@ -297,21 +325,6 @@ class EMongoDocument extends EMongoModel{
 		$_id = $_id instanceof MongoId ? $_id : new MongoId($_id);
 		return $this->findOne(array('_id' => $_id));
     }
-
-	public function delete(){
-		if(!$this->getIsNewRecord()){
-			$this->trace(__FUNCTION__);
-			if($this->beforeDelete()){
-				$result=$this->deleteBy_id($this->{$this->primaryKey()});
-				$this->afterDelete();
-				return $result;
-			}
-			else
-				return false;
-		}
-		else
-			throw new CDbException(Yii::t('yii','The active record cannot be deleted because it is new.'));
-	}
 
 	public function deleteByPk($pk,$criteria=array(),$options=array()){
 		$this->trace(__FUNCTION__);
