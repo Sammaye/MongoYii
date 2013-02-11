@@ -1,7 +1,11 @@
 <?php
 
 /**
- * Quite deceptively this actually represents the DATABASE not the connection.
+ * EMongoClient
+ *
+ * The MongoDB and MongoClient class combined.
+ *
+ * Quite deceptively this classes magics actually represents the DATABASE not the connection.
  *
  * Normally this would represent the MongoClient or Mongo and it is even named after them and implements
  * some of their functions but it is not due to the way Yii works.

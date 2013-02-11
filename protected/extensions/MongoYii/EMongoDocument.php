@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * EMongoDocument
+ *
+ * The active record itself
+ */
 class EMongoDocument extends EMongoModel{
 
 	/**
@@ -18,8 +23,19 @@ class EMongoDocument extends EMongoModel{
 	 */
 	private $_new=false;
 
+	/**
+	 * Holds criteria information for scopes
+	 */
 	private $_criteria = array();
 
+	/**
+	 * Sets up our model and set the field cache just like in EMongoModel
+	 *
+	 * It will also set the default scope on the model so be aware that if you want the default scope to not be applied you will
+	 * need to run resetScope() straight after making this model
+	 *
+	 * @param string $scenario
+	 */
 	public function __construct($scenario='insert')
 	{
 		if($scenario===null) // internally used by populateRecord() and model()
@@ -65,6 +81,10 @@ class EMongoDocument extends EMongoModel{
 		$this->afterConstruct();
 	}
 
+	/**
+	 * This, in addition to EMongoModels edition, will also call scopes on the model
+	 * @see protected/extensions/MongoYii/EMongoModel::__call()
+	 */
 	public function __call($name,$parameters){
 
 		if(array_key_exists($name, $this->relations())){
@@ -82,23 +102,67 @@ class EMongoDocument extends EMongoModel{
 		return parent::__call($name,$parameters);
 	}
 
-
+	/**
+	 * The scope attached to this model
+	 *
+	 * It is very much like how Yii normally uses scopes except the params are slightly different.
+	 *
+	 * @example
+	 *
+	 * array(
+	 * 	'10_recently_published' => array(
+	 * 		'condition' => array('published' => 1),
+	 * 		'sort' => array('date_published' => -1),
+	 * 		'skip' => 5,
+	 * 		'limit' => 10
+	 * 	)
+	 * )
+	 *
+	 * Not all params need to be defined they are all just there above to give an indea of how to use this
+	 *
+	 * @return An array of scopes
+	 */
 	public function scopes()
 	{
 		return array();
 	}
 
+	/**
+	 * Sets the default scope
+	 *
+	 * @example
+	 *
+	 * array(
+	 * 	'condition' => array('published' => 1),
+	 * 	'sort' => array('date_published' => -1),
+	 * 	'skip' => 5,
+	 * 	'limit' => 10
+	 * )
+	 *
+	 * @return an array which represents a single scope within the scope() function
+	 */
 	public function defaultScope()
 	{
 		return array();
 	}
 
+	/**
+	 * Resets the scopes applied to the model clearing the _criteria variable
+	 * @return $this
+	 */
 	public function resetScope()
 	{
 		$this->_criteria = array();
 		return $this;
 	}
 
+	/**
+	 * Returns the collection name as a string
+	 *
+	 * @example
+	 *
+	 * return 'users';
+	 */
 	function collectionName(){  }
 
 	/**
@@ -142,7 +206,7 @@ class EMongoDocument extends EMongoModel{
 	 * </pre>
 	 *
 	 * @param string $className active record class name.
-	 * @return CActiveRecord active record model instance.
+	 * @return EMongoDocument active record model instance.
 	 */
 	public static function model($className=__CLASS__){
 		if(isset(self::$_models[$className]))
@@ -154,6 +218,10 @@ class EMongoDocument extends EMongoModel{
 		}
 	}
 
+	/**
+	 * Instantiates a model from an array
+	 * @param array $document
+	 */
     protected function instantiate($document){
 		$class=get_class($this);
 		$model=new $class(null);
@@ -169,7 +237,6 @@ class EMongoDocument extends EMongoModel{
 	 * @param string $attribute the attribute name
 	 * @return string the attribute label
 	 * @see generateAttributeLabel
-	 * @since 1.1.4
 	 */
 	public function getAttributeLabel($attribute)
 	{
@@ -209,6 +276,7 @@ class EMongoDocument extends EMongoModel{
 		{
 			$record=$this->instantiate($attributes);
 			$record->setScenario('update');
+			$record->setIsNewRecord(false);
 			$record->init();
 			foreach($attributes as $name=>$value)
 			{
@@ -224,6 +292,9 @@ class EMongoDocument extends EMongoModel{
 			return null;
 	}
 
+	/**
+	 * Events
+	 */
 	public function onBeforeSave($event){ $this->raiseEvent('onBeforeSave',$event); }
 
 	public function onAfterSave($event){ $this->raiseEvent('onAfterSave',$event); }
@@ -289,6 +360,14 @@ class EMongoDocument extends EMongoModel{
 			$this->onAfterFind(new CEvent($this));
 	}
 
+	/**
+	 * Saves this record
+	 *
+	 * If an attributes specification is sent in it will only validate and save those attributes
+	 *
+	 * @param boolean $runValidation
+	 * @param array $attributes
+	 */
 	public function save($runValidation=true,$attributes=null){
 		if(!$runValidation || $this->validate($attributes))
 			return $this->getIsNewRecord() ? $this->insert($attributes) : $this->update($attributes);
@@ -296,6 +375,11 @@ class EMongoDocument extends EMongoModel{
 			return false;
 	}
 
+	/**
+	 * Saves only a specific subset of attributes as defined by the param
+	 * @param array $attributes
+	 * @throws CDbException
+	 */
 	public function saveAttributes($attributes)
 	{
 		if(!$this->getIsNewRecord())
@@ -322,6 +406,11 @@ class EMongoDocument extends EMongoModel{
 			throw new CDbException(Yii::t('yii','The active record cannot be updated because it is new.'));
 	}
 
+	/**
+	 * Inserts this record
+	 * @param array $attributes
+	 * @throws CDbException
+	 */
 	public function insert($attributes=null){
 		if(!$this->getIsNewRecord())
 			throw new CDbException(Yii::t('yii','The active record cannot be inserted to database because it is not new.'));
@@ -340,6 +429,11 @@ class EMongoDocument extends EMongoModel{
 		return false;
 	}
 
+	/**
+	 * Updates this record
+	 * @param array $attributes
+	 * @throws CDbException
+	 */
 	public function update($attributes=null){
 		if($this->getIsNewRecord())
 			throw new CDbException(Yii::t('yii','The active record cannot be updated because it is new.'));
@@ -349,7 +443,12 @@ class EMongoDocument extends EMongoModel{
 			if($this->_id===null)
 				throw new CDbException(Yii::t('yii','The active record cannot be updated because it has no _id.'));
 
-			$this->updateByPk($this->{$this->primaryKey()},$this->getAttributes($attributes));
+			if($attributes!==null){
+				$attributes=$this->getAttributes($attributes);
+				unset($attributes['_id']);
+				$this->updateByPk($this->{$this->primaryKey()}, $attributes);
+			}else
+				$this->getCollection()->save($this->getAttributes($attributes));
 			$this->afterSave();
 			return true;
 		}
@@ -357,11 +456,15 @@ class EMongoDocument extends EMongoModel{
 			return false;
 	}
 
+	/**
+	 * Deletes this record
+	 * @throws CDbException
+	 */
 	public function delete(){
 		if(!$this->getIsNewRecord()){
 			$this->trace(__FUNCTION__);
 			if($this->beforeDelete()){
-				$result=$this->deleteBy_id($this->{$this->primaryKey()});
+				$result=$this->deleteByPk($this->{$this->primaryKey()});
 				$this->afterDelete();
 				return $result;
 			}
@@ -372,29 +475,38 @@ class EMongoDocument extends EMongoModel{
 			throw new CDbException(Yii::t('yii','The active record cannot be deleted because it is new.'));
 	}
 
+	/**
+	 * Checks if a record exists in the database
+	 * @param array $criteria
+	 */
 	public function exists($criteria=array()){
 		$this->trace(__FUNCTION__);
 		return $this->getCollection()->findOne($criteria)!==null;
 	}
 
+	/**
+	 * Find one record
+	 * @param array $criteria
+	 */
 	public function findOne($criteria=array()){
 		$this->trace(__FUNCTION__);
 
-		if($record=$this->getCollection()->findOne($this->mergeCriteria($this->_criteria['condition'], $criteria))!==null)
+		$oc = isset($this->_criteria['condition']) ? $this->_criteria['condition'] : array();
+		if($record=$this->getCollection()->findOne($this->mergeCriteria($oc, $criteria))!==null)
 			return $this->populateRecord($record);
 		else
 			return null;
 	}
 
 	/**
-	 * Enter description here ...
-	 * @param unknown_type $criteria
+	 * Find some records
+	 * @param array $criteria
 	 */
     public function find($criteria=array()){
     	$this->trace(__FUNCTION__);
 
-    	if(isset($this->_criteria['condition'])){
-    		$cursor = new EMongoCursor($this->mergeCriteria($this->_criteria['condition'], $criteria), get_class($this));
+    	if($this->_criteria!==array()){
+    		$cursor = new EMongoCursor($this->mergeCriteria(isset($this->_criteria['condition']) ? $this->_criteria['condition'] : array(), $criteria), get_class($this));
 			if(isset($this->_cursor['sort'])) $cursor->sort($this->_criteria['sort']);
 
     		if(isset($this->_criteria['skip']) || isset($this->_criteria['limit'])){
@@ -408,34 +520,116 @@ class EMongoDocument extends EMongoModel{
     	}
     }
 
+    /**
+     * Finds one by _id
+     * @param $_id
+     */
     public function findBy_id($_id){
     	$this->trace(__FUNCTION__);
 		$_id = $_id instanceof MongoId ? $_id : new MongoId($_id);
 		return $this->findOne(array('_id' => $_id));
     }
 
+    /**
+     * Delete record by pk
+     * @param $pk
+     * @param $criteria
+     * @param $options
+     */
 	public function deleteByPk($pk,$criteria=array(),$options=array()){
 		$this->trace(__FUNCTION__);
 		return $this->getCollection()->remove(array_mege(array($this->primaryKey() => $pk), $criteria),
 					array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 
+	/**
+	 * Update record by PK
+	 *
+	 * This function only allows for $set-ting attributes, it does not allow for any additional opreators.
+	 *
+	 * @param string $pk
+	 * @param array $updateDoc
+	 * @param array $options
+	 */
 	public function updateByPk($pk, $updateDoc = array(), $options = array()){
 		$this->trace(__FUNCTION__);
-		return $this->getCollection()->update(array($this->primaryKey() => $pk), $updateDoc,
+		return $this->getCollection()->update(array($this->primaryKey() => $pk), array('$set' => $updateDoc),
 				array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 
+	/**
+	 * Update all records matching a criteria
+	 * @param array $criteria
+	 * @param array $updateDoc
+	 * @param array $options
+	 */
 	public function updateAll($criteria=array(),$updateDoc=array(),$options=array()){
 		$this->trace(__FUNCTION__);
 		return $this->getCollection()->update($criteria, $updateDoc, array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 
+	/**
+	 * Delete all records matching a criteria
+	 * @param array $criteria
+	 * @param array $options
+	 */
 	public function deleteAll($criteria=array(),$options=array()){
 		$this->trace(__FUNCTION__);
 		return $this->getCollection()->remove($criteria, array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 
+	/**
+	 * Allows for searching a subset of model fields; should not be used without a prior constraint.
+	 *
+	 * Will return an active cursor containing the search results.
+	 *
+	 * @param array $fields
+	 * @param string|int $term
+	 * @param array $extra
+	 * @param string $class
+	 *
+	 * @return EMongoDataProvider of the results
+	 */
+	function search($fields = array(), $term = '', $extra = array()){
+
+		$query = array();
+
+		$working_term = trim(preg_replace('/(?:\s\s+|\n|\t)/', '', $term)); // Strip all whitespace to understand if there is actually characters in the string
+
+		if(strlen($working_term) <= 0 || empty($fields)){ // I dont want to run the search if there is no term
+			return EMongoDataProvider(array('condition' => $extra)); // If no term is supplied just run the extra query placed in
+			return $result;
+		}
+
+		$broken_term = explode(' ', $term);
+
+		// Strip whitespace from query
+		foreach($broken_term as $k => $term){
+			$broken_term[$k] = trim(preg_replace('/(?:\s\s+|\n|\t)/', '', $term));
+		}
+
+		// Now lets build a regex query
+		$sub_query = array();
+		foreach($broken_term as $k => $term){
+
+			// Foreach of the terms we wish to add a regex to the field.
+			// All terms must exist in the document but they can exist across any and all fields
+			$field_regexes = array();
+			foreach($fields as $k => $field){
+				$field_regexes[] = array($field => new MongoRegex('/'.$term.'/i'));
+			}
+			$sub_query[] = array('$or' => $field_regexes);
+		}
+		$query['$and'] = $sub_query; // Lets make the $and part so as to make sure all terms must exist
+		$query = array_merge($query, $extra); // Lets add on the additional query to ensure we find only what we want to.
+
+		// TODO Add relevancy sorting
+		return EMongoDataProvider(array('condition' => $query));
+	}
+
+	/**
+	 * Cleans or rather resets the document
+	 */
     public function clean(){
     	$this->_attributes=array();
 		$this->_related=array();
@@ -455,6 +649,9 @@ class EMongoDocument extends EMongoModel{
 		return true;
     }
 
+    /**
+     * Refreshes the data from the database
+     */
     public function refresh(){
 
 		$this->trace(__FUNCTION__);
@@ -469,14 +666,26 @@ class EMongoDocument extends EMongoModel{
 			return false;
     }
 
+    /**
+     * Gets the collection for this model
+     */
     public function getCollection(){
 		return $this->getDbConnection()->{$this->collectionName()};
     }
 
+    /**
+     * Merges criteria for this object. Best used for scopes
+     * @param $oldCriteria
+     * @param $newCriteria
+     */
     public function mergeCriteria($oldCriteria, $newCriteria){
 		return $this->_criteria=$this->getDbConnection()->merge();
     }
 
+    /**
+     * Produces a trace message for functions in this class
+     * @param string $func
+     */
     public function trace($func){
     	Yii::trace(get_class($this).'.'.$func.'()','extensions.MongoYii.EMongoDocument');
     }

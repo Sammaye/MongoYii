@@ -1,13 +1,25 @@
 <?php
 
+/**
+ * EMongoCursor
+ *
+ * Represents the Yii edition to the MongoCursor and allows for lazy loading of objects.
+ *
+ * This class does not support eager loading by default, in order to use eager loading you should look into using this
+ * classes reponse with iterator_to_array().
+ */
 class EMongoCursor implements Iterator, Countable{
 
 	public $condition;
+	public $class;
+
+	/**
+	 * Most of these properties are redundant atm, I might readd the code related to them
+	 * in future versions, it depends upon the need.
+	 */
 	public $sort;
 	public $skip = 0;
 	public $limit;
-
-	public $class;
 
 	private $cursor = array();
 	private $current;
@@ -15,8 +27,11 @@ class EMongoCursor implements Iterator, Countable{
 
 	private $queried = false;
 
-	private $_db;
-
+	/**
+	 * The cursor constructor
+	 * @param array|MongoCursor $condition Either a condition array (without sort,limit and skip) or a MongoCursor Object
+	 * @param string $class the class name for the active record
+	 */
     public function __construct($condition, $class) {
 
     	$this->class = $class;
@@ -47,25 +62,22 @@ class EMongoCursor implements Iterator, Countable{
 		throw new EMongoException(Yii::t('yii', "Call to undefined function {$method} on the cursor"));
     }
 
+    /**
+     * Holds the MongoCursor
+     */
     function cursor(){
     	return $this->cursor;
     }
 
+    /**
+     * Gets the active record for the current row
+     */
     function current() {
     	if($this->class === null){
 			throw new EMongoException(Yii::t('yii', "The MongoCursor must have a class name"));
     	}
 
     	$className = $this->class;
-    	$o = new $className('update');
-		$o->setIsNewRecord(false);
-
-    	//if(!$this->current->onBeforeFind()) return null; // Raise event of before find
-
-    	$o->setAttributes($this->cursor()->current());
-
-    	//$this->current->onAfterFind(); // Raise after find event
-
-        return $this->current = $o;
+    	return $className::model()->populateRecord($this->cursor()->current());
     }
 }

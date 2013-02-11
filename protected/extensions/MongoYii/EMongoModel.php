@@ -12,7 +12,6 @@ class EMongoModel extends CModel{
 	 */
 	public static $db;
 
-	private $_md = array();
 	private $_attributes = array();
 	private $_related = array();
 
@@ -99,6 +98,12 @@ class EMongoModel extends CModel{
 		return parent::__call($name,$parameters);
 	}
 
+	/**
+	 * This sets up our model.
+	 * Apart from what Yii normally does this also sets a field cache for reflection so that we only ever do reflection once to
+	 * understand what fields are in our model.
+	 * @param string $scenario
+	 */
 	function __construct($scenario = 'insert'){
 
 		if($scenario===null) // internally used by populateRecord() and model()
@@ -163,11 +168,15 @@ class EMongoModel extends CModel{
 	}
 
 	/**
-	 *
-	 * @return multitype:
+	 * Holds all our relations
+	 * @return array
 	 */
 	function relations(){ return array(); }
 
+	/**
+	 * Finds out if a document attributes actually exists
+	 * @param string $name
+	 */
 	public function hasAttribute($name)
 	{
 		$attrs = $this->_attributes;
@@ -192,6 +201,10 @@ class EMongoModel extends CModel{
 
 	}
 
+	/**
+	 * Gets a document attribute
+	 * @param string $name
+	 */
 	public function getAttribute($name){
 		if(property_exists($this,$name))
 			return $this->$name;
@@ -236,10 +249,10 @@ class EMongoModel extends CModel{
 	/**
 	 * Returns the related record(s).
 	 * This method will return the related record(s) of the current record.
-	 * If the relation is HAS_ONE or BELONGS_TO, it will return a single object
+	 * If the relation is 'one' it will return a single object
 	 * or null if the object does not exist.
-	 * If the relation is HAS_MANY or MANY_MANY, it will return an array of objects
-	 * or an empty array.
+	 * If the relation is 'many' it will return an array of objects
+	 * or an empty iterator.
 	 * @param string $name the relation name (see {@link relations})
 	 * @param boolean $refresh whether to reload the related objects from database. Defaults to false.
 	 * @param mixed $params array with additional parameters that customize the query conditions as specified in the relation declaration.
@@ -374,6 +387,9 @@ class EMongoModel extends CModel{
 		}
 	}
 
+	/**
+	 * Gets the formed document with MongoYii objects included
+	 */
 	function getDocument(){
 
 		$attributes = $this->getDbConnection()->getFieldObjCache(get_class($this));
@@ -384,10 +400,17 @@ class EMongoModel extends CModel{
 		return array_merge($doc, $this->_attributes);
 	}
 
+	/**
+	 * Gets the raw document with MongoYii objects taken out
+	 */
 	function getRawDocument(){
 		return $this->filterRawDocument($this->getDocument());
 	}
 
+	/**
+	 * Filters a provided document to take out MongoYii objects.
+	 * @param array $doc
+	 */
 	function filterRawDocument($doc){
 		if(is_array($doc)){
 			foreach($doc as $k => $v){
@@ -401,10 +424,16 @@ class EMongoModel extends CModel{
 		return $doc;
 	}
 
+	/**
+	 * Gets the JSON encoded document
+	 */
 	function getJSONDocument(){
 		return json_encode($this->getRawDocument());
 	}
 
+	/**
+	 * Gets the BSON encoded document (never normally needed)
+	 */
 	function getBSONDocument(){
 		return bson_encode($this->getRawDocument());
 	}
