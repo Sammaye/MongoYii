@@ -33,16 +33,20 @@ class SiteController extends Controller
 		$u = new User();
 		$u->username = 'd';
 		//var_dump($u->username);
-		
+
 		$model->attributes=array(
 			array(
 				'road' => 'elm',
-				'town' => 'b'		
+				'town' => 'b'
 			)
 		);
 		// validate user input and redirect to the previous page if valid
-		if($u->validate())
+		if($u->validate()){
 			echo "valid";
+			$u->save();
+		}
+
+		var_dump(User::model()->findOne());
 
 		// renders the view file 'protected/views/site/index.php'
 		// using the default layout 'protected/views/layouts/main.php'

@@ -418,7 +418,7 @@ class EMongoDocument extends EMongoModel{
 		{
 			$this->trace(__FUNCTION__);
 
-			if(!isset($this->_id)) $this->_id = new MonogId();
+			if(!isset($this->_id)) $this->_id = new MongoId;
 			if($this->getCollection()->insert($this->getRawDocument(), $this->getDbConnection()->getDefaultWriteConcern())){
 				$this->afterSave();
 				$this->setIsNewRecord(false);
@@ -679,7 +679,7 @@ class EMongoDocument extends EMongoModel{
      * @param $newCriteria
      */
     public function mergeCriteria($oldCriteria, $newCriteria){
-		return $this->_criteria=$this->getDbConnection()->merge();
+		return $this->_criteria=$this->getDbConnection()->merge($oldCriteria, $newCriteria);
     }
 
     /**

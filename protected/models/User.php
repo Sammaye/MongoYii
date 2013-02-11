@@ -1,11 +1,11 @@
 <?php
 
-class User extends EMongoModel{
+class User extends EMongoDocument{
 
 
 	public $username;
 	public $addresses = array();
-	
+
 	function rules(){
 		return array(
 			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
@@ -13,11 +13,11 @@ class User extends EMongoModel{
 				array('town', 'string'),
 				array('county', 'string'),
 				array('post_code', 'string'),
-				array('telephone', 'integer')		
-			))		
+				array('telephone', 'integer')
+			))
 		);
 	}
-	
+
 
 	/**
 	 * Returns the static model of the specified AR class.
