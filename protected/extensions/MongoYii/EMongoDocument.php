@@ -2,10 +2,23 @@
 
 class EMongoDocument extends EMongoModel{
 
-	private static $_models=array();			// class name => model
+	/**
+	 * Holds a set of cached models for the active record to instantiate from
+	 *
+	 * Whenever you call ::model() it will either find the class in this cache arrray and use it or will
+	 * make a whole new class and cache it into this array
+	 *
+	 * @var array
+	 */
+	private static $_models=array();
 
-	private $_new=false;						// whether this instance is new or not
-	//private $_pk;								// old primary key value // THERE CAN NOLY BE ONE!! YARRRRR
+	/**
+	 * Whether or not the document is new
+	 * @var boolean
+	 */
+	private $_new=false;
+
+	private $_criteria = array();
 
 	public function __construct($scenario='insert')
 	{
@@ -43,10 +56,30 @@ class EMongoDocument extends EMongoModel{
 			);
 		}
 
+		// Set the default scope now
+		$this->mergeCriteria($this->_criteria, $this->defaultScope());
+
 		$this->init();
 
 		$this->attachBehaviors($this->behaviors());
 		$this->afterConstruct();
+	}
+
+	public function __call($name,$parameters){
+
+		if(array_key_exists($name, $this->relations())){
+			if(empty($parameters))
+				return $this->getRelated($name,false);
+			else
+				return $this->getRelated($name,false,$parameters[0]);
+		}
+
+		$scopes=$this->scopes();
+		if(isset($scopes[$name])){
+			$this->mergeCriteria($this->_criteria, $scopes[$name]);
+			return $this;
+		}
+		return parent::__call($name,$parameters);
 	}
 
 
@@ -62,13 +95,16 @@ class EMongoDocument extends EMongoModel{
 
 	public function resetScope()
 	{
-		//$this->_criteria
+		$this->_criteria = array();
 		return $this;
 	}
 
 	function collectionName(){  }
 
-	function primaryKey(){
+	/**
+	 * Atm you are not allowed to change the primary key
+	 */
+	private function primaryKey(){
 		return '_id';
 	}
 
@@ -123,6 +159,41 @@ class EMongoDocument extends EMongoModel{
 		$model=new $class(null);
 		return $model;
     }
+
+	/**
+	 * Returns the text label for the specified attribute.
+	 * This method overrides the parent implementation by supporting
+	 * returning the label defined in relational object.
+	 * In particular, if the attribute name is in the form of "post.author.name",
+	 * then this method will derive the label from the "author" relation's "name" attribute.
+	 * @param string $attribute the attribute name
+	 * @return string the attribute label
+	 * @see generateAttributeLabel
+	 * @since 1.1.4
+	 */
+	public function getAttributeLabel($attribute)
+	{
+		$labels=$this->attributeLabels();
+		if(isset($labels[$attribute]))
+			return $labels[$attribute];
+		elseif(strpos($attribute,'.')!==false)
+		{
+			$segs=explode('.',$attribute);
+			$name=array_pop($segs);
+			$model=$this;
+			foreach($segs as $seg)
+			{
+				$relations=$model->getMetaData()->relations;
+				if(isset($relations[$seg]))
+					$model=EMongoDocument::model($relations[$seg]->className);
+				else
+					break;
+			}
+			return $model->getAttributeLabel($name);
+		}
+		else
+			return $this->generateAttributeLabel($attribute);
+	}
 
 	/**
 	 * Creates an active record with the given attributes.
@@ -229,24 +300,23 @@ class EMongoDocument extends EMongoModel{
 	{
 		if(!$this->getIsNewRecord())
 		{
-			Yii::trace(get_class($this).'.saveAttributes()','system.db.ar.CActiveRecord');
+			$this->trace(__FUNCTION__);
 			$values=array();
 			foreach($attributes as $name=>$value)
 			{
-				if(is_integer($name))
-					$values[$value]=$this->$value;
-				else
+				if(is_integer($name)){
+					$v = $this->$value;
+					if(is_array($this->$value)){
+						$v = $this->filterRawDocument($this->$value);
+					}
+					$values[$value]=$v;
+				}else
 					$values[$name]=$this->$name=$value;
 			}
-			if($this->_pk===null)
-				$this->_pk=$this->getPrimaryKey();
-			if($this->updateByPk($this->getOldPrimaryKey(),$values)>0)
-			{
-				$this->_pk=$this->getPrimaryKey();
-				return true;
-			}
-			else
-				return false;
+			if(!isset($this->_id) || $this->_id===null)
+				throw new CDbException(Yii::t('yii','The active record cannot be updated because its _id is not set!'));
+
+			return $this->updateByPk($this->{$this->primaryKey()},$values);
 		}
 		else
 			throw new CDbException(Yii::t('yii','The active record cannot be updated because it is new.'));
@@ -309,15 +379,33 @@ class EMongoDocument extends EMongoModel{
 
 	public function findOne($criteria=array()){
 		$this->trace(__FUNCTION__);
-		if($record=$this->getCollection()->findOne($criteria)!==null)
+
+		if($record=$this->getCollection()->findOne($this->mergeCriteria($this->_criteria['condition'], $criteria))!==null)
 			return $this->populateRecord($record);
 		else
 			return null;
 	}
 
+	/**
+	 * Enter description here ...
+	 * @param unknown_type $criteria
+	 */
     public function find($criteria=array()){
     	$this->trace(__FUNCTION__);
-    	return new EMongoCursor($criteria, get_class($this));
+
+    	if(isset($this->_criteria['condition'])){
+    		$cursor = new EMongoCursor($this->mergeCriteria($this->_criteria['condition'], $criteria), get_class($this));
+			if(isset($this->_cursor['sort'])) $cursor->sort($this->_criteria['sort']);
+
+    		if(isset($this->_criteria['skip']) || isset($this->_criteria['limit'])){
+    			if(isset($this->_criteria['skip'])) $cursor->skip($this->_criteria['skip']);
+    			if(isset($this->_criteria['limit'])) $cursor->limit($this->_criteria['limit']);
+    			return iterator_to_array($cursor);
+    		}
+	   		return $cursor;
+    	}else{
+    		return new EMongoCursor($criteria, get_class($this));
+    	}
     }
 
     public function findBy_id($_id){
@@ -332,9 +420,9 @@ class EMongoDocument extends EMongoModel{
 					array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 
-	public function updateByPk($pk, $criteria = array(), $updateDoc = array(), $options = array()){
+	public function updateByPk($pk, $updateDoc = array(), $options = array()){
 		$this->trace(__FUNCTION__);
-		return $this->getCollection()->update(array_mege(array($this->primaryKey() => $pk), $criteria), $updateDoc,
+		return $this->getCollection()->update(array($this->primaryKey() => $pk), $updateDoc,
 				array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 
@@ -383,6 +471,10 @@ class EMongoDocument extends EMongoModel{
 
     public function getCollection(){
 		return $this->getDbConnection()->{$this->collectionName()};
+    }
+
+    public function mergeCriteria($oldCriteria, $newCriteria){
+		return $this->_criteria=$this->getDbConnection()->merge();
     }
 
     public function trace($func){

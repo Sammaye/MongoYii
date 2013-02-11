@@ -234,41 +234,6 @@ class EMongoModel extends CModel{
 	}
 
 	/**
-	 * Returns the text label for the specified attribute.
-	 * This method overrides the parent implementation by supporting
-	 * returning the label defined in relational object.
-	 * In particular, if the attribute name is in the form of "post.author.name",
-	 * then this method will derive the label from the "author" relation's "name" attribute.
-	 * @param string $attribute the attribute name
-	 * @return string the attribute label
-	 * @see generateAttributeLabel
-	 * @since 1.1.4
-	 */
-	public function getAttributeLabel($attribute)
-	{
-		$labels=$this->attributeLabels();
-		if(isset($labels[$attribute]))
-			return $labels[$attribute];
-		elseif(strpos($attribute,'.')!==false)
-		{
-			$segs=explode('.',$attribute);
-			$name=array_pop($segs);
-			$model=$this;
-			foreach($segs as $seg)
-			{
-				$relations=$model->getMetaData()->relations;
-				if(isset($relations[$seg]))
-					$model=CActiveRecord::model($relations[$seg]->className);
-				else
-					break;
-			}
-			return $model->getAttributeLabel($name);
-		}
-		else
-			return $this->generateAttributeLabel($attribute);
-	}
-
-	/**
 	 * Returns the related record(s).
 	 * This method will return the related record(s) of the current record.
 	 * If the relation is HAS_ONE or BELONGS_TO, it will return a single object
