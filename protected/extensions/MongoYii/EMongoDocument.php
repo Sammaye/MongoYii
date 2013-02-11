@@ -282,7 +282,7 @@ class EMongoDocument extends EMongoModel{
 			{
 				$record->$name=$value;
 			}
-			$record->_pk=$record->primaryKey();
+			//$record->_pk=$record->primaryKey();
 			$record->attachBehaviors($record->behaviors());
 			if($callAfterFind)
 				$record->afterFind();
@@ -492,9 +492,9 @@ class EMongoDocument extends EMongoModel{
 		$this->trace(__FUNCTION__);
 
 		$oc = isset($this->_criteria['condition']) ? $this->_criteria['condition'] : array();
-		if($record=$this->getCollection()->findOne($this->mergeCriteria($oc, $criteria))!==null)
+		if(($record=$this->getCollection()->findOne($this->mergeCriteria($oc, $criteria)))!==null){
 			return $this->populateRecord($record);
-		else
+		}else
 			return null;
 	}
 

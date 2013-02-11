@@ -43,10 +43,13 @@ class SiteController extends Controller
 		// validate user input and redirect to the previous page if valid
 		if($u->validate()){
 			echo "valid";
-			$u->save();
+			//$u->save();
 		}
 
-		var_dump(User::model()->findOne());
+		$c = User::model()->find();
+
+		foreach($c as $row)
+			var_dump($row);
 
 		// renders the view file 'protected/views/site/index.php'
 		// using the default layout 'protected/views/layouts/main.php'

@@ -2,6 +2,7 @@
 
 class User extends EMongoDocument{
 
+	public $_id;
 
 	public $username;
 	public $addresses = array();
@@ -18,15 +19,19 @@ class User extends EMongoDocument{
 		);
 	}
 
+	function collectionName(){
+		return 'users';
+	}
+
 
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @return User the static model class
 	 */
-//	public static function model($className=__CLASS__)
-//	{
-//		return parent::model($className);
-//	}
+	public static function model($className=__CLASS__)
+	{
+		return parent::model($className);
+	}
 
 	function onCheese(){
 

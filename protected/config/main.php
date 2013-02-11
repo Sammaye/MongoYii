@@ -56,7 +56,7 @@ return array(
 		'mongodb' => array(
 			'class' => 'EMongoClient',
 			'server' => 'mongodb://localhost:27017',
-			'db' => 'test'
+			'db' => 'super_test'
 		),
 		// uncomment the following to use a MySQL database
 		/*

@@ -79,13 +79,19 @@ class EMongoClient extends CApplicationComponent{
 	private $_objCache = array();
 
 	/**
+	 * The default action is to get a collection
+	 */
+	function __get($k){
+		return $this->selectCollection($k);
+	}
+
+	/**
 	 * Will either call a function on the database or call for a collection
 	 */
 	function __call($name,$parameters = array()){
 		if(method_exists($this->_db, $name)){
 			return call_user_func_array(array($this->_db, $name), $parameters);
 		}
-		return $this->selectCollection($name);
 	}
 
 	/**
@@ -178,12 +184,12 @@ class EMongoClient extends CApplicationComponent{
 	 */
 	function aggregate($collection, $pipelines){
 		if(version_compare(phpversion('mongo'), '1.3.0', '<')){
-			return $this->_db->command(array(
+			return $this->getDB()->command(array(
 				'aggregate' => $collection,
 				'pipeline' => $pipelines
 			));
 		}
-		return $this->_db->$collection->aggregate($pipelines);
+		return $this->getDB()->$collection->aggregate($pipelines);
 	}
 
 	/**
@@ -191,7 +197,7 @@ class EMongoClient extends CApplicationComponent{
 	 * @param $name
 	 */
 	function selectCollection($name){
-		return $this->_db->selectCollection($name);
+		return $this->getDB()->selectCollection($name);
 	}
 
 	/**
