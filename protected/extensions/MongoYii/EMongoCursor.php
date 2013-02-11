@@ -142,14 +142,14 @@ class EMongoCursor implements Iterator, Countable{
     }
 
     function key() {
-    	if($this->cursor() instanceof \MongoCursor)
+    	if($this->cursor() instanceof MongoCursor)
         	return $this->cursor()->key();
         elseif($this->cursor())
         	return key($this->cursor);
     }
 
     function next() {
-    	if($this->cursor() instanceof \MongoCursor)
+    	if($this->cursor() instanceof MongoCursor)
         	return $this->cursor()->next();
         elseif($this->cursor())
         	return next($this->cursor);
@@ -161,7 +161,7 @@ class EMongoCursor implements Iterator, Countable{
      * the slicing of arrays after in-memory operators were added
      */
     function valid() {
-    	if($this->cursor() instanceof \MongoCursor)
+    	if($this->cursor() instanceof MongoCursor)
         	return $this->cursor()->valid();
         elseif($this->cursor()){
 
