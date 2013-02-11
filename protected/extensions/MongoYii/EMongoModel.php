@@ -242,7 +242,7 @@ class EMongoModel extends CModel{
 	 * or an empty array.
 	 * @param string $name the relation name (see {@link relations})
 	 * @param boolean $refresh whether to reload the related objects from database. Defaults to false.
-	 * @param mixed $params array or CDbCriteria object with additional parameters that customize the query conditions as specified in the relation declaration.
+	 * @param mixed $params array with additional parameters that customize the query conditions as specified in the relation declaration.
 	 * @return mixed the related object(s).
 	 * @throws CDbException if the relation is not specified in {@link relations}.
 	 */
@@ -251,55 +251,64 @@ class EMongoModel extends CModel{
 		if(!$refresh && $params===array() && (isset($this->_related[$name]) || array_key_exists($name,$this->_related)))
 			return $this->_related[$name];
 
-		$md=$this->getMetaData();
-		if(!isset($md->relations[$name]))
+		$relations = $this->relations();
+
+		if(!isset($relations[$name]))
 			throw new CDbException(Yii::t('yii','{class} does not have relation "{name}".',
 				array('{class}'=>get_class($this), '{name}'=>$name)));
 
-		Yii::trace('lazy loading '.get_class($this).'.'.$name,'system.db.ar.CActiveRecord');
-		$relation=$md->relations[$name];
-		if($this->getIsNewRecord() && !$refresh && ($relation instanceof CHasOneRelation || $relation instanceof CHasManyRelation))
-			return $relation instanceof CHasOneRelation ? null : array();
+		Yii::trace('lazy loading '.get_class($this).'.'.$name,'extensions.MongoYii.EMongoModel');
 
-		if($params!==array()) // dynamic query
-		{
-			$exists=isset($this->_related[$name]) || array_key_exists($name,$this->_related);
-			if($exists)
-				$save=$this->_related[$name];
+		// I am unsure as to the purpose of this bit
+		//if($this->getIsNewRecord() && !$refresh && ($relation instanceof CHasOneRelation || $relation instanceof CHasManyRelation))
+			//return $relation instanceof CHasOneRelation ? null : array();
 
-			if($params instanceof CDbCriteria)
-				$params = $params->toArray();
+		$cursor = array();
+		$relation = $relations[$k];
 
-			$r=array($name=>$params);
+		// Let's get the parts of the relation to understand it entirety of its context
+		$cname = $relation[1];
+		$fkey = $relation[2];
+		$pk = isset($relation['on']) ? $this->{$relation['on']} : $this->{$this->primaryKey()};
+
+		// Form the where clause
+		$where = array();
+		if(isset($relation['where'])) $where = array_merge($relation['where'], $params);
+
+		// Find out what the pk is and what kind of condition I should apply to it
+		if(is_array($pk)){
+
+			// It is an array of _ids
+			$clause = array_merge($where, array($fkey=>array('$in' => $pk)));
+		}elseif($pk instanceof MongoDBRef){
+
+			// If it is a DBRef I can only get one doc so I should probably just return it here
+			// otherwise I will continue on
+			$row = $pk::get();
+			if(isset($row['_id'])){
+				$o = $cname::model();
+				$o->setAttributes($row);
+				return $o;
+			}
+			return null;
+
+		}else{
+
+			// It is just one _id
+			$clause = array_merge($where, array($fkey=>$pk));
 		}
-		else
-			$r=$name;
-		unset($this->_related[$name]);
 
-		$finder=new CActiveFinder($this,$r);
-		$finder->lazyFind($this);
+		$o = $cname::model();
+		if($relation[0]==='one'){
 
-		if(!isset($this->_related[$name]))
-		{
-			if($relation instanceof CHasManyRelation)
-				$this->_related[$name]=array();
-			elseif($relation instanceof CStatRelation)
-				$this->_related[$name]=$relation->defaultValue;
-			else
-				$this->_related[$name]=null;
+			// Lets find it and return it
+			$cursor = $o->findOne($clause);
+		}elseif($relation[0]==='many'){
+
+			// Lets find them and return them
+			$cursor = $o->find($clause);
 		}
-
-		if($params!==array())
-		{
-			$results=$this->_related[$name];
-			if($exists)
-				$this->_related[$name]=$save;
-			else
-				unset($this->_related[$name]);
-			return $results;
-		}
-		else
-			return $this->_related[$name];
+		return $cursor;
 	}
 
 	/**
