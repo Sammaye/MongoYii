@@ -14,21 +14,21 @@ class ESubdocumentValidator extends CValidator{
 		if(!$this->class && !$this->rules)
 			throw new EMongoException(Yii::t('yii','You must supply either some rules to validate by or a class name to use'));
 
-		$subdocument = $model->$attribute;
+		//$subdocument = $model->$attribute;
 
-		if($this->type == 'many'){
-
-			$errors = array();
-
-			foreach($subdocument as $k => $doc){
-				$EDoc = $this->validateDocument($doc);
-				if(is_array($EDoc) && !empty($EDoc))
-					$this->addError($object, $attribute, $message, $params)
-
-			}
-		}else{
-
-		}
+//		if($this->type == 'many'){
+//
+//			$errors = array();
+//
+//			foreach($subdocument as $k => $doc){
+//				$EDoc = $this->validateDocument($doc);
+//				if(is_array($EDoc) && !empty($EDoc))
+//					$this->addError($object, $attribute, $message, $params)
+//
+//			}
+//		}else{
+//
+//		}
 	}
 
 	function validateDocument($doc){

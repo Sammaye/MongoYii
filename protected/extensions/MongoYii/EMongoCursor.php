@@ -14,7 +14,7 @@ class EMongoCursor implements Iterator, Countable{
 	public $class;
 
 	/**
-	 * Most of these properties are redundant atm, I might readd the code related to them
+	 * Most of these properties are redundant atm, I might re-add the code related to them
 	 * in future versions, it depends upon the need.
 	 */
 	public $sort;
