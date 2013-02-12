@@ -594,10 +594,15 @@ class EMongoDocument extends EMongoModel{
 
 		$query = array();
 
+		foreach($this->getSafeAttributeNames() as $attribute){
+			var_dump($this->$attribute);
+		}
+		//exit();
+
 		$working_term = trim(preg_replace('/(?:\s\s+|\n|\t)/', '', $term)); // Strip all whitespace to understand if there is actually characters in the string
 
 		if(strlen($working_term) <= 0 || empty($fields)){ // I dont want to run the search if there is no term
-			return EMongoDataProvider(array('condition' => $extra)); // If no term is supplied just run the extra query placed in
+			return new EMongoDataProvider(get_class($this), array('criteria' => array('condition' => $extra))); // If no term is supplied just run the extra query placed in
 			return $result;
 		}
 
@@ -624,7 +629,7 @@ class EMongoDocument extends EMongoModel{
 		$query = array_merge($query, $extra); // Lets add on the additional query to ensure we find only what we want to.
 
 		// TODO Add relevancy sorting
-		return EMongoDataProvider(array('condition' => $query));
+		return new EMongoDataProvider(array('condition' => $query));
 	}
 
 	/**
@@ -665,6 +670,20 @@ class EMongoDocument extends EMongoModel{
 		else
 			return false;
     }
+
+	public function getDbCriteria($createIfNull=true)
+	{
+		if($this->_criteria===null)
+		{
+			if(($c=$this->defaultScope())!==array() || $createIfNull)
+				$this->_criteria=$c;
+		}
+		return $this->_criteria;
+	}
+
+	public function setDbCriteria($criteria){
+		return $this->_criteria=$criteria;
+	}
 
     /**
      * Gets the collection for this model

@@ -163,8 +163,8 @@ class EMongoModel extends CModel{
 		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
 		$virtuals = $this->getDbConnection()->getVirtualObjCache(get_class($this));
 
-		$cols = array_merge(is_array($fields) ? $fields : array(), is_array($virtuals) ? $virtuals : array());
-		return array_keys($cols!==null ? $cols : array());
+		$cols = array_merge(is_array($fields) ? $fields : array(), is_array($virtuals) ? $virtuals : array(), array_keys($this->_attributes));
+		return $cols!==null ? $cols : array();
 	}
 
 	/**

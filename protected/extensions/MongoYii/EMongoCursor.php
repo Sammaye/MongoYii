@@ -8,19 +8,20 @@
  * This class does not support eager loading by default, in order to use eager loading you should look into using this
  * classes reponse with iterator_to_array().
  */
-class EMongoCursor implements Iterator, Countable{
+class EMongoCursor extends CActiveDataProvider implements Iterator, Countable{
 
-	public $condition;
+	public $condition = array();
+
+	public $sort = array();
+	public $skip = 0;
+	public $limit = 0;
+
 	public $class;
 
 	/**
 	 * Most of these properties are redundant atm, I might re-add the code related to them
 	 * in future versions, it depends upon the need.
 	 */
-	public $sort;
-	public $skip = 0;
-	public $limit;
-
 	private $cursor = array();
 	private $current;
 	private $ok;
@@ -32,17 +33,34 @@ class EMongoCursor implements Iterator, Countable{
 	 * @param array|MongoCursor $condition Either a condition array (without sort,limit and skip) or a MongoCursor Object
 	 * @param string $class the class name for the active record
 	 */
-    public function __construct($condition, $class) {
+    public function __construct($criteria, $class) {
 
     	$this->class = $class;
 
-    	if($condition instanceof MongoCursor){
-    		$this->cursor = $condition;
+    	if($criteria instanceof MongoCursor){
+    		$this->cursor = $criteria;
         	$this->cursor->reset();
     	}elseif($class){
+
+    		if(isset($criteria['condition'])) $this->condition = $criteria['condition'];
+    		if(isset($criteria['sort'])) $this->sort = $criteria['sort'];
+    		if(isset($criteria['skip'])) $this->skip = $criteria['skip'];
+    		if(isset($criteria['limit'])) $this->limit = $criteria['limit'];
+
+    		if(!isset($criteria['condition'],$criteria['sort'],$criteria['skip'],$criteria['limit']))
+				$this->condition = $criteria;
+
 			// Then we are doing an active query
-			$this->condition = $condition;
-			$this->cursor = $class::model()->getCollection()->find($condition);
+			$this->cursor = EMongoDocument::model($class)->getCollection()->find($this->condition);
+
+			if($this->sort!==array())
+				$this->cursor->sort($this->sort);
+
+			if($this->skip>0)
+				$this->cursor->skip($this->skip);
+
+			if($this->limit>0)
+				$this->cursor->limit($this->limit);
         }
 
         return $this; // Maintain chainability
@@ -56,7 +74,7 @@ class EMongoCursor implements Iterator, Countable{
      * @param $params
      */
     function __call($method, $params = array()){
-		if($this->cursor() instanceof \MongoCursor && method_exists($this->cursor(), $method)){
+		if($this->cursor() instanceof MongoCursor && method_exists($this->cursor(), $method)){
 			return call_user_func_array(array($this->cursor(), $method), $params);
 		}
 		throw new EMongoException(Yii::t('yii', "Call to undefined function {$method} on the cursor"));
@@ -176,5 +194,14 @@ class EMongoCursor implements Iterator, Countable{
         	$this->queried = true;
         	return !is_null(key($this->cursor));
         }
+    }
+
+    function mergeWith($criteria){
+
+    	if(isset($criteria['condition'])){
+			return $this->condition=$this->getDbConnection()->merge($this->condition, isset($criteria['condition']) ? $criteria['condition'] : array());
+    	}
+
+    	//if(isset())
     }
 }

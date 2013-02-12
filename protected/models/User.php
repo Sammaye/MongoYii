@@ -9,13 +9,15 @@ class User extends EMongoDocument{
 
 	function rules(){
 		return array(
-			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
-				array('road', 'string'),
-				array('town', 'string'),
-				array('county', 'string'),
-				array('post_code', 'string'),
-				array('telephone', 'integer')
-			))
+//			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
+//				array('road', 'string'),
+//				array('town', 'string'),
+//				array('county', 'string'),
+//				array('post_code', 'string'),
+//				array('telephone', 'integer')
+//			)),
+
+			array('_id, username, addresses', 'safe', 'on'=>'search'),
 		);
 	}
 
