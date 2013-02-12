@@ -1,82 +1,43 @@
 <?php
+
+/**
+ * EMongoCriteria
+ *
+ * Yes it is here but I am not sure why. I have made this incase it proves to more suitable to beginners with
+ * MongoDB to have this class and whether it makes for better programming in general.
+ *
+ * My personal opinion is that MongoDB has a natural and easy to understand language that doesn't really require a
+ * criteria class to build moduler queries from. Not only that but unlike SQL where you can form the entire query here
+ * in MongoDB you still have to do tests to find out why limit and skip should truly be used since the Cursor is, of course,
+ * an object.
+ *
+ * For these reasons this class is not actually used anywhere, it is just here incase.
+ */
 class EMongoCriteria{
 
 	public $condition = array();
-
 	public $sort = array();
 	public $skip = 0;
 	public $limit = 0;
-
-	/**
-	 * These are not really designed to be used, instead it is a map of operators for where
-	 * Yii would rather give me a textual version of the operator (i.e. CGridView when you enter
-	 * > or <= into the search boxes)
-	 * @var array
-	 */
-	public $operators = array(
-		'greater'	=> '$gt',
-		'>'			=> '$gt',
-		'greatereq'	=> '$gte',
-		'>='		=> '$gte',
-		'less'		=> '$lt',
-		'<'			=> '$lt',
-		'lesseq'	=> '$lte',
-		'<='		=> '$lte',
-		'noteq'		=> '$ne',
-		'!='		=> '$ne',
-		'<>'		=> '$ne',
-		'in'		=> '$in',
-		'notin'		=> '$nin',
-		'all'		=> '$all',
-		'size'		=> '$size',
-		'type'		=> '$type',
-		'exists'	=> '$exists',
-		'notexists'	=> '$exists',
-		'elemmatch'	=> '$elemMatch',
-		'mod'		=> '$mod',
-		'%'			=> '$mod',
-		'equals'	=> '$$eq',
-		'eq'		=> '$$eq',
-		'=='		=> '$$eq',
-		'where'		=> '$where'
-	);
 
     public function __construct($data) {
 		foreach($data as $name=>$value)
 			$this->$name=$value;
     }
 
-    /**
-     * Designed to be used for Yiis CGridView as noted about the operators above
-     * @param $operator
-     * @param $field
-     * @param $value
-     */
-    function addSearchColumn($column, $value, $partialMatch=false){
-		if(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/',$value,$matches)){
-			$value=$matches[2];
-			$op=$matches[1];
-		}
-		else
-			$op='';
+	public function mergeWith($criteria){
+		if(isset($criteria['condition']) && is_array($criteria['condition']))
+			$this->condition = Yii::app()->monogdb->merge($this->condition, $criteria['condition']);
 
-		if($value==='')
-			return $this;
+		if(isset($criteria['sort']) && is_array($criteria['sort']))
+			$this->sort = Yii::app()->monogdb->merge($this->condition, $criteria['sort']);
 
-		if($partialMatch)
-		{
-			if($op==='')
-				return $this->addSearchCondition($column,$value,$escape,$operator);
-			if($op==='<>')
-				return $this->addSearchCondition($column,$value,$escape,$operator,'NOT LIKE');
-		}
-		elseif($op==='')
-			$op='=';
+		if(isset($criteria['skip'])&& is_numeric($criteria['skip']))
+			$this->skip = $criteria['skip'];
 
-		$this->addCondition($column.$op.self::PARAM_PREFIX.self::$paramCount,$operator);
-		$this->params[self::PARAM_PREFIX.self::$paramCount++]=$value;
+		if(isset($criteria['limit'])&& is_numeric($criteria['limit']))
+			$this->limit = $criteria['limit'];
 
 		return $this;
-    }
-
+	}
 }
