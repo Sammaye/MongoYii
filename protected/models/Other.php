@@ -1,11 +1,9 @@
 <?php
-
-class User extends EMongoDocument{
-
+class Other extends EMongoDocument{
 	public $_id;
+	public $otherId;
 
 	public $username;
-	public $addresses = array();
 
 	function rules(){
 		return array(
@@ -16,20 +14,12 @@ class User extends EMongoDocument{
 //				array('post_code', 'string'),
 //				array('telephone', 'integer')
 //			)),
-
-			array('_id, username, addresses', 'safe', 'on'=>'search'),
+			array('_id, otherId, username', 'safe', 'on'=>'search'),
 		);
 	}
 
 	function collectionName(){
-		return 'users';
-	}
-
-
-	function relations(){
-		return array(
-			'others' => array('many', 'Other', 'otherId')
-		);
+		return 'others';
 	}
 
 	/**

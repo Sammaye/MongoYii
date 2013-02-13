@@ -277,7 +277,7 @@ class EMongoModel extends CModel{
 			//return $relation instanceof CHasOneRelation ? null : array();
 
 		$cursor = array();
-		$relation = $relations[$k];
+		$relation = $relations[$name];
 
 		// Let's get the parts of the relation to understand it entirety of its context
 		$cname = $relation[1];

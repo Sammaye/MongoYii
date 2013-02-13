@@ -46,10 +46,27 @@ class SiteController extends Controller
 			//$u->save();
 		}
 
-		$c = User::model()->find();
+		$d = new Other;
+		$d->username = 'e';
 
-		foreach($c as $row)
-			var_dump($row);
+		$c = User::model()->findOne();
+		var_dump($c->others);
+
+		var_dump($c->others->count());
+		foreach($c->others as $ot) var_dump($ot);
+
+		$d->otherId = $c->_id;
+
+		// validate user input and redirect to the previous page if valid
+		if($d->validate()){
+			echo "valid";
+			//$d->save();
+		}
+
+		$e = Other::model()->findOne();
+		var_dump($e);
+		//foreach($c as $row)
+			//var_dump($row);
 
 		// renders the view file 'protected/views/site/index.php'
 		// using the default layout 'protected/views/layouts/main.php'
