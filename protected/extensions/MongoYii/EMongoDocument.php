@@ -73,7 +73,7 @@ class EMongoDocument extends EMongoModel{
 		}
 
 		// Set the default scope now
-		$this->mergeCriteria($this->_criteria, $this->defaultScope());
+		$this->setDbCriteria($this->mergeCriteria($this->_criteria, $this->defaultScope()));
 
 		$this->init();
 
@@ -96,7 +96,7 @@ class EMongoDocument extends EMongoModel{
 
 		$scopes=$this->scopes();
 		if(isset($scopes[$name])){
-			$this->mergeCriteria($this->_criteria, $scopes[$name]);
+			$this->setDbCriteria($this->mergeCriteria($this->_criteria, $scopes[$name]));
 			return $this;
 		}
 		return parent::__call($name,$parameters);
@@ -506,17 +506,13 @@ class EMongoDocument extends EMongoModel{
     	$this->trace(__FUNCTION__);
 
     	if($this->_criteria!==array()){
-    		$cursor = new EMongoCursor($this->mergeCriteria(isset($this->_criteria['condition']) ? $this->_criteria['condition'] : array(), $criteria), get_class($this));
+    		$cursor = new EMongoCursor($this, $this->mergeCriteria(isset($this->_criteria['condition']) ? $this->_criteria['condition'] : array(), $criteria));
 			if(isset($this->_cursor['sort'])) $cursor->sort($this->_criteria['sort']);
-
-    		if(isset($this->_criteria['skip']) || isset($this->_criteria['limit'])){
-    			if(isset($this->_criteria['skip'])) $cursor->skip($this->_criteria['skip']);
-    			if(isset($this->_criteria['limit'])) $cursor->limit($this->_criteria['limit']);
-    			return iterator_to_array($cursor);
-    		}
+    		if(isset($this->_criteria['skip'])) $cursor->skip($this->_criteria['skip']);
+    		if(isset($this->_criteria['limit'])) $cursor->limit($this->_criteria['limit']);
 	   		return $cursor;
     	}else{
-    		return new EMongoCursor($criteria, get_class($this));
+    		return new EMongoCursor($this, $criteria);
     	}
     }
 
@@ -655,6 +651,10 @@ class EMongoDocument extends EMongoModel{
 			return false;
     }
 
+    /**
+     * gets and if null sets the db criteria for this model
+     * @param $createIfNull
+     */
 	public function getDbCriteria($createIfNull=true)
 	{
 		if($this->_criteria===null)
@@ -665,6 +665,10 @@ class EMongoDocument extends EMongoModel{
 		return $this->_criteria;
 	}
 
+	/**
+	 * Sets the db criteria for this model
+	 * @param array $criteria
+	 */
 	public function setDbCriteria($criteria){
 		return $this->_criteria=$criteria;
 	}
@@ -682,7 +686,7 @@ class EMongoDocument extends EMongoModel{
      * @param $newCriteria
      */
     public function mergeCriteria($oldCriteria, $newCriteria){
-		return $this->_criteria=$this->getDbConnection()->merge($oldCriteria, $newCriteria);
+		return $this->getDbConnection()->merge($oldCriteria, $newCriteria);
     }
 
     /**

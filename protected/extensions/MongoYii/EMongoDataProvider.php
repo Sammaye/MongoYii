@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * EMongoDataProvider
+ *
  * A data Provider helper for interacting with the EMongoCursor
  */
 class EMongoDataProvider extends CActiveDataProvider{
@@ -22,10 +24,21 @@ class EMongoDataProvider extends CActiveDataProvider{
 	 */
 	public $keyAttribute='_id';
 
+	/**
+	 * @var array The criteria array
+	 */
 	private $_criteria;
 
+	/**
+	 * @var string The internal MongoDB cursor as a MongoCursor instance
+	 */
 	private $_cursor;
 
+	/**
+	 * Creates the EMongoDataProvider instance
+	 * @param string|EMongoDocument $modelClass
+	 * @param string $config
+	 */
 	public function __construct($modelClass,$config=array()){
 
 		if(is_string($modelClass))
@@ -44,18 +57,37 @@ class EMongoDataProvider extends CActiveDataProvider{
 
 	}
 
+	/**
+	 * (non-PHPdoc)
+	 * @see yii/framework/web/CActiveDataProvider::getCriteria()
+	 */
 	public function getCriteria(){
 		return $this->_criteria;
 	}
 
+	/**
+	 * (non-PHPdoc)
+	 * @see yii/framework/web/CActiveDataProvider::setCriteria()
+	 */
 	public function setCriteria($value){
 		$this->_criteria=$value;
 	}
 
+	/**
+	 * (non-PHPdoc)
+	 * @see yii/framework/web/CActiveDataProvider::fetchData()
+	 */
 	function fetchData(){
 		$criteria=$this->getCriteria();
-		$this->_cursor = $this->model->find(isset($criteria['condition']) ? $criteria['condition'] : array());
+		$this->_cursor = $this->model->find(isset($criteria['condition']) && is_array($criteria['condition']) ? $criteria['condition'] : array());
 
+		// If we have sort and limit and skip setup within the incoming criteria let's set it
+		if(isset($criteria['sort']) && is_array($criteria['sort']))
+			$this->_cursor->sort($criteria['sort']);
+		if(isset($criteria['skip']) && is_int($criteria['skip']))
+			$this->_cursor->skip($criteria['skip']);
+		if(isset($criteria['limit']) && is_int($criteria['limit']))
+			$this->_cursor->limit($criteria['limit']);
 
 		if(($pagination=$this->getPagination())!==false)
 		{
@@ -77,6 +109,10 @@ class EMongoDataProvider extends CActiveDataProvider{
 		return iterator_to_array($this->_cursor);
 	}
 
+	/**
+	 * (non-PHPdoc)
+	 * @see yii/framework/web/CActiveDataProvider::fetchKeys()
+	 */
 	function fetchKeys(){
 		$keys=array();
 		foreach($this->getData() as $i=>$data)
@@ -87,10 +123,18 @@ class EMongoDataProvider extends CActiveDataProvider{
 		return $keys;
 	}
 
+	/**
+	 * (non-PHPdoc)
+	 * @see yii/framework/web/CActiveDataProvider::calculateTotalItemCount()
+	 */
 	function calculateTotalItemCount(){
 		return $this->_cursor->count();
 	}
 
+	/**
+	 * Converts the sort directions found within Yiis internal workings into MongoDB readable directions
+	 * @param string $order
+	 */
 	protected function getSortDirections($order)
 	{
 		$segs=explode(',',$order);

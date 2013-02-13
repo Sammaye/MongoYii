@@ -11,7 +11,7 @@
  * in MongoDB you still have to do tests to find out why limit and skip should truly be used since the Cursor is, of course,
  * an object.
  *
- * For these reasons this class is not actually used anywhere, it is just here incase.
+ * For these reasons this class is not relied on anywhere and can easily be taken out.
  */
 class EMongoCriteria{
 
