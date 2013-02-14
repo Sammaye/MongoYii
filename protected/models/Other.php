@@ -1,6 +1,6 @@
 <?php
 class Other extends EMongoDocument{
-	public $_id;
+	//public $_id;
 	public $otherId;
 
 	public $username;

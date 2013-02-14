@@ -43,7 +43,7 @@ class SiteController extends Controller
 		// validate user input and redirect to the previous page if valid
 		if($u->validate()){
 			echo "valid";
-			//$u->save();
+			$u->save();
 		}
 
 		$d = new Other;
@@ -60,7 +60,7 @@ class SiteController extends Controller
 		// validate user input and redirect to the previous page if valid
 		if($d->validate()){
 			echo "valid";
-			//$d->save();
+			$d->save();
 		}
 
 		$e = Other::model()->findOne();

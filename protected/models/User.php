@@ -2,7 +2,7 @@
 
 class User extends EMongoDocument{
 
-	public $_id;
+	//public $_id;
 
 	public $username;
 	public $addresses = array();
