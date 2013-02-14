@@ -485,6 +485,17 @@ class EMongoDocument extends EMongoModel{
 	}
 
 	/**
+	 * Compares current active record with another one.
+	 * The comparison is made by comparing table name and the primary key values of the two active records.
+	 * @param EMongoDocument $record record to compare to
+	 * @return boolean whether the two active records refer to the same row in the database table.
+	 */
+	public function equals($record)
+	{
+		return $this->collectionName()===$record->collectionName() && $this->{$this->primaryKey()}===$record->{$this->primaryKey()};
+	}
+
+	/**
 	 * Find one record
 	 * @param array $criteria
 	 */

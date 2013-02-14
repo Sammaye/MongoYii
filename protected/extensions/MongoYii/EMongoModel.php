@@ -25,7 +25,7 @@ class EMongoModel extends CModel{
 			return $this->_related[$name];
 		}elseif(array_key_exists($name, $this->relations())){
 			return $this->_related[$name]=$this->getRelated($name);
-		}elseif(isset($this->attributes[$name])){
+		}elseif(isset($this->_attributes[$name])){
 			return $this->_attributes[$name];
 		}else{
 			return parent::__get($name);
@@ -39,14 +39,10 @@ class EMongoModel extends CModel{
 	 */
 	public function __set($name,$value){
 
-		if($this->setAttribute($name,$value)===false)
-		{
-			if(isset($this->_related[$name]) || array_key_exists($name, $this->relations()))
-				$this->_related[$name]=$value;
-			else
-				parent::__set($name,$value);
-		}
-
+		if(isset($this->_related[$name]) || array_key_exists($name, $this->relations()))
+			$this->_related[$name]=$value;
+		elseif($this->setAttribute($name,$value)===false) // It should never be false, this is a white lie
+			parent::__set($name,$value);
 	}
 
 	/**
@@ -193,10 +189,9 @@ class EMongoModel extends CModel{
 
 		if(property_exists($this,$name))
 			$this->$name=$value;
-		elseif(isset($this->_attributes[$name]))
+		else//if(isset($this->_attributes[$name]))
 			$this->_attributes[$name]=$value;
-		else
-			return false;
+		//else return false;
 		return true;
 
 	}
@@ -332,17 +327,6 @@ class EMongoModel extends CModel{
 	public function hasRelated($name)
 	{
 		return isset($this->_related[$name]) || array_key_exists($name,$this->_related);
-	}
-
-	/**
-	 * Compares current active record with another one.
-	 * The comparison is made by comparing table name and the primary key values of the two active records.
-	 * @param CActiveRecord $record record to compare to
-	 * @return boolean whether the two active records refer to the same row in the database table.
-	 */
-	public function equals($record)
-	{
-		return $this->collectionName()===$record->collectionName() && $this->{$this->primaryKey()}===$record->{$this->primaryKey()};
 	}
 
 	/**
