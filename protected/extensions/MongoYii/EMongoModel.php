@@ -252,7 +252,7 @@ class EMongoModel extends CModel{
 	 * @param boolean $refresh whether to reload the related objects from database. Defaults to false.
 	 * @param mixed $params array with additional parameters that customize the query conditions as specified in the relation declaration.
 	 * @return mixed the related object(s).
-	 * @throws CDbException if the relation is not specified in {@link relations}.
+	 * @throws EMongoException if the relation is not specified in {@link relations}.
 	 */
 	public function getRelated($name,$refresh=false,$params=array())
 	{
@@ -262,7 +262,7 @@ class EMongoModel extends CModel{
 		$relations = $this->relations();
 
 		if(!isset($relations[$name]))
-			throw new CDbException(Yii::t('yii','{class} does not have relation "{name}".',
+			throw new EMongoException(Yii::t('yii','{class} does not have relation "{name}".',
 				array('{class}'=>get_class($this), '{name}'=>$name)));
 
 		Yii::trace('lazy loading '.get_class($this).'.'.$name,'extensions.MongoYii.EMongoModel');
