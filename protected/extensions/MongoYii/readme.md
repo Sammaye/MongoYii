@@ -124,9 +124,7 @@ These variables can be used in the same way as everything else except they will 
 
 ### Relations
 
-Relations have been upgraded from EMongoDocument to the model now.
-
-Defining a relation and how they are returned has been changed as well. Unlike in SQL where you have many complicated types of relation in MongoDB you tend to only have two:-
+Defining a relation and how they are returned has been changed now. Unlike in SQL where you have many complicated types of relation in MongoDB you tend to only have two:-
 `one` and `many`.
 
 As you have guessed it you can only define two types of relation in this extension - `one` and `many`. Lets take a look at some examples:
