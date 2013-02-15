@@ -1,4 +1,4 @@
-# YiiMongo
+# MongoYii
 
 Another active record handler for the Yii framework that supports MongoDB.
 
@@ -8,27 +8,29 @@ There is already a great extension called YiiMongoDBSuite out for Yii so why mak
 
 - Does not support `$or` natively
 - Very large and complicated code base
-- Does not support the later versions of the driver that well
-- Obscured the MongoDB query language and so querying against it
+- Does not support the later versions of the PHP driver (1.3.x series) that well
+- Obscured the MongoDB query language, layering a query language over the top
 
-So after understanding these "flaws" about the YiiMongoDBSuite I decided after a while that I would make my own extension. After some spare time (a year later) I
-finally got to make my own extension, and this is the result.
+After some spare time I decided that I would take the liberty to make a MongoDB extension for Yii. It is really basically a "glue" between MongoDB and 
+Yii and it is designed to be quite free form in that respect.
 
-It is really basically a "glue" between MongoDB and Yii and it is designed to be quite free form in that respect.
-
-There are a few points of design I wished to enforce that need to be taken into consideration:
+There are a few points of design I wished to enforce:
 
 - expose the MongoDB query language in its raw form
 - make the programming of this extension simple and easy to maintain for all parties
 - make sure this extension worked with both the new and old versions of the MongoDB driver
-- attempt to make things at least a little more performant
+- attempt to make things a little more performant
 - try to follow Yiis own CActiveRecord API as much as possible without compromising MongoDB "semantics" such as the name for query operators and the use of a `MongoCursor`
 
 Ok so we have got some of the rationale in place it is time to actually talk about the extension.
 
 ## Setting up the extension
 
-Not much has changed from YiiMongoDBSuite here, you simply add the configuration for your connection to your `main.php` and/or `console.php` file within the `components` part:
+In order to use the extension you first need to set it up. The first thing to do is to download the source code and place it somewhere accessible within your applications structure, I have chosen 
+`protected/extensions/MongoYii`.
+
+Once you have the source code in place you need to edit your `main.php` configuration file (`console.php` will need modifying too if you intend to use this extension in the console) with 
+the following type of configuration:
 
 	'mongodb' => array(
 		'class' => 'EMongoClient',
@@ -41,48 +43,56 @@ And add the YiiMongo directories to your `import` section:
 	'application.extensions.MongoYii.*',
 	'application.extensions.MongoYii.validators.*',
 	'application.extensions.MongoYii.behaviors.*'
+	
+That is the basic setup of the extension.
 
-There are however some differences. You will notice that, first off, the class I use is `EMongoClient`. This is a bit deceptive since it actually represents `MongoClient` and `MongoDB`
-combined. I combined them because of how Yii works on this front, it made it easier for everyone to jump start the actual database handling from the configuration.
-
-This does mean that whenever you call the magic `__call` on the `EMongoClient` like so:
+You will notice that I use a `EMongoClient`. This is a bit deceptive since it actually represents `MongoClient` and `MongoDB` combined.  This means that whenever you call the magic `__call` 
+on the `EMongoClient` like so:
 
 	Yii::app()->mongodb->getSomething();
 
 It will either try and call a function of `getSomething` in `EMongoClient` or, if the function does not exist, try and call it within the `MongoDB` class.
 
-`EMongoClient` is also designed to handle "safe" (such a bad word for what it really is) writes and read preferences differently to YiiMongoDBSuite. It is fully compatible with the
-1.3.x series of the MongoDB driver.
+If you wish to call a function on the `MongoClient` or `Mongo` class you will need to retrieve the connection object like so:
 
-### Write Concern (formally safe writes)
+	Yii::app()->mongodb->getConnection()->getSomething();
+
+`EMongoClient` is also designed to handle full write concern and read preferences in a compatible manner with all verisons of the driver.
+
+**Note:**The component within your configuration MUST be called `mongodb` otherwise you will need to feed the component in manually into each of your models.
+
+### Write Concern (formally "safe" writes)
 
 This extension uses the new `w` variable globally to handle the level of write concern you wish to impose on MongoDB.
 
-Note: Write Concern is abstracted from the driver itself to make this variable compatible across all verisons of the driver so please use the configuration or the `EmongoClient` `w` and
-`j` class variables to set the write concern when you need to otherwise that write concern will not be used within active record.
-
-Note: Write Concern works differently when you touch the database directly (currently, not sure about this) and the write concern to use within the `EMongoCLient` class will have no
-effect. Instead you should always ensure in this case you specify the write concern manually or globally according to your driver version.
-
-By default the extension will assume acked writes, this means `safe=true` or `w=1` depending on the version of your driver. To change this simply add `w` to your `mongodb` component
+By default the extension will assume acked writes, this means `safe=true` or `w=1` depending on the version of your driver. To change this simply add `w` to your `mongodb` components configuration 
 and give it a value according to the PHP documentation: http://php.net/manual/en/mongo.writeconcerns.php
 
-For those using the 1.3.x series of the driver there is also a `j` variable which can be set to either `true` or `false` within the configuration which allows you to control
+For those using the 1.3.x series of the driver there is also a `j` option which can be set to either `true` or `false` within the configuration which allows you to control
 whether or not the write is journal acked.
+
+**Note:** Write Concern is abstracted from the driver itself to make this variable compatible across all verisons of the driver so please use the configuration or the `EmongoClient` `w` and
+`j` class variables to set the write concern when you need to otherwise that write concern will not be used within active record.
+
+**Note:** Write Concern works differently when you touch the database directly and the write concern issued within the `EMongoCLient` class will have no
+effect. Instead you should always ensure in this case you specify the write concern manually according to your driver version. 
+
+This may change in the future but at the moment when you want the active record to go away it just will.
 
 ### Read Preference
 
-For those using the old driver there is only one extra configuration variable available to you, `setSlaveOk`. Set this either `true` or `false` in your configuration to make it
+For those using the old driver there is only one extra configuration variable available to you, `setSlaveOkay`. Set this either `true` or `false` in your configuration to make it
 possible to read from members of a replica set.
 
-For those using the 1.3.x series of the driver you have the `RP` configuration variable. The RP configuration variable is a straight constructor to the `setReadPreference` function
+For those using the 1.3.x series of the driver you have the `RP` configuration variable. The RP configuration variable is a 1-1 related options array to the `setReadPreference` function
 on the `MongoClient` class with one exception. The first parameter is not a constant but instead the name of the constant. An example of using read preferences in your configuration:
 
-	'RP' => array('RP_SECONDARY' /* The name of the constant from the documentation */, array(/* Would normally be read tags */))
+	'RP' => array('RP_SECONDARY' /* The name of the constant from the documentation */, 
+		array(/* Would normally be read tags, if any */))
 
-Please refer to the documentation for a full set of options here: http://php.net/manual/en/mongo.readpreferences.php
+Please refer to the drivers documentation for a full set of options here: http://php.net/manual/en/mongo.readpreferences.php
 
-To change the Read Preference at any time please use the function applicable to your driver, i.e. for 1.3.x series:
+To change the Read Preference at any time please use the function applicable to your driver; for 1.3.x series:
 
 	Yii::app()->mongodb->setReadPreference(MongoClient::RP_PRIMARY, array());
 
@@ -90,26 +100,36 @@ and for pre-1.3:
 
 	Yii::app()->mongodb->setSlaveOkay(true);
 
-Note: Unlike write concern, the `RP` and `setSlaveOk` variables do not interlock between different versions of the driver, using the `EMongoClient` `RP` variable
+**Note:** Unlike write concern, the `RP` and `setSlaveOkay` variables do not interlock between different versions of the driver, using the `EMongoClient` `RP` variable
 will not translate to `slaveOkay`.
+
+## Using MongoDB without Active Record
+
+You can call the database directly at anytime using the same implemented methods as you would using the driver normally. As an example, to get the test database:
+
+	Yii::app()->mongodb->test
+	
+And then to query the test database:
+
+	Yii::app()->mongodb->test->collection->find(array('name' => 'sammaye'));
+	
+So the active record element of YiiMongo can quckly disappear if needed.
 
 ## EMongoModel
 
-The `EMongoModel` is a stripped down version of the `EMongoDocument` which actually extends this class.
+The `EMongoModel` is a stripped down version of the `EMongoDocument`.
 
-This was made separate from `EMongoDocument` to provide a small and slim active model for use on subdocuments. Whenever you make a class based subdocument you can extend this class
-to prevent unneeded functions and code from polluting your coding space.
+This was made separate from `EMongoDocument` to provide a small and slim active model for use on subdocuments. Whenever you make a class based subdocument you can extend this class.
 
 The `EMongoModel` implements all that `CModel` does but with a few added and changed features.
 
 ### Magic functions
 
-In order to support the schema-less nature of MongoDB without using hacks like behaviours to pretend this I have changed the way to that magic functions in Yii work slightly.
-The `__set` will now no longer will seek out behaviour properties or call variable function events.
+In order to support the schema-less nature of MongoDB without using hacks like behaviours I have changed the way that the magic functions in Yii work slightly.
+The `__set` will no longer seek out behaviour properties or call variable function events.
 
 Behaviours tend to manipulate a `owner` within its own self contained context while allowing the calling of events from the magic functions is role blurring. Events should be
-called as functions if you want to use them. As far as I am concerned no real functionality has been lost, instead the `__set` function has been made more clear but only setting
-relations and properties from now on.
+called as functions if you want to use them. In my opinion the `__set` function has been made clearer by this.
 
 ### Virtual Attributes
 
@@ -122,12 +142,13 @@ This extension supports virtual attributes via a doc block notation syntax of `@
 
 These variables can be used in the same way as everything else except they will never be saved in MongoDB.
 
+**Note:** due to how PHP OO accession works it is a good idea to make all your record fields, virtual or not, `public`.
+
 ### Relations
 
-Defining a relation and how they are returned has been changed now. Unlike in SQL where you have many complicated types of relation in MongoDB you tend to only have two:-
-`one` and `many`.
+Unlike in SQL where you have many complicated types of relation, in MongoDB you tend to only have two:- `one` and `many`.
 
-As you have guessed it you can only define two types of relation in this extension - `one` and `many`. Lets take a look at an example:
+As you have guessed, you can only define two types of relation in this extension - `one` and `many`. Lets take a look at an example:
 
 	function relations(){
 		return array(
@@ -136,45 +157,41 @@ As you have guessed it you can only define two types of relation in this extensi
 	}
 
 You will recognise a lot of this from Yiis own active record, in fact a lot is the same. We define a name for the relation as a key and then we define either `one` or `many` in text
-(this is because constants seemed useless with only two states) and then we define a class name (`Other` in this case) and then we define the foreign key in that class (`otherId`).
+(constants seemed useless with only two types) and then we define a class name, `Other` in this case, and then we define the foreign key in that class, `otherId`.
 
-The default behaviour of relations is to attempt to use the primary key, `_id`, of the current model as the primary key to query the foreign key. This is a problem for `EMongoModel`
-since it has no primary key (subdocument semantics) so make sure that, if you use this in `EMongoModel` you define a `on` clause to replace the primary key of the current model.
+The default behaviour of relations is to attempt to use the primary key, `_id`, of the current model to query the foreign key. This is a problem for `EMongoModel`
+since it has no primary key. Make sure that if you use this in `EMongoModel` you define a `on` clause to replace the primary key of the current model.
 
-The `on` clause support multiple definitions. It can take a `DBRef` or an `ObjectId` or an array of `ObjectId`s depending on how you define your document.
+The `on` clause supports multiple field types. It can take a `DBRef` or an `ObjectId` or an array of `ObjectId`s depending on how you define your document.
 
 You can also, just like in Yii, define a `where` clause. This is a 1-1 relation to the syntax used within normal querying in MongoDB and the extension will basically merge this
 clause with the primary key field you define in order to query for the relation.
 
 All relations are returned as `EMongoCursor`s which is basically the Yii active record implementation of `MongoCursor`. There is no eager loading, if you wish to use eager loading
-please look into using `iterator_to_array()` on the relation when you retrieve it.
+please look into using `iterator_to_array()` on the return value from calling the relation.
 
-### Document Retrieval functions
-
-The `EMongoModel` has numerous helper functions to aid the user in retrieving information is a format most suitable for them.
-
-#### getDocument()
+### getDocument()
 
 Just gets the docuemnt "as-it-is". This means that if you put meta objects in like nested `EMongoModel`s it will get these back in the output.
 
-#### getRawDocument()
+### getRawDocument()
 
 Will strip away all classes used by the extension and return a document suitable for use with MongoDB.
 
-#### getJSONDocument()
+### getJSONDocument()
 
 Will run `getRawDocument()` and then return its output as a JSON string.
 
-#### getBSONDocument()
+### getBSONDocument()
 
 Will run `getRawDocument()` and then return its output as a BSON string.
 
 ## EMongoDocument
 
-The `EMongoDocument` extends `EMongoModel` and implements all of its features along with the needed feature for database accession. It also implements as much as possible of
+The `EMongoDocument` extends `EMongoModel` and implements all of its features along with the needed features for database accession. It also implements as much as possible of
 `CActiveRecord`.
 
-The functions that allow database usage are not defined within this section of the documentation. Instead those functions are actually defined within the "Querying" section of this
+**Note:** The functions that allow database usage are not defined within this section of the documentation. Instead those functions are actually defined within the "Querying" section of this
 documentation. Please move to the "Querying" section if you wish to read about this part of the `EMongoDocument`.
 
 ### collectionName()
@@ -187,14 +204,14 @@ Currently only returns `_id` as the key. This function is `private` and cannot b
 
 ### Scopes
 
-Scopes are fully supported in all the normal ways with CActiveRecord but with one difference. The terminology.
+Scopes are fully supported in all the normal ways as with `CActiveRecord` but with one difference; the terminology.
 
 The scopes, and queries, in this extension use these words to describe their parts:
 
-- `condition` to describe the condition itself (i.e. `array('deleted' => 1)`)
-- `sort` to describe the sort (i.e. `array('deleted' => -1)`)
-- `skip` to describe offset (i.e. `2`)
-- `limit` to describe limit (i.e. `3`)
+- `condition` to describe the condition itself
+- `sort` to describe the sort
+- `skip` to describe offset
+- `limit` to describe limit
 
 As an example of a full default scope which omits deleted models to get the latest 10 skipping the first one:
 
@@ -211,7 +228,7 @@ Checks if the current model equals another sent in as a parameter.
 
 ### exists()
 
-Checks if a document exists in the data with the criteria supplied as the first parameter.
+Checks if a document exists in the database with the criteria supplied as the first parameter.
 
 ### clean()
 
@@ -223,40 +240,38 @@ Runs `clean()` and then re-populates the model from the database.
 
 ### getCollection()
 
-Returns the raw `MongoCollection`. Best not to use this and instead to use the extension wrapped editions - 'updateAll` and `deleteAll`. The only difference of said functions
+Returns the raw `MongoCollection`. 
+
+It is normally best not to use this and instead to use the extension wrapped editions - 'updateAll` and `deleteAll`. The only difference of said functions
 from doing it manually on `getCollection()` is that the functions understand the write concern of the extension.
 
 ## Querying
 
-I wanted to expose MongoDBs query language for what it was so even though I have added a `EMongoCriteria` class, it is not required and does not provide any more functionality
-than just doing it via arrays. The `EMongoCriteria` class is not relied on anywhere and is not needed to query anything.
+Querying attempts to expose the native MongoDB querying as much as possible. A `EMongoCriteria` class is provided however, it is not required and does not provide any more functionality
+than just doing it via arrays. The `EMongoCriteria` class is not relied on anywhere and is not needed.
 
-This means that this extension supports every operator in MongoDB since it literally passes its query document straight to the driver, no fiddling about in between of the two.
+### find()
 
-### Read Operations
-
-#### `find()`
-
-`find()` is really simply. It is essentially a 1-1 to the drivers own `find()` function and implements the same specifics. Just like the drivers edition, it also returns a cursor
+`find()` is really simple. It is essentially a 1-1 to the drivers own `find()` function and implements the same specifics. Just like the drivers edition, it also returns a cursor
 instance (`EMongoCursor`) which can be used to lazy load results from the database.
 
 It will return a cursor irrespective of whether it finds results or not. However if it cannot find results then `count` will return `0` and the iterator will not have any iterations
 to it.
 
-Note: The cursor does not eager load documents, instead if you wish to accomplish this please wrap the call to `find` in a `iterator_to_array` function.
+**Note:** The cursor does not eager load documents, instead if you wish to accomplish this please wrap the call to `find` in a `iterator_to_array` function.
 
-#### `findOne` and `findOneBy_id`
+### findOne() and findOneBy_id()
 
-`findOne`, just like `find` is a straight 1-1 implementation of the drivers own `findOne` method and return an active record document if found and null if not found.
+`findOne`, just like `find` is a straight 1-1 implementation of the drivers own `findOne` method and returns an active record record model if something was found, otherwise `null`.
 
-The `findOneBy_id` function takes either a hexadeciminal representation of a ObjectId in string form or wrapped in the `MongoId` class and will seek out a record with that `_id` using
+The `findOneBy_id` function takes either a hexadecimal representation of a `ObjectId` in string form or wrapped in the `MongoId` class and will seek out a record with that `_id` using
 the `findOne` function, returning the exact same. It is basically a helper for `findOne` to make your life a little easier.
 
-#### Scopes
+### Scopes
 
-The read functions of this extension have full support for scopes within models. Please refer to the models section to understand this better.
+The read functions of this extension have full support for scopes within models.
 
-#### Example
+### Example
 
 Ok so now we have a basic grasp of querying lets look at an example:
 
@@ -266,41 +281,40 @@ This may look complicated but I will now break it down for you:
 
 - `User::model()` gets our model
 - `->recently()` is actually a scope, this is not needed but good for demonstration purposes
-- `->find()` is basically the MongoDB drivers `find` method and returns a `EMongoCursor` which implements a `MongoCursor`
+- `->find(/*...*/)` is basically the MongoDB drivers `find` method and returns a `EMongoCursor` which implements a `MongoCursor`
 - `->sort()` is basically the MongoDB driver `sort` method on the `MongoCursor`
 - `->limit()` is again basically the MongoDB drivers own `limit` function on the `MongoCursor`
 
 For a reference on what operators are supported please refer to the MongoDB documentation: http://docs.mongodb.org/manual/reference/operators/
 
-Note: I omitted the other functions like `findByAttributes` since it seems pointless with MongoDBs querying language to implement those.
+**Note:** other functions like `findByAttributes` have been omitted since it seems pointless with MongoDBs querying language to implement those.
 
-### Write Operations
+### save()
 
-A number of write operations are supported by this extension.
+This `save`s the document and is used externally as a means to access either `insert` or `update` on the active record model, i.e.:
 
-#### save()
+	if($user->validate()) $user->save();
+    
+If the document is new it will insert otherwise it will update.
 
-This `save()`s the document and is used externally as a means to access either `insert` or `update` on the active record model, i.e.:
+### insert()
 
-    if($user->validate()) $user->save();
+This is used internally by the active record model. If the record is new it will attempt to insert it instead of updating it otherwise it will throw 
+an error.
 
-#### insert()
+### update()
 
-This is used internally by the active record model. If the record is new it will attempt to insert it instead of update it.
+This is used internally by the active record model. If the record is not new it will attempt to update it otherwise it will throw an error.
 
-#### update()
+If you send in attributes into either this function or the `save` function it will attempt to do a `$set` on those attributes otherwise it will `save` the model.
 
-This is used internally the active record model. If the record is not new it will attempt to update it.
+### delete()
 
-If you send in not attributes into either this function or the `save` function it will attempt to do a `save` otherwise it will `$set` those attributes.
+This is used to delete the current active record.
 
-#### delete()
+### deleteByPk() and updateByPk()
 
-This is used to delete the current active record from MongoDB.
-
-#### deleteByPk() and updateByPk()
-
-These are helpers to the update and delete except the act on the database directly, instead of through active record.
+These are helpers to the update and delete functions except they act on the database directly, instead of through active record.
 
 To show by example:
 
@@ -311,7 +325,7 @@ Arguments shown in `[]` are optional.
 
 These functions can take both a string and a `MongoId` as the `$_id` parameter.
 
-#### updateAll() and deleteAll()
+### updateAll() and deleteAll()
 
 Same as above really except these translate directly to the MongoDB drivers own `update` and `delete` functions.
 
@@ -319,11 +333,13 @@ Note: `UpdateAll` is `multi` `true` by default
 
 ## Validation
 
+## Subdocuments
+
 ## Using the ActiveDataProvider
 
 This extension comes with a `CActiveDataProvider` helper called `EMongoDataProvider`. It works exactly the same way except for how it is called.
 
-Instead of using a `EMongoCriteria` or something similar you use use arrays like so:
+Instead of using a `EMongoCriteria` or something similar you use arrays like so:
 
 	new EMongoDataProvider(array(
 		'criteria' => array(
@@ -337,7 +353,7 @@ Instead of using a `EMongoCriteria` or something similar you use use arrays like
 
 The `criteria` option basically relates to the parts of a cursor.
 
-Note: This does not work with CGridView due to how Yii core expects a `CActiveRecord` and uses that class directly for some parts of the widget.
+Note: This does not work with `CGridView` due to how Yii core expects a `CActiveRecord` and uses that class directly for some parts of the widget.
 
 ## Known Flaws
 
@@ -349,7 +365,7 @@ I am sure there are more but that is the immediate flaws you need to consider in
 
 ## Bugs
 
-Probably some, however, I will endevour to accept pull requests and fix reported bugs.
+Probably some, however, I will endeavour to accept pull requests and fix reported bugs.
 
 ## Examples
 

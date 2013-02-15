@@ -57,7 +57,7 @@ class EMongoClient extends CApplicationComponent{
 	 * The Legacy read preference. DO NOT USE IF YOU ARE ON VERSION 1.3+
 	 * @var boolean
 	 */
-	public $setSlaveOk = false;
+	public $setSlaveOkay = false;
 
 	/**
 	 * The Mongo Connection instance
@@ -116,8 +116,8 @@ class EMongoClient extends CApplicationComponent{
 			$this->_mongo = new Mongo($this->server, $this->options);
 			$this->_mongo->connect();
 
-			if($this->setSlaveOk)
-				$this->_mongo->setSlaveOkay($this->setSlaveOk);
+			if($this->setSlaveOkay)
+				$this->_mongo->setSlaveOkay($this->setSlaveOkay);
 		}else{
 			$this->_mongo = new MongoClient($this->server, $this->options);
 
