@@ -127,7 +127,7 @@ These variables can be used in the same way as everything else except they will 
 Defining a relation and how they are returned has been changed now. Unlike in SQL where you have many complicated types of relation in MongoDB you tend to only have two:-
 `one` and `many`.
 
-As you have guessed it you can only define two types of relation in this extension - `one` and `many`. Lets take a look at some examples:
+As you have guessed it you can only define two types of relation in this extension - `one` and `many`. Lets take a look at an example:
 
 	function relations(){
 		return array(
