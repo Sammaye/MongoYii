@@ -111,6 +111,17 @@ Behaviours tend to manipulate a `owner` within its own self contained context wh
 called as functions if you want to use them. As far as I am concerned no real functionality has been lost, instead the `__set` function has been made more clear but only setting
 relations and properties from now on.
 
+### Virtual Attributes
+
+This extension supports virtual attributes via a doc block notation syntax of `@virtual`, for example:
+
+	class User extends EMongoModel{
+	    /** @virtual */
+	    public $somevar;
+	}
+
+These variables can be used in the same way as everything else except they will never be saved in MongoDB.
+
 ### Relations
 
 Relations have been upgraded from EMongoDocument to the model now.
