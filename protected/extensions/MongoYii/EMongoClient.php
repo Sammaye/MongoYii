@@ -314,6 +314,23 @@ class EMongoClient extends CApplicationComponent{
 		}
 		return $merged;
 	}
+
+	/**
+	 * Set read preference on MongoClient
+	 * @param $pref
+	 * @param $options
+	 */
+	function setReadPreference($pref, $options=array()){
+		return $this->getConnection()->setReadPreference($pref, $options);
+	}
+
+	/**
+	 * setSlaveOkay on Mongo
+	 * @param $bool
+	 */
+	function setSlaveOkay($bool){
+		return $this->getConnection()->setSlaveOkay($bool);
+	}
 }
 
 class EMongoException extends CException {}

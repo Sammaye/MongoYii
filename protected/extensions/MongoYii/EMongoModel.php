@@ -38,8 +38,10 @@ class EMongoModel extends CModel{
 	 * @see CComponent::__set()
 	 */
 	public function __set($name,$value){
-
-		if(isset($this->_related[$name]) || array_key_exists($name, $this->relations()))
+		$setter='set'.$name;
+		if(method_exists($this,$setter))
+			return $this->$setter($value);
+		elseif(isset($this->_related[$name]) || array_key_exists($name, $this->relations()))
 			$this->_related[$name]=$value;
 		elseif($this->setAttribute($name,$value)===false) // It should never be false, this is a white lie
 			parent::__set($name,$value);

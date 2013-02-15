@@ -545,6 +545,8 @@ class EMongoDocument extends EMongoModel{
      */
 	public function deleteByPk($pk,$criteria=array(),$options=array()){
 		$this->trace(__FUNCTION__);
+
+		$pk = $pk instanceof MongoId ? $pk : new MongoId($pk);
 		return $this->getCollection()->remove(array_mege(array($this->primaryKey() => $pk), $criteria),
 					array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
@@ -558,9 +560,11 @@ class EMongoDocument extends EMongoModel{
 	 * @param array $updateDoc
 	 * @param array $options
 	 */
-	public function updateByPk($pk, $updateDoc = array(), $options = array()){
+	public function updateByPk($pk, $updateDoc = array(), $criteria = array(), $options = array()){
 		$this->trace(__FUNCTION__);
-		return $this->getCollection()->update(array($this->primaryKey() => $pk), array('$set' => $updateDoc),
+
+		$pk = $pk instanceof MongoId ? $pk : new MongoId($pk);
+		return $this->getCollection()->update($this->mergeCriteria($criteria, array($this->primaryKey() => $pk)), array('$set' => $updateDoc),
 				array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 
@@ -570,7 +574,7 @@ class EMongoDocument extends EMongoModel{
 	 * @param array $updateDoc
 	 * @param array $options
 	 */
-	public function updateAll($criteria=array(),$updateDoc=array(),$options=array()){
+	public function updateAll($criteria=array(),$updateDoc=array(),$options=array('multi'=>true)){
 		$this->trace(__FUNCTION__);
 		return $this->getCollection()->update($criteria, $updateDoc, array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
