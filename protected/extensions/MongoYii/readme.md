@@ -38,7 +38,7 @@ the following type of configuration:
 		'db' => 'super_test'
 	),
 
-And add the YiiMongo directories to your `import` section:
+And add the MongoYii directories to your `import` section:
 
 	'application.extensions.MongoYii.*',
 	'application.extensions.MongoYii.validators.*',
@@ -113,7 +113,7 @@ And then to query the test database:
 
 	Yii::app()->mongodb->test->collection->find(array('name' => 'sammaye'));
 	
-So the active record element of YiiMongo can quckly disappear if needed.
+So the active record element of MongoYii can quckly disappear if needed.
 
 ## EMongoModel
 
@@ -333,7 +333,57 @@ Note: `UpdateAll` is `multi` `true` by default
 
 ## Validation
 
+The validation has pretty much not changed except for one validator which required some rewriting, the unique validator.
+
+Basically the `CUniqueValidator` is retro-fitted to work for MongoDB so the call to the validator is the same but you must take into account that the name of the 
+validator is now `EMongoUniqueValidator`.
+
 ## Subdocuments
+
+Subdocuments are mostly not automatically supported by this extension. There a couple of reasons, firstly due to performance - to automate subdocument usage requires a lot of 
+loaded class space to handle different types and quite a few eager loaded classes to store the formed subdocuments in. The other main reason is that whenever, in any project I have done, 
+tried to automate subdocuments through active record it has always resulted in me actually ditching it and doing the process manually. It has been proven many times that you rarely 
+actually want automated subdocuments and normally you want greater control over their storage than this extension could provide.
+
+So that is a brief understanding of the rationale behind the idea to ditch automatic subdocument handling and preperation within the active record.
+
+This does not mean you cannot embed subdocument classes at all, when saving the active record will iterate the document and attempt to strip and `EMongoModel` or `EMongoDocument` 
+classes that have sprung up.
+
+This all aside, there is a provided subdocument validator and technically it can even accept multi level nesting. Please bare in mind, though, that it will cause repitition 
+for every level you use it on. This WILL have a performance implication on your application.
+
+An example of using an array based subdocument is:
+
+	function rules(){
+		return array(
+			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
+				array('road', 'string'),
+				array('town', 'string'),
+				array('county', 'string'),
+				array('post_code', 'string'),
+				array('telephone', 'integer')
+			)),
+		);
+	}  
+	
+While a classs based one is:
+
+	function rules(){
+		return array(
+			array('addresses', 'subdocument', 'type' => 'many', 'class' => 'Other'),
+		);
+	}
+	
+`type` defines the type of subdocument, as with relations this is either `one` or `many`.
+	
+The validator will evaluate the rules as though they are completely separate from the originating model so in theory there is nothing stopping you from using any validator you want.
+
+The error output for the validator will differ between the `one` and `many` types of subdocument. With `one` the validator will output the model errors directly onto the field 
+however with `many` it will create a new element for each model with an embedded errors in that new element in the field on the parent. 
+
+**Note:** While on the subject, to avoid the iteration everytime to save the document (since validation is run by default in Yii on save) you should confine your subdocument 
+validators to specific scenarios where they will be actively used.
 
 ## Using the ActiveDataProvider
 
