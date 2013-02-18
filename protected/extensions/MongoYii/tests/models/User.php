@@ -5,7 +5,19 @@ class User extends EMongoDocument{
 	public $username;
 	public $addresses = array();
 	public $url = array();
+	public $interests = array();
 
+	function scopes(){
+		return array(
+			'programmers' => array(
+				'condition' => array('job_title' => 'programmer'),
+				'sort' => array('name' => 1), 
+				'skip' => 1,
+				'limit' => 3
+			)	
+		);
+	}
+	
 	function rules(){
 		return array(
 			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
@@ -30,6 +42,12 @@ class User extends EMongoDocument{
 			'one_interest' => array('one', 'Interest', 'i_id'),
 			'embedInterest' => array('many', 'Interest', '_id', 'on' => 'embedI'),
 			'where_interest' => array('many', 'Interest', 'i_id', 'where' => array('name' => 'jogging'))
+		);
+	}
+	
+	function attributeLabels(){
+		return array(
+			'username' => 'name'		
 		);
 	}
 

@@ -80,16 +80,13 @@ class ESubdocumentValidator extends CValidator{
 	}
 
 	/**
-	 * Adds an error about the specified attribute to the active record.
-	 * This is a helper method that performs message selection and internationalization.
+	 * Sets the errors for a certain attribute
 	 * @param CModel $object the data object being validated
 	 * @param string $attribute the attribute being validated
-	 * @param string $message the error message
-	 * @param array $params values for the placeholders in the error message
+	 * @param array $messages the error messages for that attribute
 	 */
-	protected function setAttributeErrors($object,$attribute,$message,$params=array())
+	protected function setAttributeErrors($object,$attribute,$messages)
 	{
-		$params['{attribute}']=$object->getAttributeLabel($attribute);
-		$object->setAttributeErrors($attribute,strtr($message,$params));
+		$object->setAttributeErrors($attribute,$messages);
 	}
 }

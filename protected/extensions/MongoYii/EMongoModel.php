@@ -355,6 +355,11 @@ class EMongoModel extends CModel{
 			return false;
 	}
 
+	/**
+	 * Sets the errors for that particular attribute
+	 * @param string $attribute
+	 * @param array $errors
+	 */
 	function setAttributeErrors($attribute, $errors){
 		$this->_errors[$attribute]=$errors;
 	}
