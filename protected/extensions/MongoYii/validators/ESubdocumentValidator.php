@@ -1,4 +1,11 @@
 <?php
+
+/**
+ * ESubdocumentValidator
+ *
+ * Warning: This class, if abused, can cause heavy repitition within your application.
+ * With great power comes great responsibility.
+ */
 class ESubdocumentValidator extends CValidator{
 
 	public $class;
@@ -14,38 +21,75 @@ class ESubdocumentValidator extends CValidator{
 		if(!$this->class && !$this->rules)
 			throw new EMongoException(Yii::t('yii','You must supply either some rules to validate by or a class name to use'));
 
-		//$subdocument = $model->$attribute;
-
-//		if($this->type == 'many'){
-//
-//			$errors = array();
-//
-//			foreach($subdocument as $k => $doc){
-//				$EDoc = $this->validateDocument($doc);
-//				if(is_array($EDoc) && !empty($EDoc))
-//					$this->addError($object, $attribute, $message, $params)
-//
-//			}
-//		}else{
-//
-//		}
-	}
-
-	function validateDocument($doc){
-
-		if($this->rules && !empty($this->rules)){
-
+		// Lets judge what class we are using
+		// If we are using a pre-defined class then lets just get on with it otherwise
+		// lets instantiate a EMongoModel and fill its rules with what we want
+		if($this->class){
+			$c = $this->class;
 		}else{
-			if($doc instanceof $this->class && !$doc->validate()){
-				return $doc->getErrors();
-			}else{
-				$oDoc = new $this->class;
-				$oDoc->attributes($doc);
-				if(!$oDoc->validate())
-					return $oDoc->getErrors();
+			$c=new EMongoModel();
+			foreach($this->rules as $rule){
+				if(isset($rule[0],$rule[1]))  // attributes, validator name
+					$c->validatorList->add->add(CValidator::createValidator($rule[1],$this,$rule[0],array_slice($rule,2)));
+				else
+					throw new CException(Yii::t('yii','{class} has an invalid validation rule. The rule must specify attributes to be validated and the validator name.',
+						array('{class}'=>get_class($this))));
 			}
 		}
 
-		return true;
+		if($this->type == 'many'){
+			if(is_array($object->$attribute)){
+
+				$fieldErrors = array();
+				$fieldValue = array();
+
+				foreach($object->$attribute as $row){
+					$c->clean();
+					$val = $fieldValue[] = $row instanceof $c ? $row->getRawDocument() : $row;
+					$c->setAttributes($val);
+					if(!$c->validate()){
+						$fieldErrors[] = $c->getErrors();
+					}
+				}
+
+				if($this->message!==null){
+					$this->addError($object,$attribute,$this->message);
+				}else{
+					$this->setAttributeErrors($object, $attribute, $fieldErrors);
+				}
+
+				// Strip the models etc from the field value
+				$this->owner->$attribute = $fieldValue;
+			}
+		}else{
+
+			$c->clean();
+			$fieldValue = $object->$attribute instanceof $c ? $object->$attribute->getRawDocument() : $object->$attribute;
+			$c->setAttributes($fieldValue);
+			if(!$c->validate()){
+				if($this->message!==null){
+					$this->addError($object,$attribute,$this->message);
+				}else{
+					$this->setAttributeErrors($object, $attribute, $c->getErrors());
+				}
+			}
+
+			// Strip the models etc from the field value
+			$this->owner->$attribute = $fieldValue;
+		}
+	}
+
+	/**
+	 * Adds an error about the specified attribute to the active record.
+	 * This is a helper method that performs message selection and internationalization.
+	 * @param CModel $object the data object being validated
+	 * @param string $attribute the attribute being validated
+	 * @param string $message the error message
+	 * @param array $params values for the placeholders in the error message
+	 */
+	protected function setAttributeErrors($object,$attribute,$message,$params=array())
+	{
+		$params['{attribute}']=$object->getAttributeLabel($attribute);
+		$object->setAttributeErrors($attribute,strtr($message,$params));
 	}
 }

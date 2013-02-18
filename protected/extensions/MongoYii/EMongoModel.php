@@ -12,6 +12,8 @@ class EMongoModel extends CModel{
 	 */
 	public static $db;
 
+	private $_errors=array();	// attribute name => array of errors
+
 	private $_attributes = array();
 	private $_related = array();
 
@@ -351,6 +353,10 @@ class EMongoModel extends CModel{
 		}
 		else
 			return false;
+	}
+
+	function setAttributeErrors($attribute, $errors){
+		$this->_errors[$attribute]=$errors;
 	}
 
 	/**
