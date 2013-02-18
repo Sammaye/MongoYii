@@ -2,21 +2,20 @@
 
 class User extends EMongoDocument{
 
-	//public $_id;
-
 	public $username;
 	public $addresses = array();
+	public $url = array();
 
 	function rules(){
 		return array(
-//			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
-//				array('road', 'string'),
-//				array('town', 'string'),
-//				array('county', 'string'),
-//				array('post_code', 'string'),
-//				array('telephone', 'integer')
-//			)),
-
+			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
+				array('road', 'string'),
+				array('town', 'string'),
+				array('county', 'string'),
+				array('post_code', 'string'),
+				array('telephone', 'integer')
+			)),
+			array('url', 'subdocument', 'type' => 'one', 'class' => 'SocialUrl'),
 			array('_id, username, addresses', 'safe', 'on'=>'search'),
 		);
 	}
@@ -25,10 +24,12 @@ class User extends EMongoDocument{
 		return 'users';
 	}
 
-
 	function relations(){
 		return array(
-			'others' => array('many', 'Other', 'otherId')
+			'interests' => array('many', 'Interest', 'i_id'),
+			'one_interest' => array('one', 'Interest', 'i_id'),
+			'embedInterest' => array('many', 'Interest', '_id', 'on' => 'embedI'),
+			'where_interest' => array('many', 'Interest', 'i_id', 'where' => array('name' => 'jogging'))
 		);
 	}
 
@@ -46,9 +47,7 @@ class SocialUrl extends EMongoModel{
 
 	public function rules(){
 		return array(
-			array('url'),
-			array('caption')
+			array('url, caption', 'string'),
 		);
 	}
-
 }

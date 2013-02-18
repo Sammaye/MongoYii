@@ -138,6 +138,9 @@ class EMongoModel extends CModel{
 				sizeof($documentFields) > 0 ? $documentFields : null
 			);
 		}
+		
+		// We copy this function to add the subdocument validator as a built in validator
+		CValidator::$builtInValidators['subdocument'] = 'ESubdocumentValidator';		
 
 		$this->init();
 
@@ -339,9 +342,6 @@ class EMongoModel extends CModel{
 	 */
 	public function validate($attributes=null, $clearErrors=true)
 	{
-		// We copy this function to add the subdocument validator as a built in validator
-		CValidator::$builtInValidators['subdocument'] = 'ESubdocumentValidator';
-
 		if($clearErrors)
 			$this->clearErrors();
 		if($this->beforeValidate())

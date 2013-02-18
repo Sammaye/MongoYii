@@ -1,19 +1,10 @@
 <?php
 class Interest extends EMongoDocument{
-	//public $_id;
-	public $otherId;
-
-	public $username;
+	
+	public $name;
 
 	function rules(){
 		return array(
-//			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
-//				array('road', 'string'),
-//				array('town', 'string'),
-//				array('county', 'string'),
-//				array('post_code', 'string'),
-//				array('telephone', 'integer')
-//			)),
 			array('_id, otherId, username', 'safe', 'on'=>'search'),
 		);
 	}

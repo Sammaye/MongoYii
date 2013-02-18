@@ -71,6 +71,9 @@ class EMongoDocument extends EMongoModel{
 				sizeof($documentFields) > 0 ? $documentFields : null
 			);
 		}
+		
+		// We copy this function to add the subdocument validator as a built in validator
+		CValidator::$builtInValidators['subdocument'] = 'ESubdocumentValidator';		
 
 		// Set the default scope now
 		$this->setDbCriteria($this->mergeCriteria($this->_criteria, $this->defaultScope()));
