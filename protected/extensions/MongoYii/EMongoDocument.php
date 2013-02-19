@@ -71,9 +71,9 @@ class EMongoDocument extends EMongoModel{
 				sizeof($documentFields) > 0 ? $documentFields : null
 			);
 		}
-		
+
 		// We copy this function to add the subdocument validator as a built in validator
-		CValidator::$builtInValidators['subdocument'] = 'ESubdocumentValidator';		
+		CValidator::$builtInValidators['subdocument'] = 'ESubdocumentValidator';
 
 		// Set the default scope now
 		$this->setDbCriteria($this->mergeCriteria($this->_criteria, $this->defaultScope()));
@@ -557,8 +557,6 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * Update record by PK
 	 *
-	 * This function only allows for $set-ting attributes, it does not allow for any additional opreators.
-	 *
 	 * @param string $pk
 	 * @param array $updateDoc
 	 * @param array $options
@@ -567,7 +565,7 @@ class EMongoDocument extends EMongoModel{
 		$this->trace(__FUNCTION__);
 
 		$pk = $pk instanceof MongoId ? $pk : new MongoId($pk);
-		return $this->getCollection()->update($this->mergeCriteria($criteria, array($this->primaryKey() => $pk)), array('$set' => $updateDoc),
+		return $this->getCollection()->update($this->mergeCriteria($criteria, array($this->primaryKey() => $pk)),$updateDoc,
 				array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 

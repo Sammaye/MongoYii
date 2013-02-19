@@ -11,13 +11,19 @@ class User extends EMongoDocument{
 		return array(
 			'programmers' => array(
 				'condition' => array('job_title' => 'programmer'),
-				'sort' => array('name' => 1), 
+				'sort' => array('name' => 1),
 				'skip' => 1,
 				'limit' => 3
-			)	
+			)
 		);
 	}
-	
+
+	function behaviors(){
+		return array(
+			'EMongoTimestampBehaviour'
+		);
+	}
+
 	function rules(){
 		return array(
 			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
@@ -40,14 +46,14 @@ class User extends EMongoDocument{
 		return array(
 			'interests' => array('many', 'Interest', 'i_id'),
 			'one_interest' => array('one', 'Interest', 'i_id'),
-			'embedInterest' => array('many', 'Interest', '_id', 'on' => 'embedI'),
+			'embedInterest' => array('many', 'Interest', '_id', 'on' => 'interests'),
 			'where_interest' => array('many', 'Interest', 'i_id', 'where' => array('name' => 'jogging'))
 		);
 	}
-	
+
 	function attributeLabels(){
 		return array(
-			'username' => 'name'		
+			'username' => 'name'
 		);
 	}
 
