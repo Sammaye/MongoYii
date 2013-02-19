@@ -26,7 +26,7 @@ class MongoDocumentTest extends CTestCase{
 		// Lets save all the child docs
 		foreach($childDocs as $doc){
 			$i = Interest::model();
-			$i->setAttributes($doc);
+			foreach($doc as $k=>$v) $i->$k=$v;
 			$this->assertTrue($i->save());
 		}
 
@@ -44,7 +44,7 @@ class MongoDocumentTest extends CTestCase{
 		$user_ids = array();
 		foreach($parentDocs as $doc){
 			$u = User::model();
-			$u->setAttributes($doc);
+			foreach($doc as $k=>$v) $i->$k=$v;
 			$u->interests = $interest_ids;
 			$this->assertTrue($u->save());
 
@@ -311,7 +311,7 @@ class MongoDocumentTest extends CTestCase{
 
 		foreach($parentDocs as $doc){
 			$u=User::model();
-			$u->setAttributes($doc);
+			foreach($doc as $k=>$v) $i->$k=$v;
 			$this->assertTrue($u->save());
 		}
 
