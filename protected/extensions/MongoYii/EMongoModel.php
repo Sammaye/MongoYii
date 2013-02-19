@@ -223,15 +223,10 @@ class EMongoModel extends CModel{
 		$attributes=$this->_attributes;
 		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
 
-		if(is_array($fields)){
-			foreach($fields as $name=>$column)
-			{
-				if(property_exists($this,$name))
-					$attributes[$name]=$this->$name;
-				elseif($names===true && !isset($attributes[$name]))
-					$attributes[$name]=null;
-			}
+		foreach($fields as $name){
+			$attributes[$name] = $this->$name;
 		}
+
 		if(is_array($names))
 		{
 			$attrs=array();
@@ -246,6 +241,45 @@ class EMongoModel extends CModel{
 		}
 		else
 			return $attributes;
+	}
+
+	/**
+	 * Sets the attribute values in a massive way.
+	 * @param array $values attribute values (name=>value) to be set.
+	 * @param boolean $safeOnly whether the assignments should only be done to the safe attributes.
+	 * A safe attribute is one that is associated with a validation rule in the current {@link scenario}.
+	 * @see getSafeAttributeNames
+	 * @see attributeNames
+	 */
+	public function setAttributes($values,$safeOnly=true)
+	{
+		if(!is_array($values))
+			return;
+		$attributes=array_flip($safeOnly ? $this->getSafeAttributeNames() : $this->attributeNames());
+		foreach($values as $name=>$value)
+		{
+			if($safeOnly){
+				if(isset($attributes[$name]))
+					$this->$name=$value;
+				elseif($safeOnly)
+					$this->onUnsafeAttribute($name,$value);
+			}else
+				$this->$name=$value;
+		}
+	}
+
+	/**
+	 * Sets the attributes to be null.
+	 * @param array $names list of attributes to be set null. If this parameter is not given,
+	 * all attributes as specified by {@link attributeNames} will have their values unset.
+	 * @since 1.1.3
+	 */
+	public function unsetAttributes($names=null)
+	{
+		if($names===null)
+			$names=$this->attributeNames();
+		foreach($names as $name)
+			$this->$name=null;
 	}
 
 	/**
