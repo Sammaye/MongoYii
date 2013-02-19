@@ -30,6 +30,7 @@ class SiteController extends Controller
 
 		var_dump(Yii::app()->mongodb);
 
+		/*
 		$u = new User();
 		$u->username = 'd';
 		//var_dump($u->username);
@@ -67,6 +68,12 @@ class SiteController extends Controller
 		var_dump($e);
 		//foreach($c as $row)
 			//var_dump($row);
+		*/
+
+		$u=new User();
+		$u->setAttributes(array('_id' => new MongoId(), 'username' => 'sammaye', 'poop' => true),false);
+
+		var_dump($u->getAttributes());
 
 		// renders the view file 'protected/views/site/index.php'
 		// using the default layout 'protected/views/layouts/main.php'
