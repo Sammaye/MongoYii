@@ -223,8 +223,10 @@ class EMongoModel extends CModel{
 		$attributes=$this->_attributes;
 		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
 
-		foreach($fields as $name){
-			$attributes[$name] = $this->$name;
+		if(is_array($fields)){
+			foreach($fields as $name){
+				$attributes[$name] = $this->$name;
+			}
 		}
 
 		if(is_array($names))
