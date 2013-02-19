@@ -229,14 +229,57 @@ class MongoDocumentTest extends CTestCase{
 	}
 
 	function testUniqueValidator(){
+		$c=User::model();
+		$c->setScenario('testUnqiue');
+		$c->username='sammaye';
+		$this->assertTrue($c->save());
 
+		$c=User::model();
+		$c->setScenario('testUnqiue');
+		$c->username='sammaye';
+		$this->assertFalse($c->validate());
+		$this->assertNotEmpty($c->getError('username'));
 	}
 
 	function testArraySubdocumentValidator(){
 
+		$c=User::model();
+		$c->username='sammaye';
+		$c->addresses = array(
+			array('road' => 12, 'town' => 'yo', 'county' => 23, 'post_code' => 'g', 'telephone' => 23)
+		);
+		$this->assertFalse($c->validate());
+
+		$c=User::model();
+		$c->username='sammaye';
+		$c->addresses = array(
+			array('road' => 's', 'town' => 'yo', 'county' => 'sa', 'post_code' => 'g', 'telephone' => 23)
+		);
+		$this->assertTrue($c->validate());
 	}
 
 	function testClassSubdocumentValidator(){
+		$c=User::model();
+		$c->username='sammaye';
+
+		$s=new SocialUrl();
+		$s->url="facebook";
+		$s->caption="social_profile";
+		$c->url=$s;
+
+		$this->assertTrue($c->validate());
+		$this->assertTrue(!$c->url instanceof SocialUrl);
+
+		$c=User::model();
+		$c->username='sammaye';
+
+		$s=new SocialUrl();
+		$s->url=1;
+		$s->caption=2;
+		$c->url=$s;
+
+		$this->assertFalse($c->validate());
+		$this->assertTrue(!$c->url instanceof SocialUrl);
 
 	}
 

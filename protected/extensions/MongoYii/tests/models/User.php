@@ -4,7 +4,7 @@ class User extends EMongoDocument{
 
 	public $username;
 	public $addresses = array();
-	public $url = array();
+	public $url = null;
 	public $interests = array();
 
 	function scopes(){
@@ -26,6 +26,7 @@ class User extends EMongoDocument{
 
 	function rules(){
 		return array(
+			array('username', 'EMongoUniqueValidator', 'className' => 'User', 'attributeName' => 'username', 'on' => 'testUnqiue'),
 			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
 				array('road', 'string'),
 				array('town', 'string'),
