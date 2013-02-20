@@ -1,4 +1,7 @@
 <?php
+
+require_once 'bootstrap.php';
+
 class MongoDocumentTest extends CTestCase{
 
 	function setUp(){

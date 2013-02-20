@@ -1,4 +1,7 @@
 <?php
+
+require_once 'bootstrap.php';
+
 class MongoClientTest extends CTestCase{
 
 	function testSettingUpConnection(){
