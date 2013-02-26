@@ -450,8 +450,9 @@ class EMongoModel extends CModel{
 		$attributes = $this->getDbConnection()->getFieldObjCache(get_class($this));
 		$doc = array();
 
-		foreach($attributes as $field)
-			$doc[$field] = $this->$field;
+		if(is_array($attributes)){
+			foreach($attributes as $field) $doc[$field] = $this->$field;
+		}
 		return array_merge($doc, $this->_attributes);
 	}
 
