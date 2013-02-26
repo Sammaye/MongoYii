@@ -28,11 +28,8 @@ class User extends EMongoDocument{
 		return array(
 			array('username', 'EMongoUniqueValidator', 'className' => 'User', 'attributeName' => 'username', 'on' => 'testUnqiue'),
 			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
-				array('road', 'string'),
-				array('town', 'string'),
-				array('county', 'string'),
-				array('post_code', 'string'),
-				array('telephone', 'integer')
+				array('road,town,county,post_code', 'safe'),
+				array('telephone', 'numerical', 'integerOnly' => true)
 			)),
 			array('url', 'subdocument', 'type' => 'one', 'class' => 'SocialUrl'),
 			array('_id, username, addresses', 'safe', 'on'=>'search'),
@@ -72,7 +69,7 @@ class SocialUrl extends EMongoModel{
 
 	public function rules(){
 		return array(
-			array('url, caption', 'string'),
+			array('url, caption', 'safe'),
 		);
 	}
 }

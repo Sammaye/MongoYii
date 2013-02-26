@@ -25,12 +25,12 @@ class ESubdocumentValidator extends CValidator{
 		// If we are using a pre-defined class then lets just get on with it otherwise
 		// lets instantiate a EMongoModel and fill its rules with what we want
 		if($this->class){
-			$c = $this->class;
+			$c = new $this->class;
 		}else{
 			$c=new EMongoModel();
 			foreach($this->rules as $rule){
 				if(isset($rule[0],$rule[1]))  // attributes, validator name
-					$c->validatorList->add->add(CValidator::createValidator($rule[1],$this,$rule[0],array_slice($rule,2)));
+					$c->validatorList->add(CValidator::createValidator($rule[1],$this,$rule[0],array_slice($rule,2)));
 				else
 					throw new CException(Yii::t('yii','{class} has an invalid validation rule. The rule must specify attributes to be validated and the validator name.',
 						array('{class}'=>get_class($this))));
@@ -59,10 +59,9 @@ class ESubdocumentValidator extends CValidator{
 				}
 
 				// Strip the models etc from the field value
-				$this->owner->$attribute = $fieldValue;
+				$object->$attribute = $fieldValue;
 			}
 		}else{
-
 			$c->clean();
 			$fieldValue = $object->$attribute instanceof $c ? $object->$attribute->getRawDocument() : $object->$attribute;
 			$c->setAttributes($fieldValue);
@@ -75,7 +74,7 @@ class ESubdocumentValidator extends CValidator{
 			}
 
 			// Strip the models etc from the field value
-			$this->owner->$attribute = $fieldValue;
+			$object->$attribute = $fieldValue;
 		}
 	}
 

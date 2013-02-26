@@ -105,7 +105,6 @@ class EMongoDataProvider extends CActiveDataProvider{
 			}
 			$this->_cursor->sort($sort);
 		}
-
 		return iterator_to_array($this->_cursor);
 	}
 

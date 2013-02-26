@@ -628,28 +628,6 @@ class EMongoDocument extends EMongoModel{
 		return new EMongoDataProvider(array('condition' => $query));
 	}
 
-	/**
-	 * Cleans or rather resets the document
-	 */
-    public function clean(){
-    	$this->_attributes=array();
-		$this->_related=array();
-
-		// blank class properties
-		$cache = $this->getDbConnection()->getObjCache(get_class($this));
-
-		if(isset($cache['document'])){
-			foreach($cache['document'] as $field)
-				$this->$field = null;
-		}
-
-		if(isset($cache['virtual'])){
-			foreach($cache['virtual'] as $field)
-				$this->$field = null;
-		}
-		return true;
-    }
-
     /**
      * Refreshes the data from the database
      */
