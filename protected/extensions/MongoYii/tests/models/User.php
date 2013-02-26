@@ -69,7 +69,7 @@ class SocialUrl extends EMongoModel{
 
 	public function rules(){
 		return array(
-			array('url, caption', 'safe'),
+			array('url, caption', 'numerical', 'integerOnly' => true),
 		);
 	}
 }

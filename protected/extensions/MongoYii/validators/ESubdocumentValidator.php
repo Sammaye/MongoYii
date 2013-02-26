@@ -51,10 +51,10 @@ class ESubdocumentValidator extends CValidator{
 						$fieldErrors[] = $c->getErrors();
 					}
 				}
-
+				
 				if($this->message!==null){
 					$this->addError($object,$attribute,$this->message);
-				}else{
+				}elseif(sizeof($fieldErrors)>0){
 					$this->setAttributeErrors($object, $attribute, $fieldErrors);
 				}
 
@@ -68,7 +68,7 @@ class ESubdocumentValidator extends CValidator{
 			if(!$c->validate()){
 				if($this->message!==null){
 					$this->addError($object,$attribute,$this->message);
-				}else{
+				}elseif(sizeof($c->getErrors())>0){
 					$this->setAttributeErrors($object, $attribute, $c->getErrors());
 				}
 			}

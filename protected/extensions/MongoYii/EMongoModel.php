@@ -23,14 +23,18 @@ class EMongoModel extends CModel{
 	 */
 	public function __get($name){
 
-		if(isset($this->_related[$name])){
+		$getter='get'.$name;
+		if(method_exists($this,$getter))
+			return $this->$getter();
+		elseif(isset($this->_related[$name])){
 			return $this->_related[$name];
 		}elseif(array_key_exists($name, $this->relations())){
 			return $this->_related[$name]=$this->getRelated($name);
 		}elseif(isset($this->_attributes[$name])){
 			return $this->_attributes[$name];
 		}else{
-			return parent::__get($name);
+			return null;
+			//return parent::__get($name);
 		}
 
 	}
@@ -377,6 +381,88 @@ class EMongoModel extends CModel{
 	function setAttributeErrors($attribute, $errors){
 		$this->_errors[$attribute]=$errors;
 	}
+	
+	/* THESE ERROR FUNCTIONS ARE ONLY HERE BECAUSE OF THE WAY IN WHICH PHP RESOLVES THE THE SCOPES OF VARS */
+	// I needed to add the error handling function above but I had to include these as well
+	
+	/**
+	 * Returns a value indicating whether there is any validation error.
+	 * @param string $attribute attribute name. Use null to check all attributes.
+	 * @return boolean whether there is any error.
+	 */
+	public function hasErrors($attribute=null)
+	{
+		if($attribute===null)
+			return $this->_errors!==array();
+		else
+			return isset($this->_errors[$attribute]);
+	}
+	
+	/**
+	 * Returns the errors for all attribute or a single attribute.
+	 * @param string $attribute attribute name. Use null to retrieve errors for all attributes.
+	 * @return array errors for all attributes or the specified attribute. Empty array is returned if no error.
+	 */
+	public function getErrors($attribute=null)
+	{
+		if($attribute===null)
+			return $this->_errors;
+		else
+			return isset($this->_errors[$attribute]) ? $this->_errors[$attribute] : array();
+	}
+	
+	/**
+	 * Returns the first error of the specified attribute.
+	 * @param string $attribute attribute name.
+	 * @return string the error message. Null is returned if no error.
+	 */
+	public function getError($attribute)
+	{
+		return isset($this->_errors[$attribute]) ? reset($this->_errors[$attribute]) : null;
+	}
+	
+	/**
+	 * Adds a new error to the specified attribute.
+	 * @param string $attribute attribute name
+	 * @param string $error new error message
+	 */
+	public function addError($attribute,$error)
+	{
+		$this->_errors[$attribute][]=$error;
+	}
+	
+	/**
+	 * Adds a list of errors.
+	 * @param array $errors a list of errors. The array keys must be attribute names.
+	 * The array values should be error messages. If an attribute has multiple errors,
+	 * these errors must be given in terms of an array.
+	 * You may use the result of {@link getErrors} as the value for this parameter.
+	 */
+	public function addErrors($errors)
+	{
+		foreach($errors as $attribute=>$error)
+		{
+			if(is_array($error))
+			{
+				foreach($error as $e)
+					$this->addError($attribute, $e);
+			}
+			else
+				$this->addError($attribute, $error);
+		}
+	}
+	
+	/**
+	 * Removes errors for all attributes or a single attribute.
+	 * @param string $attribute attribute name. Use null to remove errors for all attribute.
+	 */
+	public function clearErrors($attribute=null)
+	{
+		if($attribute===null)
+			$this->_errors=array();
+		else
+			unset($this->_errors[$attribute]);
+	}	
 
 	/**
 	 * Returns the database connection used by active record.

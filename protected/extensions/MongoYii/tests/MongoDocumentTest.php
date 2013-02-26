@@ -258,10 +258,8 @@ class MongoDocumentTest extends CTestCase{
 		$c->addresses = array(
 				array('road' => 12, 'town' => 'yo', 'county' => 23, 'post_code' => 'g', 'telephone' => 'ggg')
 		);
-		var_dump($c->getErrors());
 		$this->assertFalse($c->validate());
-		var_dump($c->getErrors());
-		var_dump($c->hasErrors());
+
 		$c=new User;
 		$c->username='sammaye';
 		$c->addresses = array(
@@ -279,7 +277,7 @@ class MongoDocumentTest extends CTestCase{
 		$s->caption="social_profile";
 		$c->url=$s;
 
-		$this->assertTrue($c->validate());
+		$this->assertFalse($c->validate());
 		$this->assertTrue(!$c->url instanceof SocialUrl);
 
 		$c=new User;
@@ -290,7 +288,7 @@ class MongoDocumentTest extends CTestCase{
 		$s->caption=2;
 		$c->url=$s;
 
-		$this->assertFalse($c->validate());
+		$this->assertTrue($c->validate());
 		$this->assertTrue(!$c->url instanceof SocialUrl);
 
 	}
