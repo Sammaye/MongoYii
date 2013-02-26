@@ -85,7 +85,7 @@ class EMongoCursor implements Iterator, Countable{
     	return $this->current=$this->model->populateRecord($this->cursor()->current());
     }
 
-    function count($takeSkip = true){
+    function count($takeSkip = false /* Was true originally but it was to change the way the driver worked which seemed wrong */){
     	return $this->cursor()->count($takeSkip);
     }
 

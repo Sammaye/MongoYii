@@ -65,6 +65,6 @@ class MongoCursorTest extends CTestCase{
 		$c = User::model()->find()->skip(1)->limit(3);
 
 		$this->assertInstanceOf('EMongoCursor', $c);
-		$this->assertTrue($c->count() == 3);
+		$this->assertTrue($c->count(true) == 3);
 	}
 }
