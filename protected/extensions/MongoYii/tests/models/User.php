@@ -42,7 +42,7 @@ class User extends EMongoDocument{
 
 	function relations(){
 		return array(
-			'interests' => array('many', 'Interest', 'i_id'),
+			'many_interests' => array('many', 'Interest', 'i_id'),
 			'one_interest' => array('one', 'Interest', 'i_id'),
 			'embedInterest' => array('many', 'Interest', '_id', 'on' => 'interests'),
 			'where_interest' => array('many', 'Interest', 'i_id', 'where' => array('name' => 'jogging'))

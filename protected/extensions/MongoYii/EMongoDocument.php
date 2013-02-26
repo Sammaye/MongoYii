@@ -38,6 +38,7 @@ class EMongoDocument extends EMongoModel{
 	 */
 	public function __construct($scenario='insert')
 	{
+		
 		if($scenario===null) // internally used by populateRecord() and model()
 			return;
 
@@ -72,8 +73,6 @@ class EMongoDocument extends EMongoModel{
 			);
 		}
 
-		// We copy this function to add the subdocument validator as a built in validator
-		CValidator::$builtInValidators['subdocument'] = 'ESubdocumentValidator';
 
 		// Set the default scope now
 		$this->setDbCriteria($this->mergeCriteria($this->_criteria, $this->defaultScope()));
@@ -495,7 +494,7 @@ class EMongoDocument extends EMongoModel{
 	 */
 	public function equals($record)
 	{
-		return $this->collectionName()===$record->collectionName() && $this->{$this->primaryKey()}===$record->{$this->primaryKey()};
+		return $this->collectionName()===$record->collectionName() && (string)$this->{$this->primaryKey()}===(string)$record->{$this->primaryKey()};
 	}
 
 	/**
@@ -521,7 +520,7 @@ class EMongoDocument extends EMongoModel{
 
     	if($this->_criteria!==array()){
     		$cursor = new EMongoCursor($this, $this->mergeCriteria(isset($this->_criteria['condition']) ? $this->_criteria['condition'] : array(), $criteria));
-			if(isset($this->_cursor['sort'])) $cursor->sort($this->_criteria['sort']);
+			if(isset($this->_criteria['sort'])) $cursor->sort($this->_criteria['sort']);
     		if(isset($this->_criteria['skip'])) $cursor->skip($this->_criteria['skip']);
     		if(isset($this->_criteria['limit'])) $cursor->limit($this->_criteria['limit']);
 	   		return $cursor;
@@ -550,8 +549,8 @@ class EMongoDocument extends EMongoModel{
 		$this->trace(__FUNCTION__);
 
 		$pk = $pk instanceof MongoId ? $pk : new MongoId($pk);
-		return $this->getCollection()->remove(array_mege(array($this->primaryKey() => $pk), $criteria),
-					array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
+		return $this->getCollection()->remove(array_merge(array($this->primaryKey() => $pk), $criteria),
+					array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 
 	/**
@@ -566,7 +565,7 @@ class EMongoDocument extends EMongoModel{
 
 		$pk = $pk instanceof MongoId ? $pk : new MongoId($pk);
 		return $this->getCollection()->update($this->mergeCriteria($criteria, array($this->primaryKey() => $pk)),$updateDoc,
-				array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
+				array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 
 	/**
@@ -577,7 +576,7 @@ class EMongoDocument extends EMongoModel{
 	 */
 	public function updateAll($criteria=array(),$updateDoc=array(),$options=array('multi'=>true)){
 		$this->trace(__FUNCTION__);
-		return $this->getCollection()->update($criteria, $updateDoc, array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
+		return $this->getCollection()->update($criteria, $updateDoc, array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 
 	/**
@@ -587,7 +586,7 @@ class EMongoDocument extends EMongoModel{
 	 */
 	public function deleteAll($criteria=array(),$options=array()){
 		$this->trace(__FUNCTION__);
-		return $this->getCollection()->remove($criteria, array_mege($this->getDbConnection()->getDefaultWriteConcern(), $options));
+		return $this->getCollection()->remove($criteria, array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 
 	/**

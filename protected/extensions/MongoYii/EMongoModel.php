@@ -139,9 +139,6 @@ class EMongoModel extends CModel{
 			);
 		}
 
-		// We copy this function to add the subdocument validator as a built in validator
-		CValidator::$builtInValidators['subdocument'] = 'ESubdocumentValidator';
-
 		$this->init();
 
 		$this->attachBehaviors($this->behaviors());
@@ -370,25 +367,6 @@ class EMongoModel extends CModel{
 	public function hasRelated($name)
 	{
 		return isset($this->_related[$name]) || array_key_exists($name,$this->_related);
-	}
-
-	/**
-	 * (non-PHPdoc)
-	 * @see CModel::validate()
-	 */
-	public function validate($attributes=null, $clearErrors=true)
-	{
-		if($clearErrors)
-			$this->clearErrors();
-		if($this->beforeValidate())
-		{
-			foreach($this->getValidators() as $validator)
-				$validator->validate($this,$attributes);
-			$this->afterValidate();
-			return !$this->hasErrors();
-		}
-		else
-			return false;
 	}
 
 	/**

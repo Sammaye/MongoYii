@@ -28,7 +28,7 @@ class MongoDocumentTest extends CTestCase{
 
 		// Lets save all the child docs
 		foreach($childDocs as $doc){
-			$i = Interest::model();
+			$i = new Interest;
 			foreach($doc as $k=>$v) $i->$k=$v;
 			$this->assertTrue($i->save());
 		}
@@ -46,27 +46,31 @@ class MongoDocumentTest extends CTestCase{
 		// Create the users with each doc having the value of the interest ids
 		$user_ids = array();
 		foreach($parentDocs as $doc){
-			$u = User::model();
+			$u = new User;
 			foreach($doc as $k=>$v) $i->$k=$v;
 			$u->interests = $interest_ids;
 			$this->assertTrue($u->save());
 
 			$user_ids[] = $u->_id;
 		}
+		
+		$interests = array_values(iterator_to_array($c));
 
 		// Now 50^6 times re-insert each interest with a parnt user _id
 		// So we have two forms of the document in interests, one without the parent user and one with
 		for($i=0;$i<50;$i++){
-			foreach($c as $row){
-				$randPos = rand(0, sizeof($user_ids));
-				$row->i_id = $user_ids[$randPos];
+			
+			$randInt = rand(0,sizeof($interests)-1);
+			$row =$interests[$randInt];
+				
+			$randPos = rand(0, sizeof($user_ids)-1);
+			$row->i_id = $user_ids[$randPos];
 
-				$row->setIsNewRecord(true);
-				$row->_id = null;
-				$row->setScenario('insert');
+			$row->setIsNewRecord(true);
+			$row->_id = null;
+			$row->setScenario('insert');
 
-				$this->assertTrue($row->save());
-			}
+			$this->assertTrue($row->save());
 		}
 
 		// we will assume the set up was successful and we will leave it to further testing to see
@@ -85,11 +89,11 @@ class MongoDocumentTest extends CTestCase{
 	}
 
 	function testSaving(){
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
 
-		$r=User::model()->findOne();
+		$r=User::model()->find();
 		$this->assertTrue($r->count()>0);
 
 		foreach($r as $doc){
@@ -99,38 +103,39 @@ class MongoDocumentTest extends CTestCase{
 	}
 
 	function testDeleting(){
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
-		$this->assertTrue($c->delete());
+		$r=$c->delete();
+		$this->assertTrue($r['n']==1&&$r['err']===null);
 
-		$r=User::model()->findOne();
+		$r=User::model()->find();
 		$this->assertFalse($r->count()>0);
 	}
 
 	function testFindOne(){
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
 
-		$r=User::model()->findOne();
+		$r=User::model()->find();
 		$this->assertTrue($r->count()>0);
 	}
 
 	function testFindBy_id(){
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
 
 		$r=User::model()->findBy_id($c->_id);
-		$this->assertTrue($r->count()>0);
+		$this->assertTrue(!is_null($r));
 
 		$r=User::model()->findBy_id((string)$c->_id);
-		$this->assertTrue($r->count()>0);
+		$this->assertTrue(!is_null($r));
 	}
 
 	function testUpdateByPk(){
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
 
@@ -141,7 +146,7 @@ class MongoDocumentTest extends CTestCase{
 	}
 
 	function testDeleteByPk(){
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
 
@@ -152,7 +157,7 @@ class MongoDocumentTest extends CTestCase{
 	}
 
 	function testUpdateAll(){
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
 
@@ -163,7 +168,7 @@ class MongoDocumentTest extends CTestCase{
 	}
 
 	function testDeleteAll(){
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
 
@@ -175,10 +180,13 @@ class MongoDocumentTest extends CTestCase{
 
 	function testSaveAttributes(){
 
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
+		$this->assertTrue($c->save());
+		
 		$c->job_title='programmer';
-		$this->assertTrue($c->saveAttributes(array('username')));
+		$r=$c->saveAttributes(array('username'));
+		$this->assertNull($r['err']);
 
 		$r=User::model()->findOne();
 		$this->assertFalse(isset($r->job_title));
@@ -193,8 +201,8 @@ class MongoDocumentTest extends CTestCase{
 	function testManyRelation(){
 		$this->setUpRelationalModel();
 		$r=User::model()->findOne();
-		$this->assertInstanceOf('EMongoCursor', $r->interests);
-		$this->assertTrue($r->interests->count()>0);
+		$this->assertInstanceOf('EMongoCursor', $r->many_interests);
+		$this->assertTrue($r->many_interests->count()>0);
 	}
 
 	function testEmbeddedRelation(){
@@ -208,20 +216,19 @@ class MongoDocumentTest extends CTestCase{
 		$this->setUpRelationalModel();
 		$r=User::model()->findOne();
 		$this->assertInstanceOf('EMongoCursor', $r->where_interest);
-		$this->assertTrue($r->where_interest->count()>0);
 	}
 
 	function testFunctionalRelation(){
 		$this->setUpRelationalModel();
 		$r=User::model()->findOne();
 
-		$rel=$r->interests(array('name' => 'computers'));
+		$rel=$r->many_interests(array('name' => 'computers'));
 		$this->assertInstanceOf('EMongoCursor', $rel);
 		$this->assertTrue($rel->count()>0);
 	}
 
 	function testTimestampBehaviour(){
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
 		$this->assertTrue(isset($c->create_time));
@@ -232,12 +239,12 @@ class MongoDocumentTest extends CTestCase{
 	}
 
 	function testUniqueValidator(){
-		$c=User::model();
+		$c=new User;
 		$c->setScenario('testUnqiue');
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
-
-		$c=User::model();
+	
+		$c=new User;
 		$c->setScenario('testUnqiue');
 		$c->username='sammaye';
 		$this->assertFalse($c->validate());
@@ -245,24 +252,26 @@ class MongoDocumentTest extends CTestCase{
 	}
 
 	function testArraySubdocumentValidator(){
-
-		$c=User::model();
+	
+		$c=new User;
 		$c->username='sammaye';
 		$c->addresses = array(
-			array('road' => 12, 'town' => 'yo', 'county' => 23, 'post_code' => 'g', 'telephone' => 23)
+				array('road' => 12, 'town' => 'yo', 'county' => 23, 'post_code' => 'g', 'telephone' => 'ggg')
 		);
+		var_dump($c->getErrors());
 		$this->assertFalse($c->validate());
-
-		$c=User::model();
+		var_dump($c->getErrors());
+		var_dump($c->hasErrors());
+		$c=new User;
 		$c->username='sammaye';
 		$c->addresses = array(
-			array('road' => 's', 'town' => 'yo', 'county' => 'sa', 'post_code' => 'g', 'telephone' => 23)
+				array('road' => 's', 'town' => 'yo', 'county' => 'sa', 'post_code' => 'g', 'telephone' => 23)
 		);
 		$this->assertTrue($c->validate());
-	}
+	}	
 
 	function testClassSubdocumentValidator(){
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 
 		$s=new SocialUrl();
@@ -273,7 +282,7 @@ class MongoDocumentTest extends CTestCase{
 		$this->assertTrue($c->validate());
 		$this->assertTrue(!$c->url instanceof SocialUrl);
 
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 
 		$s=new SocialUrl();
@@ -287,18 +296,18 @@ class MongoDocumentTest extends CTestCase{
 	}
 
 	function testExists(){
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
-		$this->assertTrue(User::model()->exists(array('name' => 'sammaye')));
+		$this->assertTrue(User::model()->exists(array('username' => 'sammaye')));
 	}
 
 	function testEquals(){
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
 
-		$d=User::model()->findOne(array('name' => 'sammaye'));
+		$d=User::model()->findOne(array('username' => 'sammaye'));
 		$this->assertTrue($c->equals($d));
 	}
 
@@ -313,37 +322,39 @@ class MongoDocumentTest extends CTestCase{
 		);
 
 		foreach($parentDocs as $doc){
-			$u=User::model();
-			foreach($doc as $k=>$v) $i->$k=$v;
-			$this->assertTrue($u->save());
+			$c=new User;
+			foreach($doc as $k=>$v) $c->$k=$v;
+			$this->assertTrue($c->save());
 		}
 
 		$u=User::model()->programmers()->find();
-		$this->assertTrue($u->count()==2);
+		$this->assertTrue($u->count(true)==2);
+		User::model()->resetScope();
 	}
 
+	
 	function testClean_Refresh(){
-		$c=User::model();
+		$c=new User;
+		User::model()->resetScope();
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
-
+		
 		$this->assertTrue($c->clean());
 		$this->assertNull($c->username);
-
+	
 		$r=User::model()->findOne();
-		$this->assertTrue($r->count()>0);
 		$this->assertInstanceOf('EMongoDocument',$r);
-
+	
 		$r->username = 'fgfgfg';
 		$r->refresh();
 		$this->assertEquals('sammaye', $r->username);
-	}
+	}	
 
 	function testGetAttributeLabel(){
-		$c=User::model();
+		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
 
-		$this->assertEquals('name', $r->getAttributeLabel('username'));
+		$this->assertEquals('name', $c->getAttributeLabel('username'));
 	}
 }

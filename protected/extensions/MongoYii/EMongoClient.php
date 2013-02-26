@@ -93,6 +93,11 @@ class EMongoClient extends CApplicationComponent{
 			return call_user_func_array(array($this->_db, $name), $parameters);
 		}
 	}
+	
+	function __construct(){
+		// We copy this function to add the subdocument validator as a built in validator
+		CValidator::$builtInValidators['subdocument'] = 'ESubdocumentValidator';
+	}
 
 	/**
 	 * The init function
