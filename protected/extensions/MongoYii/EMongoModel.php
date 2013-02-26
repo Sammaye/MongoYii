@@ -184,7 +184,7 @@ class EMongoModel extends CModel{
 	{
 		$attrs = $this->_attributes;
 		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
-		return isset($attrs[$name])||isset($fields[$name])?true:false;
+		return isset($attrs[$name])||isset($fields[$name])||property_exists($this, $name)?true:false;
 	}
 
 	/**

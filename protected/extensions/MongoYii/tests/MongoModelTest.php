@@ -30,7 +30,7 @@ class MongoModelTest extends CTestCase{
 		$this->assertTrue($d->hasAttribute('dum'));
 
 		$an = $d->attributeNames();
-		$this->assertTrue(array_key_exists('dum',$an));
+		$this->assertTrue(array_key_exists('dum',array_flip($an)));
 
 		$d->username = 'sammaye';
 		$attr = $d->getAttributes();
@@ -50,8 +50,8 @@ class MongoModelTest extends CTestCase{
 		$d->username = 'sammaye';
 
 		$doc = $d->getDocument();
-		$this->assertTrue(array_key_exists('username', $attr));
-		$this->assertTrue(array_key_exists('dum', $attr));
+		$this->assertTrue(array_key_exists('username', $doc));
+		$this->assertTrue(array_key_exists('dum', $doc));
 	}
 
 	function testGetRawDocument(){
