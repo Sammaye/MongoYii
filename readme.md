@@ -67,7 +67,7 @@ make your default (master) connection be a component called `mongodb`.
 This extension uses the new `w` variable globally to handle the level of write concern you wish to impose on MongoDB.
 
 By default the extension will assume acknowledged writes, this means `safe=true` or `w=1` depending on the version of your driver. To change this simply add `w` to your `mongodb` components configuration
-and give it a value according to the (PHP documentation)[http://php.net/manual/en/mongo.writeconcerns.php].
+and give it a value according to the [PHP documentation](http://php.net/manual/en/mongo.writeconcerns.php).
 
 For those using the 1.3.x series of the driver there is also a `j` option which can be set to either `true` or `false` within the configuration which allows you to control
 whether or not the write is journal acknowledged.
@@ -92,7 +92,7 @@ would be:
 	'RP' => array('RP_SECONDARY' /* The name of the constant from the documentation */,
 		array(/* Would normally be read tags, if any */))
 
-Please refer to the (drivers documentation for a full set of options here)[http://php.net/manual/en/mongo.readpreferences.php].
+Please refer to the [drivers documentation for a full set of options here](http://php.net/manual/en/mongo.readpreferences.php).
 
 To change the Read Preference at any time please use the function applicable to your driver; for 1.3.x series:
 
@@ -325,7 +325,7 @@ This may look complicated but I will now break it down for you:
 - `->sort()` is basically the MongoDB drivers `sort` method on the `MongoCursor`
 - `->limit()` is, again, basically the MongoDB drivers own `limit` function on the `MongoCursor`
 
-For a reference on what operators are supported please refer to the MongoDB documentation: (http://docs.mongodb.org/manual/reference/operators/)[http://docs.mongodb.org/manual/reference/operators/]
+For a reference on what operators are supported please refer to the MongoDB documentation: [http://docs.mongodb.org/manual/reference/operators/](http://docs.mongodb.org/manual/reference/operators/)
 
 **Note:** Other functions like `findByAttributes` have been omitted since it seems pointless with MongoDBs querying language to implement those.
 
