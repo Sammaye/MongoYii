@@ -11,7 +11,7 @@ There is already a great extension called YiiMongoDBSuite out for Yii so why mak
 - Does not support the later versions of the PHP driver (1.3.x series) that well
 - Obscured the MongoDB query language, layering a query language over the top
 
-After some spare time I decided that I would take the liberty to make a MongoDB extension for Yii. It is really basically a "glue" between MongoDB and 
+After some spare time I decided that I would take the liberty to make a MongoDB extension for Yii. It is really basically a "glue" between MongoDB and
 Yii and it is designed to be quite free form in that respect.
 
 There are a few points of design I wished to enforce:
@@ -26,10 +26,10 @@ Ok so we have got some of the rationale in place it is time to actually talk abo
 
 ## Setting up the extension
 
-In order to use the extension you first need to set it up. The first thing to do is to download the source code and place it somewhere accessible within your applications structure, I have chosen 
+In order to use the extension you first need to set it up. The first thing to do is to download the source code and place it somewhere accessible within your applications structure, I have chosen
 `protected/extensions/MongoYii`.
 
-Once you have the source code in place you need to edit your `main.php` configuration file (`console.php` will need modifying too if you intend to use this extension in the console) with 
+Once you have the source code in place you need to edit your `main.php` configuration file (`console.php` will need modifying too if you intend to use this extension in the console) with
 the following type of configuration:
 
 	'mongodb' => array(
@@ -43,10 +43,10 @@ And add the MongoYii directories to your `import` section:
 	'application.extensions.MongoYii.*',
 	'application.extensions.MongoYii.validators.*',
 	'application.extensions.MongoYii.behaviors.*'
-	
+
 That is the basic setup of the extension.
 
-You will notice that I use a `EMongoClient`. This is a bit deceptive since it actually represents `MongoClient` and `MongoDB` combined.  This means that whenever you call the magic `__call` 
+You will notice that I use a `EMongoClient`. This is a bit deceptive since it actually represents `MongoClient` and `MongoDB` combined.  This means that whenever you call the magic `__call`
 on the `EMongoClient` like so:
 
 	Yii::app()->mongodb->getSomething();
@@ -65,7 +65,7 @@ If you wish to call a function on the `MongoClient` or `Mongo` class you will ne
 
 This extension uses the new `w` variable globally to handle the level of write concern you wish to impose on MongoDB.
 
-By default the extension will assume acked writes, this means `safe=true` or `w=1` depending on the version of your driver. To change this simply add `w` to your `mongodb` components configuration 
+By default the extension will assume acked writes, this means `safe=true` or `w=1` depending on the version of your driver. To change this simply add `w` to your `mongodb` components configuration
 and give it a value according to the PHP documentation: http://php.net/manual/en/mongo.writeconcerns.php
 
 For those using the 1.3.x series of the driver there is also a `j` option which can be set to either `true` or `false` within the configuration which allows you to control
@@ -75,7 +75,7 @@ whether or not the write is journal acked.
 `j` class variables to set the write concern when you need to otherwise that write concern will not be used within active record.
 
 **Note:** Write Concern works differently when you touch the database directly and the write concern issued within the `EMongoCLient` class will have no
-effect. Instead you should always ensure in this case you specify the write concern manually according to your driver version. 
+effect. Instead you should always ensure in this case you specify the write concern manually according to your driver version.
 
 This may change in the future but at the moment when you want the active record to go away it just will.
 
@@ -87,7 +87,7 @@ possible to read from members of a replica set.
 For those using the 1.3.x series of the driver you have the `RP` configuration variable. The RP configuration variable is a 1-1 related options array to the `setReadPreference` function
 on the `MongoClient` class with one exception. The first parameter is not a constant but instead the name of the constant. An example of using read preferences in your configuration:
 
-	'RP' => array('RP_SECONDARY' /* The name of the constant from the documentation */, 
+	'RP' => array('RP_SECONDARY' /* The name of the constant from the documentation */,
 		array(/* Would normally be read tags, if any */))
 
 Please refer to the drivers documentation for a full set of options here: http://php.net/manual/en/mongo.readpreferences.php
@@ -108,11 +108,11 @@ will not translate to `slaveOkay`.
 You can call the database directly at anytime using the same implemented methods as you would using the driver normally. As an example, to get the test database:
 
 	Yii::app()->mongodb->test
-	
+
 And then to query the test database:
 
 	Yii::app()->mongodb->test->collection->find(array('name' => 'sammaye'));
-	
+
 So the active record element of MongoYii can quckly disappear if needed.
 
 ## EMongoModel
@@ -126,10 +126,10 @@ The `EMongoModel` implements all that `CModel` does but with a few added and cha
 ### Magic functions
 
 In order to support the schema-less nature of MongoDB without using hacks like behaviours I have changed the way that the magic functions in Yii work slightly.
-The `__set` will no longer seek out behaviour properties or call variable function events.
+The `__set` and `__get` will no longer seek out behaviour properties or call variable function events.
 
 Behaviours tend to manipulate a `owner` within its own self contained context while allowing the calling of events from the magic functions is role blurring. Events should be
-called as functions if you want to use them. In my opinion the `__set` function has been made clearer by this.
+called as functions if you want to use them. In my opinion the `__set` and `__get` function has been made clearer by this.
 
 ### Virtual Attributes
 
@@ -222,6 +222,8 @@ As an example of a full default scope which omits deleted models to get the late
 		'limit' => 11
 	)
 
+**Note:** Just like in Yii normally scopes are not reset automatically, please use `resetScope()` to reset the scope.
+
 ### equals()
 
 Checks if the current model equals another sent in as a parameter.
@@ -240,7 +242,7 @@ Runs `clean()` and then re-populates the model from the database.
 
 ### getCollection()
 
-Returns the raw `MongoCollection`. 
+Returns the raw `MongoCollection`.
 
 It is normally best not to use this and instead to use the extension wrapped editions - 'updateAll` and `deleteAll`. The only difference of said functions
 from doing it manually on `getCollection()` is that the functions understand the write concern of the extension.
@@ -294,12 +296,12 @@ For a reference on what operators are supported please refer to the MongoDB docu
 This `save`s the document and is used externally as a means to access either `insert` or `update` on the active record model, i.e.:
 
 	if($user->validate()) $user->save();
-    
+
 If the document is new it will insert otherwise it will update.
 
 ### insert()
 
-This is used internally by the active record model. If the record is new it will attempt to insert it instead of updating it otherwise it will throw 
+This is used internally by the active record model. If the record is new it will attempt to insert it instead of updating it otherwise it will throw
 an error.
 
 ### update()
@@ -335,22 +337,24 @@ Note: `UpdateAll` is `multi` `true` by default
 
 The validation has pretty much not changed except for one validator which required some rewriting, the unique validator.
 
-Basically the `CUniqueValidator` is retro-fitted to work for MongoDB so the call to the validator is the same but you must take into account that the name of the 
+Basically the `CUniqueValidator` is retro-fitted to work for MongoDB so the call to the validator is the same but you must take into account that the name of the
 validator is now `EMongoUniqueValidator`.
 
 ## Subdocuments
 
-Subdocuments are mostly not automatically supported by this extension. There a couple of reasons, firstly due to performance - to automate subdocument usage requires a lot of 
-loaded class space to handle different types and quite a few eager loaded classes to store the formed subdocuments in. The other main reason is that whenever, in any project I have done, 
-tried to automate subdocuments through active record it has always resulted in me actually ditching it and doing the process manually. It has been proven many times that you rarely 
-actually want automated subdocuments and normally you want greater control over their storage than this extension could provide.
+Subdocuments are, mostly, not automatically supported by this extension. There a couple of reasons, firstly due to performance - automating subdocument usage requires a lot of
+loaded classes to handle different subdocuments and their validation.
 
-So that is a brief understanding of the rationale behind the idea to ditch automatic subdocument handling and preperation within the active record.
+The other main reason is that, in any project I have done, whenever I tried to automate subdocuments through active record it has always resulted in me actually ditching
+it and doing the process manually. It has been proven many times that you rarely actually want automated subdocuments and normally you want greater control over their storage than
+this extension could provide.
 
-This does not mean you cannot embed subdocument classes at all, when saving the active record will iterate the document and attempt to strip and `EMongoModel` or `EMongoDocument` 
+So that is a brief understanding of the rationale behind the idea to ditch automatic subdocument handling within the active record.
+
+This does not mean you cannot embed subdocument classes at all, when saving, the active record will iterate the document and attempt to strip any `EMongoModel` or `EMongoDocument`
 classes that have sprung up.
 
-This all aside, there is a provided subdocument validator and technically it can even accept multi level nesting. Please bare in mind, though, that it will cause repitition 
+This all aside, is a subdocument validator and technically it can even accept multi-level nesting. Please bare in mind, though, that it will cause repitition
 for every level you use it on. This WILL have a performance implication on your application.
 
 An example of using an array based subdocument is:
@@ -358,31 +362,38 @@ An example of using an array based subdocument is:
 	function rules(){
 		return array(
 			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
-				array('road', 'string'),
-				array('town', 'string'),
-				array('county', 'string'),
-				array('post_code', 'string'),
+				array('road,town,county,post_code', 'safe'),
 				array('telephone', 'integer')
 			)),
 		);
-	}  
-	
-While a classs based one is:
+	}
+
+While an example of a class based one is:
 
 	function rules(){
 		return array(
 			array('addresses', 'subdocument', 'type' => 'many', 'class' => 'Other'),
 		);
 	}
-	
+
 `type` defines the type of subdocument, as with relations this is either `one` or `many`.
-	
+
 The validator will evaluate the rules as though they are completely separate from the originating model so in theory there is nothing stopping you from using any validator you want.
 
-The error output for the validator will differ between the `one` and `many` types of subdocument. With `one` the validator will output the model errors directly onto the field 
-however with `many` it will create a new element for each model with an embedded errors in that new element in the field on the parent. 
+The error output for the validator will differ between the `one` and `many` types of subdocument. With `one` the validator will output the model errors directly onto the field
+however with `many` it will create a new element for each model (row) with embedded errors in that new element in the field on the parent, for example:
 
-**Note:** While on the subject, to avoid the iteration everytime to save the document (since validation is run by default in Yii on save) you should confine your subdocument 
+	array(
+		'addresses' => array(
+			0 => array(
+				'telephone' => array(
+					0 => 'Some error here'
+				)
+			)
+		)
+	)
+
+**Note:** While on the subject, to avoid the iteration every time you save the root document (since validation is run by default in Yii on save) you should confine your subdocument
 validators to specific scenarios where they will be actively used.
 
 ## Using the ActiveDataProvider
@@ -420,3 +431,14 @@ Probably some, however, I will endeavour to accept pull requests and fix reporte
 ## Examples
 
 Please look to the tests folder for examples of how to use this extension, it is quite comprehensive.
+
+## Running the Tests
+
+The tests require a fully complied version of PHPUnit. Using PEAR you can initiate the following command:
+
+	sudo pear install --force --alldeps phpunit/PHPUnit &&
+	pear install phpunit/dbUnit &&
+	pear install phpunit/PHPUnit_Story &&
+	pear install phpunit/PHPUnit_Selenium
+
+After that you can just tell PHPUnit to run all tests within the `tests/` folder with no real order.
