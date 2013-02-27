@@ -57,22 +57,22 @@ If you wish to call a function on the `MongoClient` or `Mongo` class you will ne
 
 	Yii::app()->mongodb->getConnection()->getSomething();
 
-`EMongoClient` is also designed to handle full write concern and read preferences in a compatible manner with all verisons of the driver.
+`EMongoClient` is also designed to handle full write concern and read preferences in a compatible manner with all versions of the driver.
 
-**Note:**The component within your configuration MUST be called `mongodb` otherwise you will need to feed the component in manually into each of your models.
+**Note:** The component within your configuration MUST be called `mongodb` otherwise you will need to feed the component in manually into each of your models.
 
 ### Write Concern (formally "safe" writes)
 
 This extension uses the new `w` variable globally to handle the level of write concern you wish to impose on MongoDB.
 
-By default the extension will assume acked writes, this means `safe=true` or `w=1` depending on the version of your driver. To change this simply add `w` to your `mongodb` components configuration
-and give it a value according to the PHP documentation: http://php.net/manual/en/mongo.writeconcerns.php
+By default the extension will assume acknowledged writes, this means `safe=true` or `w=1` depending on the version of your driver. To change this simply add `w` to your `mongodb` components configuration
+and give it a value according to the (PHP documentation)[http://php.net/manual/en/mongo.writeconcerns.php].
 
 For those using the 1.3.x series of the driver there is also a `j` option which can be set to either `true` or `false` within the configuration which allows you to control
-whether or not the write is journal acked.
+whether or not the write is journal acknowledged.
 
-**Note:** Write Concern is abstracted from the driver itself to make this variable compatible across all verisons of the driver so please use the configuration or the `EmongoClient` `w` and
-`j` class variables to set the write concern when you need to otherwise that write concern will not be used within active record.
+**Note:** Write Concern is abstracted from the driver itself to make this variable compatible across all versions of the driver so please use the configuration or the `EMongoClient` `w` and
+`j` class variables to set the write concern when you need to, otherwise that write concern will not be used within active record.
 
 **Note:** Write Concern works differently when you touch the database directly and the write concern issued within the `EMongoCLient` class will have no
 effect. Instead you should always ensure in this case you specify the write concern manually according to your driver version.
@@ -81,16 +81,17 @@ This may change in the future but at the moment when you want the active record 
 
 ### Read Preference
 
-For those using the old driver there is only one extra configuration variable available to you, `setSlaveOkay`. Set this either `true` or `false` in your configuration to make it
+For those using the old driver there is only one extra configuration variable available to you, `setSlaveOkay`. Set this to either `true` or `false` in your configuration to make it
 possible to read from members of a replica set.
 
-For those using the 1.3.x series of the driver you have the `RP` configuration variable. The RP configuration variable is a 1-1 related options array to the `setReadPreference` function
-on the `MongoClient` class with one exception. The first parameter is not a constant but instead the name of the constant. An example of using read preferences in your configuration:
+For those using the 1.3.x series of the driver you have the `RP` configuration variable. The RP configuration variable is a 1-1 relation to the options array of `setReadPreference`
+on the `MongoClient` class with one exception. The first parameter is not a constant but instead the name of the constant. An example of using read preferences in your configuration
+would be:
 
 	'RP' => array('RP_SECONDARY' /* The name of the constant from the documentation */,
 		array(/* Would normally be read tags, if any */))
 
-Please refer to the drivers documentation for a full set of options here: http://php.net/manual/en/mongo.readpreferences.php
+Please refer to the (drivers documentation for a full set of options here)[http://php.net/manual/en/mongo.readpreferences.php]
 
 To change the Read Preference at any time please use the function applicable to your driver; for 1.3.x series:
 
@@ -100,20 +101,16 @@ and for pre-1.3:
 
 	Yii::app()->mongodb->setSlaveOkay(true);
 
-**Note:** Unlike write concern, the `RP` and `setSlaveOkay` variables do not interlock between different versions of the driver, using the `EMongoClient` `RP` variable
+**Note:** Unlike write concern, the `RP` and `setSlaveOkay` variables do not inter-lock between different versions of the driver, using the `EMongoClient` `RP` variable
 will not translate to `slaveOkay`.
 
 ## Using MongoDB without Active Record
 
-You can call the database directly at anytime using the same implemented methods as you would using the driver normally. As an example, to get the test database:
+You can call the database directly at any time using the same implemented methods as you would using the driver normally. As an example, to query the database:
 
-	Yii::app()->mongodb->test
+	Yii::app()->mongodb->collection->find(array('name' => 'sammaye'));
 
-And then to query the test database:
-
-	Yii::app()->mongodb->test->collection->find(array('name' => 'sammaye'));
-
-So the active record element of MongoYii can quckly disappear if needed.
+So the active record element of MongoYii can quickly disappear if needed.
 
 ## EMongoModel
 
@@ -129,7 +126,7 @@ In order to support the schema-less nature of MongoDB without using hacks like b
 The `__set` and `__get` will no longer seek out behaviour properties or call variable function events.
 
 Behaviours tend to manipulate a `owner` within its own self contained context while allowing the calling of events from the magic functions is role blurring. Events should be
-called as functions if you want to use them. In my opinion the `__set` and `__get` function has been made clearer by this.
+called as functions if you want to use them. In my opinion the `__set` and `__get` functions have been made clearer by this.
 
 ### Virtual Attributes
 
@@ -146,7 +143,7 @@ These variables can be used in the same way as everything else except they will 
 
 ### Relations
 
-Unlike in SQL where you have many complicated types of relation, in MongoDB you tend to only have two:- `one` and `many`.
+Unlike in SQL where you have many complicated types of relations, in MongoDB you tend to only have two:- `one` and `many`.
 
 As you have guessed, you can only define two types of relation in this extension - `one` and `many`. Lets take a look at an example:
 
