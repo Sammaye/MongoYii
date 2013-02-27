@@ -59,7 +59,8 @@ If you wish to call a function on the `MongoClient` or `Mongo` class you will ne
 
 `EMongoClient` is also designed to handle full write concern and read preferences in a compatible manner with all versions of the driver.
 
-**Note:** The component within your configuration MUST be called `mongodb` otherwise you will need to feed the component in manually into each of your models.
+**Note:** The models will by default seek a `mongodb` component within your configuration so please make sure that unless you modify the extension, or use it without active record, to 
+make your default (master) connection be a component called `mongodb`.
 
 ### Write Concern (formally "safe" writes)
 
@@ -84,14 +85,14 @@ This may change in the future but at the moment when you want the active record 
 For those using the old driver there is only one extra configuration variable available to you, `setSlaveOkay`. Set this to either `true` or `false` in your configuration to make it
 possible to read from members of a replica set.
 
-For those using the 1.3.x series of the driver you have the `RP` configuration variable. The RP configuration variable is a 1-1 relation to the options array of `setReadPreference`
+For those using the 1.3.x series of the driver you have the `RP` configuration variable. The RP configuration variable is a 1-1 relation to the options of `setReadPreference`
 on the `MongoClient` class with one exception. The first parameter is not a constant but instead the name of the constant. An example of using read preferences in your configuration
 would be:
 
 	'RP' => array('RP_SECONDARY' /* The name of the constant from the documentation */,
 		array(/* Would normally be read tags, if any */))
 
-Please refer to the (drivers documentation for a full set of options here)[http://php.net/manual/en/mongo.readpreferences.php]
+Please refer to the (drivers documentation for a full set of options here)[http://php.net/manual/en/mongo.readpreferences.php].
 
 To change the Read Preference at any time please use the function applicable to your driver; for 1.3.x series:
 
@@ -219,7 +220,7 @@ As an example of a full default scope which omits deleted models to get the late
 		'limit' => 11
 	)
 
-**Note:** Just like in Yii normally scopes are not reset automatically, please use `resetScope()` to reset the scope.
+**Note:** Just like in Yii, normally scopes are not reset automatically, please use `resetScope()` to reset the scope.
 
 ### equals()
 
@@ -241,12 +242,52 @@ Runs `clean()` and then re-populates the model from the database.
 
 Returns the raw `MongoCollection`.
 
-It is normally best not to use this and instead to use the extension wrapped editions - 'updateAll` and `deleteAll`. The only difference of said functions
+It is normally best not to use this and instead to use the extension wrapped editions - `updateAll` and `deleteAll`. The only difference of said functions
 from doing it manually on `getCollection()` is that the functions understand the write concern of the extension.
+
+### Example
+
+So now that we have discussed the `EMongoDocument` lets look at the most base of example:
+
+	class User extends EMongoDocument{
+		function collectionName(){
+			return 'users';
+		}
+		
+		public static function model($className=__CLASS__){
+			return parent::model($className);
+		}	
+	}
+
+This is the most basic document that can exist - no predefined schema and only a `model` function (same as Yii active record) and the `tableName`, otherwise known as the `collectionName`, 
+are needed.
+
+As time goes on you will want to add certain fields like virtual attributes and such to make your life easier:
+
+	class User extends EMongoDocument{
+	
+		/** @virtual */
+		public $agree = 1;
+		
+		public $addresses = array();
+	
+		function collectionName(){
+			return 'users';
+		}
+		
+		public static function model($className=__CLASS__){
+			return parent::model($className);
+		}	
+	}
+
+Notice how I have added the `addresses` field despite not needing to? I do this due to the way that PHP uses magic functions. 
+
+If you access an array magically you cannot, in the same breath, manipulate it since it is an indirect accession of the variable. So a good tip here: if you plan on having subdocuments 
+in your document it might be good to explicitly declare the field as a variable within the class.
 
 ## Querying
 
-Querying attempts to expose the native MongoDB querying as much as possible. A `EMongoCriteria` class is provided however, it is not required and does not provide any more functionality
+Querying attempts to expose the native MongoDB querying language as much as possible. A `EMongoCriteria` class is provided, however, it is not required and does not provide any more functionality
 than just doing it via arrays. The `EMongoCriteria` class is not relied on anywhere and is not needed.
 
 ### find()
@@ -281,12 +322,12 @@ This may look complicated but I will now break it down for you:
 - `User::model()` gets our model
 - `->recently()` is actually a scope, this is not needed but good for demonstration purposes
 - `->find(/*...*/)` is basically the MongoDB drivers `find` method and returns a `EMongoCursor` which implements a `MongoCursor`
-- `->sort()` is basically the MongoDB driver `sort` method on the `MongoCursor`
-- `->limit()` is again basically the MongoDB drivers own `limit` function on the `MongoCursor`
+- `->sort()` is basically the MongoDB drivers `sort` method on the `MongoCursor`
+- `->limit()` is, again, basically the MongoDB drivers own `limit` function on the `MongoCursor`
 
-For a reference on what operators are supported please refer to the MongoDB documentation: http://docs.mongodb.org/manual/reference/operators/
+For a reference on what operators are supported please refer to the MongoDB documentation: (http://docs.mongodb.org/manual/reference/operators/)[http://docs.mongodb.org/manual/reference/operators/]
 
-**Note:** other functions like `findByAttributes` have been omitted since it seems pointless with MongoDBs querying language to implement those.
+**Note:** Other functions like `findByAttributes` have been omitted since it seems pointless with MongoDBs querying language to implement those.
 
 ### save()
 
@@ -328,13 +369,13 @@ These functions can take both a string and a `MongoId` as the `$_id` parameter.
 
 Same as above really except these translate directly to the MongoDB drivers own `update` and `delete` functions.
 
-Note: `UpdateAll` is `multi` `true` by default
+**Note:** `UpdateAll` is `multi` `true` by default
 
 ## Validation
 
 The validation has pretty much not changed except for one validator which required some rewriting, the unique validator.
 
-Basically the `CUniqueValidator` is retro-fitted to work for MongoDB so the call to the validator is the same but you must take into account that the name of the
+Basically the `CUniqueValidator` has been retro-fitted to work for MongoDB so the call to the validator is the same but you must take into account that the name of the
 validator is now `EMongoUniqueValidator`.
 
 ## Subdocuments
@@ -348,10 +389,10 @@ this extension could provide.
 
 So that is a brief understanding of the rationale behind the idea to ditch automatic subdocument handling within the active record.
 
-This does not mean you cannot embed subdocument classes at all, when saving, the active record will iterate the document and attempt to strip any `EMongoModel` or `EMongoDocument`
+This does not mean you cannot embed subdocument classes at all; when saving, the active record will iterate the document and attempt to strip any `EMongoModel` or `EMongoDocument`
 classes that have sprung up.
 
-This all aside, is a subdocument validator and technically it can even accept multi-level nesting. Please bare in mind, though, that it will cause repitition
+This all aside, there is a subdocument validator and technically it can even accept multi-level nesting. Please bare in mind, though, that it will cause repitition
 for every level you use it on. This WILL have a performance implication on your application.
 
 An example of using an array based subdocument is:
@@ -411,12 +452,12 @@ Instead of using a `EMongoCriteria` or something similar you use arrays like so:
 
 The `criteria` option basically relates to the parts of a cursor.
 
-Note: This does not work with `CGridView` due to how Yii core expects a `CActiveRecord` and uses that class directly for some parts of the widget.
+**Note:** This does not work with `CGridView` due to how Yii core expects a `CActiveRecord` and uses that class directly for some parts of the widget.
 
 ## Known Flaws
 
 - Covered queries are not supported, but then as I am unsure if they really fit with active record
-- Subdocuments are not automated, but again I have stated why above
+- Subdocuments are not automated, however, I have stated why above
 - the aggregation framework does not fit well with active record as such it is not directly supported within the models
 
 I am sure there are more but that is the immediate flaws you need to consider in this extension.
@@ -427,11 +468,11 @@ Probably some, however, I will endeavour to accept pull requests and fix reporte
 
 ## Examples
 
-Please look to the tests folder for examples of how to use this extension, it is quite comprehensive.
+Please look to the tests folder for further examples of how to use this extension, it is quite comprehensive.
 
 ## Running the Tests
 
-The tests require a fully complied version of PHPUnit. Using PEAR you can initiate the following command:
+The tests require the PHPUnit plugin with all dependencies compiled. Using PEAR you can initiate the following command:
 
 	sudo pear install --force --alldeps phpunit/PHPUnit &&
 	pear install phpunit/dbUnit &&
