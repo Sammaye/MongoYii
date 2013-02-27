@@ -219,6 +219,40 @@ As an example of a full default scope which omits deleted models to get the late
 		'skip' => 1,
 		'limit' => 11
 	)
+	
+You can also define your own scopes, however, it is a little different to how you are used to doing it in Yii:
+
+	function someScope(){
+		$this->mergeDbCriteria(array(
+			'condition'=>array('scoped' => true),
+			'sort'=>array('date'=>-1),
+			'skip'=>1,
+			'limit'=>11
+		));
+	}
+
+As you will notice the `_certeria` variable within the EMongoDocument which would normally be a `EMongoCriteria` object is actually completely array based.
+
+This applies to all scope actions; they are all array based.
+
+To help you in not having the `EMongoCriteria` object the `EMongoDocument` provides a helper function for merging criteria objects called `mergeCriteria`. Using this function will 
+have no impact on the model itself and merely merges criteria to be returned. As an example of using the `mergeCriteria` function:
+
+	function someScope(){
+	
+		$criteria = array(
+			'condition'=>array('scoped' => true),
+			'sort'=>array('date'=>-1),
+			'skip'=>1,
+			'limit'=>11
+		);
+	
+		if($this->deleted)
+			$criteria = $this->mergeCriteria($criteria,array('condition'=>array('deleted'=>1)));
+			
+		$this->mergeDbCriteria($criteria);
+		reutrn $this;
+	}
 
 **Note:** Just like in Yii, normally scopes are not reset automatically, please use `resetScope()` to reset the scope.
 

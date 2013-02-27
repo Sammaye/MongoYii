@@ -672,6 +672,14 @@ class EMongoDocument extends EMongoModel{
 	public function setDbCriteria($criteria){
 		return $this->_criteria=$criteria;
 	}
+	
+	/**
+	 * Merges the currrent DB Criteria with the inputted one
+	 * @param array $newCriteria
+	 */
+	public function mergeDbCriteria($newCriteria){
+		 return $this->_criteria=$this->mergeCriteria($this->getDbCriteria(), $newCriteria);
+	}	
 
     /**
      * Gets the collection for this model
@@ -679,9 +687,9 @@ class EMongoDocument extends EMongoModel{
     public function getCollection(){
 		return $this->getDbConnection()->{$this->collectionName()};
     }
-
+    
     /**
-     * Merges criteria for this object. Best used for scopes
+     * Merges two criteria objects. Best used for scopes
      * @param $oldCriteria
      * @param $newCriteria
      */
