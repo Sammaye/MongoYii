@@ -82,6 +82,9 @@ class EMongoClient extends CApplicationComponent{
 	 * The default action is to get a collection
 	 */
 	function __get($k){
+		$getter='get'.$name;
+		if(method_exists($this,$getter))
+			return $this->$getter();		
 		return $this->selectCollection($k);
 	}
 
