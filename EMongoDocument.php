@@ -173,6 +173,13 @@ class EMongoDocument extends EMongoModel{
 	private function primaryKey(){
 		return '_id';
 	}
+	
+	/**
+	 * Returns the value of the primary key
+	 */
+	function getPrimaryKey(){
+		return $this->{$this->primaryKey()};
+	}
 
 	/**
 	 * Returns if the current record is new.
