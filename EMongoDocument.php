@@ -170,7 +170,7 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * Atm you are not allowed to change the primary key
 	 */
-	 function primaryKey(){
+	private function primaryKey(){
 		return '_id';
 	}
 
