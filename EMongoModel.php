@@ -1,7 +1,7 @@
 <?php
 
 /**
- * WHY IS THERE NO FUCKING GOOD NAME FOR THIS FUCKING PIECE OF SHIT
+ *
  */
 class EMongoModel extends CModel{
 
@@ -381,10 +381,10 @@ class EMongoModel extends CModel{
 	function setAttributeErrors($attribute, $errors){
 		$this->_errors[$attribute]=$errors;
 	}
-	
+
 	/* THESE ERROR FUNCTIONS ARE ONLY HERE BECAUSE OF THE WAY IN WHICH PHP RESOLVES THE THE SCOPES OF VARS */
 	// I needed to add the error handling function above but I had to include these as well
-	
+
 	/**
 	 * Returns a value indicating whether there is any validation error.
 	 * @param string $attribute attribute name. Use null to check all attributes.
@@ -397,7 +397,7 @@ class EMongoModel extends CModel{
 		else
 			return isset($this->_errors[$attribute]);
 	}
-	
+
 	/**
 	 * Returns the errors for all attribute or a single attribute.
 	 * @param string $attribute attribute name. Use null to retrieve errors for all attributes.
@@ -410,7 +410,7 @@ class EMongoModel extends CModel{
 		else
 			return isset($this->_errors[$attribute]) ? $this->_errors[$attribute] : array();
 	}
-	
+
 	/**
 	 * Returns the first error of the specified attribute.
 	 * @param string $attribute attribute name.
@@ -420,7 +420,7 @@ class EMongoModel extends CModel{
 	{
 		return isset($this->_errors[$attribute]) ? reset($this->_errors[$attribute]) : null;
 	}
-	
+
 	/**
 	 * Adds a new error to the specified attribute.
 	 * @param string $attribute attribute name
@@ -430,7 +430,7 @@ class EMongoModel extends CModel{
 	{
 		$this->_errors[$attribute][]=$error;
 	}
-	
+
 	/**
 	 * Adds a list of errors.
 	 * @param array $errors a list of errors. The array keys must be attribute names.
@@ -451,7 +451,7 @@ class EMongoModel extends CModel{
 				$this->addError($attribute, $error);
 		}
 	}
-	
+
 	/**
 	 * Removes errors for all attributes or a single attribute.
 	 * @param string $attribute attribute name. Use null to remove errors for all attribute.
@@ -462,7 +462,7 @@ class EMongoModel extends CModel{
 			$this->_errors=array();
 		else
 			unset($this->_errors[$attribute]);
-	}	
+	}
 
 	/**
 	 * Returns the database connection used by active record.
