@@ -77,7 +77,7 @@ class EMongoDataProvider extends CActiveDataProvider{
 	 * (non-PHPdoc)
 	 * @see yii/framework/web/CActiveDataProvider::fetchData()
 	 */
-	function fetchData(){
+	public function fetchData(){
 		$criteria=$this->getCriteria();
 		$this->_cursor = $this->model->find(isset($criteria['condition']) && is_array($criteria['condition']) ? $criteria['condition'] : array());
 
@@ -112,7 +112,7 @@ class EMongoDataProvider extends CActiveDataProvider{
 	 * (non-PHPdoc)
 	 * @see yii/framework/web/CActiveDataProvider::fetchKeys()
 	 */
-	function fetchKeys(){
+	public function fetchKeys(){
 		$keys=array();
 		foreach($this->getData() as $i=>$data)
 		{
@@ -126,7 +126,7 @@ class EMongoDataProvider extends CActiveDataProvider{
 	 * (non-PHPdoc)
 	 * @see yii/framework/web/CActiveDataProvider::calculateTotalItemCount()
 	 */
-	function calculateTotalItemCount(){
+	public function calculateTotalItemCount(){
 		return $this->_cursor->count();
 	}
 

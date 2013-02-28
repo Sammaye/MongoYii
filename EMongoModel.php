@@ -108,7 +108,7 @@ class EMongoModel extends CModel{
 	 * understand what fields are in our model.
 	 * @param string $scenario
 	 */
-	function __construct($scenario = 'insert'){
+	public function __construct($scenario = 'insert'){
 
 		if($scenario===null) // internally used by populateRecord() and model()
 			return;
@@ -162,7 +162,7 @@ class EMongoModel extends CModel{
 	 * (non-PHPdoc)
 	 * @see CModel::attributeNames()
 	 */
-	function attributeNames(){
+	public function attributeNames(){
 
 		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
 		$virtuals = $this->getDbConnection()->getVirtualObjCache(get_class($this));
@@ -175,7 +175,7 @@ class EMongoModel extends CModel{
 	 * Holds all our relations
 	 * @return array
 	 */
-	function relations(){ return array(); }
+	public function relations(){ return array(); }
 
 	/**
 	 * Finds out if a document attributes actually exists
@@ -378,7 +378,7 @@ class EMongoModel extends CModel{
 	 * @param string $attribute
 	 * @param array $errors
 	 */
-	function setAttributeErrors($attribute, $errors){
+	public function setAttributeErrors($attribute, $errors){
 		$this->_errors[$attribute]=$errors;
 	}
 
@@ -509,7 +509,7 @@ class EMongoModel extends CModel{
 	/**
 	 * Gets the formed document with MongoYii objects included
 	 */
-	function getDocument(){
+	public function getDocument(){
 
 		$attributes = $this->getDbConnection()->getFieldObjCache(get_class($this));
 		$doc = array();
@@ -523,7 +523,7 @@ class EMongoModel extends CModel{
 	/**
 	 * Gets the raw document with MongoYii objects taken out
 	 */
-	function getRawDocument(){
+	public function getRawDocument(){
 		return $this->filterRawDocument($this->getDocument());
 	}
 
@@ -531,7 +531,7 @@ class EMongoModel extends CModel{
 	 * Filters a provided document to take out MongoYii objects.
 	 * @param array $doc
 	 */
-	function filterRawDocument($doc){
+	public function filterRawDocument($doc){
 		if(is_array($doc)){
 			foreach($doc as $k => $v){
 				if(is_array($v)){
@@ -547,14 +547,14 @@ class EMongoModel extends CModel{
 	/**
 	 * Gets the JSON encoded document
 	 */
-	function getJSONDocument(){
+	public function getJSONDocument(){
 		return json_encode($this->getRawDocument());
 	}
 
 	/**
 	 * Gets the BSON encoded document (never normally needed)
 	 */
-	function getBSONDocument(){
+	public function getBSONDocument(){
 		return bson_encode($this->getRawDocument());
 	}
 }

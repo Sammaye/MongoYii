@@ -81,23 +81,23 @@ class EMongoClient extends CApplicationComponent{
 	/**
 	 * The default action is to get a collection
 	 */
-	function __get($k){
+	public function __get($k){
 		$getter='get'.$k;
 		if(method_exists($this,$getter))
-			return $this->$getter();		
+			return $this->$getter();
 		return $this->selectCollection($k);
 	}
 
 	/**
 	 * Will either call a function on the database or call for a collection
 	 */
-	function __call($name,$parameters = array()){
+	public function __call($name,$parameters = array()){
 		if(method_exists($this->_db, $name)){
 			return call_user_func_array(array($this->_db, $name), $parameters);
 		}
 	}
-	
-	function __construct(){
+
+	public function __construct(){
 		// We copy this function to add the subdocument validator as a built in validator
 		CValidator::$builtInValidators['subdocument'] = 'ESubdocumentValidator';
 	}
@@ -107,7 +107,7 @@ class EMongoClient extends CApplicationComponent{
 	 * We also connect here
 	 * @see yii/framework/base/CApplicationComponent::init()
 	 */
-	function init(){
+	public function init(){
 		parent::init();
 		$this->connect();
 	}
@@ -115,7 +115,7 @@ class EMongoClient extends CApplicationComponent{
 	/**
 	 * Connects to our database
 	 */
-	function connect(){
+	public function connect(){
 
 		// We don't need to throw useless exceptions here, the MongoDB PHP Driver has its own checks and error reporting
 		// Yii will easily and effortlessly display the errors from the PHP driver, we should only catch its exceptions if
@@ -145,7 +145,7 @@ class EMongoClient extends CApplicationComponent{
 	 * Gets the connection object
 	 * @return Mongo|MongoClient
 	 */
-	function getConnection(){
+	public function getConnection(){
 
 		if(empty($this->_mongo))
 			$this->connect();
@@ -157,7 +157,7 @@ class EMongoClient extends CApplicationComponent{
 	 * Sets the raw database adhoc
 	 * @param $name
 	 */
-	function setDB($name){
+	public function setDB($name){
 		$this->_db = $this->getConnection()->selectDb($name);
 	}
 
@@ -165,7 +165,7 @@ class EMongoClient extends CApplicationComponent{
 	 * Gets the raw Database
 	 * @return MongoDB
 	 */
-	function getDB(){
+	public function getDB(){
 
 		if(empty($this->_db))
 			$this->setDB($this->db);
@@ -179,7 +179,7 @@ class EMongoClient extends CApplicationComponent{
 	 * The PHP driver will handle connections automatically, and will
 	 * keep this performant for you.
 	 */
-	function close(){
+	public function close(){
 		if(!empty($this->_mongo))
 			$this->_mongo->close();
 	}
@@ -190,7 +190,7 @@ class EMongoClient extends CApplicationComponent{
 	 * @param $collection
 	 * @param $pipelines
 	 */
-	function aggregate($collection, $pipelines){
+	public function aggregate($collection, $pipelines){
 		if(version_compare(phpversion('mongo'), '1.3.0', '<')){
 			return $this->getDB()->command(array(
 				'aggregate' => $collection,
@@ -204,7 +204,7 @@ class EMongoClient extends CApplicationComponent{
 	 * ATM does nothing but the original processing; ATM
 	 * @param $name
 	 */
-	function selectCollection($name){
+	public function selectCollection($name){
 		return $this->getDB()->selectCollection($name);
 	}
 
@@ -215,7 +215,7 @@ class EMongoClient extends CApplicationComponent{
 	 * @param array $virtualFields
 	 * @param array $documentFields
 	 */
-	function setObjectCache($name, $virtualFields = null, $documentFields = null){
+	public function setObjectCache($name, $virtualFields = null, $documentFields = null){
 
 		if($virtualFields)
 			$this->_objCache[$name]['virtual'] = $virtualFields;
@@ -229,7 +229,7 @@ class EMongoClient extends CApplicationComponent{
 	 * @param string $name
 	 * @return NULL|array
 	 */
-	function getVirtualObjCache($name){
+	public function getVirtualObjCache($name){
 		return isset($this->_objCache[$name], $this->_objCache[$name]['virtual']) ? $this->_objCache[$name]['virtual'] : null;
 	}
 
@@ -238,7 +238,7 @@ class EMongoClient extends CApplicationComponent{
 	 * @param string $name
 	 * @return NULL|array
 	 */
-	function getFieldObjCache($name){
+	public function getFieldObjCache($name){
 		return isset($this->_objCache[$name], $this->_objCache[$name]['document']) ? $this->_objCache[$name]['document'] : null;
 	}
 
@@ -247,7 +247,7 @@ class EMongoClient extends CApplicationComponent{
 	 * @param string $name
 	 * @return NULL|array
 	 */
-	function getObjCache($name){
+	public function getObjCache($name){
 		return isset($this->_objCache[$name]) ? $this->_objCache[$name] : null;
 	}
 
@@ -255,7 +255,7 @@ class EMongoClient extends CApplicationComponent{
 	 * Gets the default write concern options for all queries through active record
 	 * @return array
 	 */
-	function getDefaultWriteConcern(){
+	public function getDefaultWriteConcern(){
 		if(version_compare(phpversion('mongo'), '1.3.0', '<')){
 			if($this->w == 1){
 				return array('safe' => true);
@@ -273,7 +273,7 @@ class EMongoClient extends CApplicationComponent{
 	 * here as a helper for anyone who needs it
 	 * @param $yourTimestamp
 	 */
-	function createMongoIdFromTimestamp( $yourTimestamp )
+	public function createMongoIdFromTimestamp( $yourTimestamp )
 	{
 	    static $inc = 0;
 
@@ -295,7 +295,7 @@ class EMongoClient extends CApplicationComponent{
 	/**
 	 * Recursively merges two arrays. Most useful for scope criteria objects
 	 */
-	function merge(){
+	public function merge(){
 		if (func_num_args() < 2) {
 			throw new CDbException(Yii::t('yii',__FUNCTION__ .' needs two or more array arguments'));
 			return;
@@ -328,7 +328,7 @@ class EMongoClient extends CApplicationComponent{
 	 * @param $pref
 	 * @param $options
 	 */
-	function setReadPreference($pref, $options=array()){
+	public function setReadPreference($pref, $options=array()){
 		return $this->getConnection()->setReadPreference($pref, $options);
 	}
 
@@ -336,7 +336,7 @@ class EMongoClient extends CApplicationComponent{
 	 * setSlaveOkay on Mongo
 	 * @param $bool
 	 */
-	function setSlaveOkay($bool){
+	public function setSlaveOkay($bool){
 		return $this->getConnection()->setSlaveOkay($bool);
 	}
 }

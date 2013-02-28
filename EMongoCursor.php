@@ -62,7 +62,7 @@ class EMongoCursor implements Iterator, Countable{
      * @param $method
      * @param $params
      */
-    function __call($method, $params = array()){
+    public function __call($method, $params = array()){
 		if($this->cursor() instanceof MongoCursor && method_exists($this->cursor(), $method)){
 			return call_user_func_array(array($this->cursor(), $method), $params);
 		}
@@ -72,52 +72,52 @@ class EMongoCursor implements Iterator, Countable{
     /**
      * Holds the MongoCursor
      */
-    function cursor(){
+    public function cursor(){
     	return $this->cursor;
     }
 
     /**
      * Gets the active record for the current row
      */
-    function current() {
+    public function current() {
     	if($this->model === null)
 			throw new EMongoException(Yii::t('yii', "The MongoCursor must have a model"));
     	return $this->current=$this->model->populateRecord($this->cursor()->current());
     }
 
-    function count($takeSkip = false /* Was true originally but it was to change the way the driver worked which seemed wrong */){
+    public function count($takeSkip = false /* Was true originally but it was to change the way the driver worked which seemed wrong */){
     	return $this->cursor()->count($takeSkip);
     }
 
-    function sort(array $fields){
+    public function sort(array $fields){
 		$this->cursor()->sort($fields);
 		return $this;
     }
 
-    function skip($num = 0){
+    public function skip($num = 0){
 		$this->cursor()->skip($num);
 		return $this;
     }
 
-    function limit($num = 0){
+    public function limit($num = 0){
 		$this->cursor()->limit($num);
 		return $this;
     }
 
-    function rewind() {
+    public function rewind() {
        	$this->cursor()->rewind();
         return $this;
     }
 
-    function key() {
+    public function key() {
        	return $this->cursor()->key();
     }
 
-    function next() {
+    public function next() {
        	return $this->cursor()->next();
     }
 
-    function valid() {
+    public function valid() {
         return $this->cursor()->valid();
     }
 }

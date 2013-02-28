@@ -38,7 +38,7 @@ class EMongoDocument extends EMongoModel{
 	 */
 	public function __construct($scenario='insert')
 	{
-		
+
 		if($scenario===null) // internally used by populateRecord() and model()
 			return;
 
@@ -173,11 +173,11 @@ class EMongoDocument extends EMongoModel{
 	private function primaryKey(){
 		return '_id';
 	}
-	
+
 	/**
 	 * Returns the value of the primary key
 	 */
-	function getPrimaryKey(){
+	public function getPrimaryKey(){
 		return $this->{$this->primaryKey()};
 	}
 
@@ -601,7 +601,7 @@ class EMongoDocument extends EMongoModel{
 	 *
 	 * @param $query allows you to specify a query which should always take hold along with the searched fields
 	 */
-	function search($query=array()){
+	public function search($query=array()){
 
 		foreach($this->getSafeAttributeNames() as $attribute){
 
@@ -632,6 +632,15 @@ class EMongoDocument extends EMongoModel{
 			}
 		}
 		return new EMongoDataProvider(array('condition' => $query));
+	}
+
+	/**
+	 * This is an aggregate helper on the model
+	 * Note: This does not return the model but instead the result array directly from MongoDB.
+	 * @param array $pipeline
+	 */
+	public function aggregate($pipeline){
+		return Yii::app()->mongodb->aggregate($this->collectionName(),$pipeline);
 	}
 
     /**
@@ -672,14 +681,14 @@ class EMongoDocument extends EMongoModel{
 	public function setDbCriteria($criteria){
 		return $this->_criteria=$criteria;
 	}
-	
+
 	/**
 	 * Merges the currrent DB Criteria with the inputted one
 	 * @param array $newCriteria
 	 */
 	public function mergeDbCriteria($newCriteria){
 		 return $this->_criteria=$this->mergeCriteria($this->getDbCriteria(), $newCriteria);
-	}	
+	}
 
     /**
      * Gets the collection for this model
@@ -687,7 +696,7 @@ class EMongoDocument extends EMongoModel{
     public function getCollection(){
 		return $this->getDbConnection()->{$this->collectionName()};
     }
-    
+
     /**
      * Merges two criteria objects. Best used for scopes
      * @param $oldCriteria
