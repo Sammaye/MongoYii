@@ -455,7 +455,7 @@ class EMongoDocument extends EMongoModel{
 			if($attributes!==null){
 				$attributes=$this->getAttributes($attributes);
 				unset($attributes['_id']);
-				$this->updateByPk($this->{$this->primaryKey()}, $attributes);
+				$this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
 			}else
 				$this->getCollection()->save($this->getAttributes($attributes));
 			$this->afterSave();
