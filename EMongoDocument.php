@@ -551,7 +551,7 @@ class EMongoDocument extends EMongoModel{
     }
 
     /**
-     * An alias for findByPk() that relates to Yiis own findByPk
+     * An alias for findBy_id() that relates to Yiis own findByPk
      * @param $pk
      */
     public function findByPk($pk){
