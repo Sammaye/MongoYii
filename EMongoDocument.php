@@ -513,6 +513,8 @@ class EMongoDocument extends EMongoModel{
 
 		$oc = isset($this->_criteria['condition']) ? $this->_criteria['condition'] : array();
 		if(($record=$this->getCollection()->findOne($this->mergeCriteria($oc, $criteria)))!==null){
+
+			$this->resetScope();
 			return $this->populateRecord($record);
 		}else
 			return null;
@@ -530,6 +532,8 @@ class EMongoDocument extends EMongoModel{
 			if(isset($this->_criteria['sort'])) $cursor->sort($this->_criteria['sort']);
     		if(isset($this->_criteria['skip'])) $cursor->skip($this->_criteria['skip']);
     		if(isset($this->_criteria['limit'])) $cursor->limit($this->_criteria['limit']);
+
+    		$this->resetScope();
 	   		return $cursor;
     	}else{
     		return new EMongoCursor($this, $criteria);
