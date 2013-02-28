@@ -555,6 +555,7 @@ class EMongoDocument extends EMongoModel{
      * @param $pk
      */
     public function findByPk($pk){
+    	$this->trace(__FUNCTION__);
 		return $this->findBy_id($pk);
     }
 
@@ -614,6 +615,7 @@ class EMongoDocument extends EMongoModel{
 	 * @param $query allows you to specify a query which should always take hold along with the searched fields
 	 */
 	public function search($query=array()){
+		$this->trace(__FUNCTION__);
 
 		foreach($this->getSafeAttributeNames() as $attribute){
 
@@ -652,6 +654,7 @@ class EMongoDocument extends EMongoModel{
 	 * @param array $pipeline
 	 */
 	public function aggregate($pipeline){
+		$this->trace(__FUNCTION__);
 		return Yii::app()->mongodb->aggregate($this->collectionName(),$pipeline);
 	}
 
