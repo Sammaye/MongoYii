@@ -13,7 +13,7 @@ class ESubdocumentValidator extends CValidator{
 	public $type;
 	public $rules;
 
-	function validateAttribute($object, $attribute){
+	public function validateAttribute($object, $attribute){
 
 		if(!$this->type)
 			throw new EMongoException(Yii::t('yii','You must supply a subdocument type of either "many" or "one" in order to validate subdocuments'));
@@ -51,7 +51,7 @@ class ESubdocumentValidator extends CValidator{
 						$fieldErrors[] = $c->getErrors();
 					}
 				}
-				
+
 				if($this->message!==null){
 					$this->addError($object,$attribute,$this->message);
 				}elseif(sizeof($fieldErrors)>0){
