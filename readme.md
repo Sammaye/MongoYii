@@ -59,7 +59,7 @@ If you wish to call a function on the `MongoClient` or `Mongo` class you will ne
 
 `EMongoClient` is also designed to handle full write concern and read preferences in a compatible manner with all versions of the driver.
 
-**Note:** The models will by default seek a `mongodb` component within your configuration so please make sure that unless you modify the extension, or use it without active record, to 
+**Note:** The models will by default seek a `mongodb` component within your configuration so please make sure that unless you modify the extension, or use it without active record, to
 make your default (master) connection be a component called `mongodb`.
 
 ### Write Concern (formally "safe" writes)
@@ -219,7 +219,7 @@ As an example of a full default scope which omits deleted models to get the late
 		'skip' => 1,
 		'limit' => 11
 	)
-	
+
 You can also define your own scopes, however, it is a little different to how you are used to doing it in Yii:
 
 	function someScope(){
@@ -235,21 +235,21 @@ As you will notice the `_certeria` variable within the EMongoDocument which woul
 
 This applies to all scope actions; they are all array based.
 
-To help you in not having the `EMongoCriteria` object the `EMongoDocument` provides a helper function for merging criteria objects called `mergeCriteria`. Using this function will 
+To help you in not having the `EMongoCriteria` object the `EMongoDocument` provides a helper function for merging criteria objects called `mergeCriteria`. Using this function will
 have no impact on the model itself and merely merges criteria to be returned. As an example of using the `mergeCriteria` function:
 
 	function someScope(){
-	
+
 		$criteria = array(
 			'condition'=>array('scoped' => true),
 			'sort'=>array('date'=>-1),
 			'skip'=>1,
 			'limit'=>11
 		);
-	
+
 		if($this->deleted)
 			$criteria = $this->mergeCriteria($criteria,array('condition'=>array('deleted'=>1)));
-			
+
 		$this->mergeDbCriteria($criteria);
 		reutrn $this;
 	}
@@ -287,36 +287,36 @@ So now that we have discussed the `EMongoDocument` lets look at the most base of
 		function collectionName(){
 			return 'users';
 		}
-		
+
 		public static function model($className=__CLASS__){
 			return parent::model($className);
-		}	
+		}
 	}
 
-This is the most basic document that can exist - no predefined schema and only a `model` function (same as Yii active record) and the `tableName`, otherwise known as the `collectionName`, 
+This is the most basic document that can exist - no predefined schema and only a `model` function (same as Yii active record) and the `tableName`, otherwise known as the `collectionName`,
 are needed.
 
 As time goes on you will want to add certain fields like virtual attributes and such to make your life easier:
 
 	class User extends EMongoDocument{
-	
+
 		/** @virtual */
 		public $agree = 1;
-		
+
 		public $addresses = array();
-	
+
 		function collectionName(){
 			return 'users';
 		}
-		
+
 		public static function model($className=__CLASS__){
 			return parent::model($className);
-		}	
+		}
 	}
 
-Notice how I have added the `addresses` field despite not needing to? I do this due to the way that PHP uses magic functions. 
+Notice how I have added the `addresses` field despite not needing to? I do this due to the way that PHP uses magic functions.
 
-If you access an array magically you cannot, in the same breath, manipulate it since it is an indirect accession of the variable. So a good tip here: if you plan on having subdocuments 
+If you access an array magically you cannot, in the same breath, manipulate it since it is an indirect accession of the variable. So a good tip here: if you plan on having subdocuments
 in your document it might be good to explicitly declare the field as a variable within the class.
 
 ## Querying
@@ -334,11 +334,11 @@ to it.
 
 **Note:** The cursor does not eager load documents, instead if you wish to accomplish this please wrap the call to `find` in a `iterator_to_array` function.
 
-### findOne() and findOneBy_id()
+### findOne() and findBy_id()
 
-`findOne`, just like `find` is a straight 1-1 implementation of the drivers own `findOne` method and returns an active record record model if something was found, otherwise `null`.
+`findOne`, just like `findBy_id` is a straight 1-1 implementation of the drivers own `findOne` method and returns an active record record model if something was found, otherwise `null`.
 
-The `findOneBy_id` function takes either a hexadecimal representation of a `ObjectId` in string form or wrapped in the `MongoId` class and will seek out a record with that `_id` using
+The `findBy_id` function takes either a hexadecimal representation of a `ObjectId` in string form or wrapped in the `MongoId` class and will seek out a record with that `_id` using
 the `findOne` function, returning the exact same. It is basically a helper for `findOne` to make your life a little easier.
 
 ### Scopes
