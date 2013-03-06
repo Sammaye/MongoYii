@@ -167,10 +167,12 @@ class EMongoDocument extends EMongoModel{
 	function collectionName(){  }
 
 	/**
-	 * Atm you are not allowed to change the primary key
+	 * Returns MongoId based on $value
+	 * @param string|MongoId $value
+	 * @return MongoId
 	 */
-	private function primaryKey(){
-		return '_id';
+	public function getMongoId($value){
+		return $value instanceof MongoId ? $value : new MongoId($value);
 	}
 
 	/**
@@ -545,7 +547,7 @@ class EMongoDocument extends EMongoModel{
      */
     public function findBy_id($_id){
     	$this->trace(__FUNCTION__);
-		$_id = $_id instanceof MongoId ? $_id : new MongoId($_id);
+		$_id = $this->getMongoId($_id);
 		return $this->findOne(array('_id' => $_id));
     }
 
@@ -567,7 +569,7 @@ class EMongoDocument extends EMongoModel{
 	public function deleteByPk($pk,$criteria=array(),$options=array()){
 		$this->trace(__FUNCTION__);
 
-		$pk = $pk instanceof MongoId ? $pk : new MongoId($pk);
+		$pk = $this->getMongoId($pk);
 		return $this->getCollection()->remove(array_merge(array($this->primaryKey() => $pk), $criteria),
 					array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
@@ -582,7 +584,7 @@ class EMongoDocument extends EMongoModel{
 	public function updateByPk($pk, $updateDoc = array(), $criteria = array(), $options = array()){
 		$this->trace(__FUNCTION__);
 
-		$pk = $pk instanceof MongoId ? $pk : new MongoId($pk);
+		$pk = $this->getMongoId($pk);
 		return $this->getCollection()->update($this->mergeCriteria($criteria, array($this->primaryKey() => $pk)),$updateDoc,
 				array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}

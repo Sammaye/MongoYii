@@ -286,6 +286,13 @@ class EMongoModel extends CModel{
 	}
 
 	/**
+	 * Atm you are not allowed to change the primary key
+	 */
+	protected function primaryKey(){
+		return '_id';
+	}
+
+	/**
 	 * Returns the related record(s).
 	 * This method will return the related record(s) of the current record.
 	 * If the relation is 'one' it will return a single object
