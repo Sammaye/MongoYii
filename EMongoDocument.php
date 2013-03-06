@@ -39,12 +39,6 @@ class EMongoDocument extends EMongoModel{
 	public function __construct($scenario='insert')
 	{
 
-		if($scenario===null) // internally used by populateRecord() and model()
-			return;
-
-		$this->setScenario($scenario);
-		$this->setIsNewRecord(true);
-
 		// Run reflection and cache it if not already there
 		if(!$this->getDbConnection()->getObjCache(get_class($this)) && get_class($this) != 'EMongoDocument' /* We can't cache the model */){
 			$virtualFields = array();
@@ -73,6 +67,11 @@ class EMongoDocument extends EMongoModel{
 			);
 		}
 
+		if($scenario===null) // internally used by populateRecord() and model()
+			return;
+
+		$this->setScenario($scenario);
+		$this->setIsNewRecord(true);
 
 		// Set the default scope now
 		$this->setDbCriteria($this->mergeCriteria($this->_criteria, $this->defaultScope()));
