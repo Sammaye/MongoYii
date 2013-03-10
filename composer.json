@@ -1,0 +1,13 @@
+{
+    "name": "Sammaye/MongoYii",
+    "description": "A Yii MongoDB ORM",
+    "keywords": ["mongodb","orm","yii"],
+    "type": "yii-extension",
+    "license": "BSD-2-Clause",
+    "authors": [
+        {
+            "name": "Sammaye",
+            "homepage": "http://sammaye.wordpress.com"
+        }
+    ]
+}
