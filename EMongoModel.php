@@ -33,8 +33,11 @@ class EMongoModel extends CModel{
 		}elseif(isset($this->_attributes[$name])){
 			return $this->_attributes[$name];
 		}else{
-			return null;
-			//return parent::__get($name);
+			try {
+				return parent::__get($name);
+			} catch (CException $e) {
+				return null;
+			}
 		}
 
 	}
