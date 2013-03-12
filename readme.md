@@ -123,6 +123,15 @@ The `EMongoModel` implements all that `CModel` does but with a few added and cha
 
 ### Magic functions
 
+#### This has been changed
+
+Changed as of this issue: [https://github.com/Sammaye/MongoYii/issues/7](https://github.com/Sammaye/MongoYii/issues/7) whereby
+[@f10i](https://github.com/f10i) gives over a pull request that can actually fix the schemaless issue completely.
+
+The `__get` and `__set` have been completely re-written around his ideas and should now have all the same power as Yiis own `CActiveRecord` class.
+
+The below is still shown as a note to people who use old checkouts:
+
 In order to support the schema-less nature of MongoDB without using hacks like behaviours I have changed the way that the magic functions in Yii work slightly.
 The `__set` and `__get` will no longer seek out behaviour properties or call variable function events.
 
