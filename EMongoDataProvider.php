@@ -127,6 +127,10 @@ class EMongoDataProvider extends CActiveDataProvider{
 	 * @see yii/framework/web/CActiveDataProvider::calculateTotalItemCount()
 	 */
 	public function calculateTotalItemCount(){
+		if(!$this->_cursor){
+			$criteria=$this->getCriteria();
+			$this->_cursor=$this->model->find(isset($criteria['condition']) && is_array($criteria['condition']) ? $criteria['condition'] : array());
+		}		
 		return $this->_cursor->count();
 	}
 
