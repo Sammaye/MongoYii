@@ -267,11 +267,11 @@ class EMongoModel extends CModel{
 		{
 			if($safeOnly){
 				if(isset($attributes[$name]))
-					$this->$name=$value;
+					$this->$name=!is_array($value) && preg_match('/^[0-9]+$/', $value) > 0 ? (int)$value : $value;
 				elseif($safeOnly)
 					$this->onUnsafeAttribute($name,$value);
 			}else
-				$this->$name=$value;
+				$this->$name=!is_array($value) && preg_match('/^[0-9]+$/', $value) > 0 ? (int)$value : $value;
 		}
 	}
 
