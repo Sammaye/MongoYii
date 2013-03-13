@@ -101,7 +101,7 @@ class EMongoDataProvider extends CActiveDataProvider{
 			$sort=array();
 			foreach($this->getSortDirections($order) as $name=>$descending)
 			{
-				$sort[$name]=$descending ? '-1' : 1;
+				$sort[$name]=$descending ? -1 : 1;
 			}
 			$this->_cursor->sort($sort);
 		}
@@ -150,5 +150,12 @@ class EMongoDataProvider extends CActiveDataProvider{
 			$directions[trim($seg)]=false;
 		}
 		return $directions;
+	}
+	/**
+	 * getSort with 'EMongoSort' classname
+	 * @param string $classname
+	 */
+	public function getSort($classname='EMongoSort') {
+		return parent::getSort($classname);
 	}
 }
