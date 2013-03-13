@@ -495,7 +495,6 @@ Instead of using a `EMongoCriteria` or something similar you use arrays like so:
 
 The `criteria` option basically relates to the parts of a cursor.
 
-**Note:** This does not work with `CGridView` due to how Yii core expects a `CActiveRecord` and uses that class directly for some parts of the widget.
 
 ## Known Flaws
 
