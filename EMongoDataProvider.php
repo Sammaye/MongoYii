@@ -151,4 +151,8 @@ class EMongoDataProvider extends CActiveDataProvider{
 		}
 		return $directions;
 	}
+
+	public function getSort($classname='EMongoSort') {
+		return parent::getSort($classname);
+	}
 }
