@@ -151,7 +151,10 @@ class EMongoDataProvider extends CActiveDataProvider{
 		}
 		return $directions;
 	}
-
+	/**
+	 * getSort with 'EMongoSort' classname
+	 * @param string $classname
+	 */
 	public function getSort($classname='EMongoSort') {
 		return parent::getSort($classname);
 	}

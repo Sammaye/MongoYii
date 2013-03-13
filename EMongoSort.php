@@ -1,14 +1,23 @@
 <?php
-
+/**
+ * EMongoSort
+ * @author Andrea Cardinale <a.cardinale80@gmail.com>
+ * corresponding to Csort for MongoYii
+ * @see yii/framework/web/CSort
+ */
 class EMongoSort extends CSort
 {
-
+	/**
+	 * @see yii/framework/web/CSort::resolveAttribute()
+	 */
 	public function resolveAttribute($attribute)
 	{
 
 		if($this->attributes!==array())
 			$attributes=$this->attributes;
 		elseif($this->modelClass!==null)
+			//$attributes=EmongoDocument::model($this->modelClass)->attributeNames();
+			//I used safeAttributeNames() because attributeNames() return empty array
 			$attributes=EmongoDocument::model($this->modelClass)->safeAttributeNames;
 		else
 			return false;
@@ -32,7 +41,9 @@ class EMongoSort extends CSort
 		}
 		return false;
 	}
-
+	/**
+	 * @see yii/framework/web/CSort::resolveLabel()
+	 */
 	public function resolveLabel($attribute)
 	{
 		$definition=$this->resolveAttribute($attribute);
@@ -48,7 +59,9 @@ class EMongoSort extends CSort
 		else
 			return $attribute;
 	}
-
+	/**
+	 * @see yii/framework/web/CSort::getOrderBy()
+	 */
 	public function getOrderBy($criteria=null)
 	{
 		$directions=$this->getDirections();
