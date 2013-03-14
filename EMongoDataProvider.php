@@ -79,6 +79,8 @@ class EMongoDataProvider extends CActiveDataProvider{
 	 */
 	public function fetchData(){
 		$criteria=$this->getCriteria();
+
+		// I have not refactored this line considering that the condition may have changed from total item count to here, maybe.
 		$this->_cursor = $this->model->find(isset($criteria['condition']) && is_array($criteria['condition']) ? $criteria['condition'] : array());
 
 		// If we have sort and limit and skip setup within the incoming criteria let's set it
@@ -96,14 +98,12 @@ class EMongoDataProvider extends CActiveDataProvider{
 			$this->_cursor->skip($pagination->getOffset());
 		}
 
-		if(($sort=$this->getSort())!==false && ($order=$sort->getOrderBy())!='')
+		if(($sort=$this->getSort())!==false)
 		{
-			$sort=array();
-			foreach($this->getSortDirections($order) as $name=>$descending)
-			{
-				$sort[$name]=$descending ? '-1' : 1;
+			$sort = $sort->getOrderBy();
+			if(sizeof($sort)>0){
+				$this->_cursor->sort($sort);
 			}
-			$this->_cursor->sort($sort);
 		}
 		return iterator_to_array($this->_cursor,false);
 	}
@@ -130,25 +130,15 @@ class EMongoDataProvider extends CActiveDataProvider{
 		if(!$this->_cursor){
 			$criteria=$this->getCriteria();
 			$this->_cursor=$this->model->find(isset($criteria['condition']) && is_array($criteria['condition']) ? $criteria['condition'] : array());
-		}		
+		}
 		return $this->_cursor->count();
 	}
 
 	/**
-	 * Converts the sort directions found within Yiis internal workings into MongoDB readable directions
-	 * @param string $order
+	 * getSort with 'EMongoSort' classname
+	 * @param string $classname
 	 */
-	protected function getSortDirections($order)
-	{
-		$segs=explode(',',$order);
-		$directions=array();
-		foreach($segs as $seg)
-		{
-			if(preg_match('/(.*?)(\s+(desc|asc))?$/i',trim($seg),$matches))
-			$directions[$matches[1]]=isset($matches[3]) && !strcasecmp($matches[3],'desc');
-			else
-			$directions[trim($seg)]=false;
-		}
-		return $directions;
+	public function getSort($classname='EMongoSort') {
+		return parent::getSort($classname);
 	}
 }

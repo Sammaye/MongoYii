@@ -622,31 +622,37 @@ class EMongoDocument extends EMongoModel{
 
 			$value = $this->{$attribute};
 			if($value !== null && $value !== ''){
-				if(is_array($value) || is_object($value))
-					$criteria->$attribute = $value;
-				elseif(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/',$value,$matches)){
+				if(is_array($value) || is_object($value)){
+					$query[$attribute] = $value;
+				}elseif(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/',$value,$matches)){
 					$value=$matches[2];
 					$op=$matches[1];
 
 					switch($op){
 						case "<>":
 							$query[$attribute] = array('$ne' => $value);
+							break;
 						case "<=":
 							$query[$attribute] = array('$lte' => $value);
+							break;
 						case ">=":
 							$query[$attribute] = array('$gte' => $value);
+							break;
 						case "<":
 							$query[$attribute] = array('$lt' => $value);
+							break;
 						case ">":
 							$query[$attribute] = array('$gt' => $value);
+							break;
 						case "=":
 						default:
 							$query[$attribute] = $value;
+							break;
 					}
 				}
 			}
 		}
-		return new EMongoDataProvider(array('condition' => $query));
+		return new EMongoDataProvider(get_class($this), array('criteria' => array('condition' => $query)));
 	}
 
 	/**
