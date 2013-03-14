@@ -21,8 +21,10 @@ class EMongoSort extends CSort
 			$attributes=$this->attributes;
 		elseif($this->modelClass!==null){
 			$attributes=EmongoDocument::model($this->modelClass)->attributeNames();
-			//I used safeAttributeNames() because attributeNames() return empty array
-			//$attributes=EmongoDocument::model($this->modelClass)->safeAttributeNames;
+			if(empty($attributes)){
+				// The previous statement can return null in certain models. So this is used as backup.
+				$attributes=EmongoDocument::model($this->modelClass)->safeAttributeNames;
+			}
 		}else
 			return false;
 
