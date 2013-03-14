@@ -71,8 +71,7 @@ class EMongoSort extends CSort
 			return is_string($this->defaultOrder) ? $this->defaultOrder : array();
 		else
 		{
-			if($this->modelClass!==null)
-				$schema=EMongoDocument::model($this->modelClass)->getDbConnection()->getSchema();
+			$schema=null; // ATM the schema aspect of this function has been disabled, the code below for schema isset is left in for future reference
 			$orders=array();
 			foreach($directions as $attribute=>$descending)
 			{
