@@ -74,7 +74,7 @@ class ESubdocumentValidator extends CValidator{
 			}
 
 			// Strip the models etc from the field value
-			$object->$attribute = $fieldValue;
+			$object->$attribute = $c->attributes;
 		}
 	}
 
