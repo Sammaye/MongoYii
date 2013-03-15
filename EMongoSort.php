@@ -93,7 +93,7 @@ class EMongoSort extends CSort
 					if(isset($schema))
 					{
 						if(($pos=strpos($attribute,'.'))!==false)
-							throw EMongoException('MongoDB cannot sort on joined fields please modify '.$attribute.' to not be sortable');
+							throw new EMongoException('MongoDB cannot sort on joined fields please modify '.$attribute.' to not be sortable');
 							//$attribute=$schema->quoteTableName(substr($attribute,0,$pos)).'.'.$schema->quoteColumnName(substr($attribute,$pos+1));
 						else{
 							// MongoDB does not need these escaping or table namespacing elements at all so they have been commented out for the second
