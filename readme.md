@@ -495,6 +495,27 @@ Instead of using a `EMongoCriteria` or something similar you use arrays like so:
 
 The `criteria` option basically relates to the parts of a cursor.
 
+This extension does fully support `CGridView` (thanks to @acardinale for the fix) and it should also be able to take the `CListView` as well.
+
+As a side note to the above, `CGridView` is best used when you predefine the schema you wish to to display within the definition of the `CGridView` widget like so:
+
+	$this->widget('zii.widgets.grid.CGridView', array(
+		'id'=>'user-grid',
+		'dataProvider'=>$model->search(),
+		'filter'=>$model,
+		'columns'=>array(
+			'_id',
+			'username',
+			'addresses',
+			'create_time',
+			array(
+				'class'=>'CButtonColumn',
+				'template'=>'{update}{delete}',
+			),
+		),
+	));
+
+For a user model. This is the best because, of course, MongoDB is schemaless (has a flexible schema is more appropiate) so sometimes it doesn't work so well in a rigid table.
 
 ## Known Flaws
 
