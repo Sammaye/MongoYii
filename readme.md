@@ -515,7 +515,7 @@ As a side note to the above, `CGridView` is best used when you predefine the sch
 		),
 	));
 
-For a user model. This is the best because, of course, MongoDB is schemaless (has a flexible schema is more appropiate) so sometimes it doesn't work so well in a rigid table.
+For a user model. This is the best because, of course, MongoDB is schemaless (has a flexible schema is more appropriate) so sometimes it doesn't work so well in a rigid table.
 
 ## Known Flaws
 
