@@ -73,9 +73,6 @@ class EMongoDocument extends EMongoModel{
 		$this->setScenario($scenario);
 		$this->setIsNewRecord(true);
 
-		// Set the default scope now
-		$this->setDbCriteria($this->mergeCriteria($this->_criteria, $this->defaultScope()));
-
 		$this->init();
 
 		$this->attachBehaviors($this->behaviors());
@@ -512,8 +509,11 @@ class EMongoDocument extends EMongoModel{
 	public function findOne($criteria=array()){
 		$this->trace(__FUNCTION__);
 
-		$oc = isset($this->_criteria['condition']) ? $this->_criteria['condition'] : array();
-		if(($record=$this->getCollection()->findOne($this->mergeCriteria($oc, $criteria)))!==null){
+		$c=$this->getDbCriteria();
+		if((
+			$record=$this->getCollection()->findOne($this->mergeCriteria(
+										isset($c['condition']) ? $c['condition'] : array(), $criteria
+		)))!==null){
 
 			$this->resetScope();
 			return $this->populateRecord($record);
@@ -528,11 +528,12 @@ class EMongoDocument extends EMongoModel{
     public function find($criteria=array()){
     	$this->trace(__FUNCTION__);
 
-    	if($this->_criteria!==array()){
-    		$cursor = new EMongoCursor($this, $this->mergeCriteria(isset($this->_criteria['condition']) ? $this->_criteria['condition'] : array(), $criteria));
-			if(isset($this->_criteria['sort'])) $cursor->sort($this->_criteria['sort']);
-    		if(isset($this->_criteria['skip'])) $cursor->skip($this->_criteria['skip']);
-    		if(isset($this->_criteria['limit'])) $cursor->limit($this->_criteria['limit']);
+    	$c=$this->getDbCriteria();
+    	if($c!==array()){
+    		$cursor = new EMongoCursor($this, $this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria));
+			if(isset($c['sort'])) $cursor->sort($c['sort']);
+    		if(isset($c['skip'])) $cursor->skip($c['skip']);
+    		if(isset($c['limit'])) $cursor->limit($c['limit']);
 
     		$this->resetScope();
 	   		return $cursor;
@@ -688,7 +689,7 @@ class EMongoDocument extends EMongoModel{
      */
 	public function getDbCriteria($createIfNull=true)
 	{
-		if($this->_criteria===null)
+		if(empty($this->_criteria))
 		{
 			if(($c=$this->defaultScope())!==array() || $createIfNull)
 				$this->_criteria=$c;
