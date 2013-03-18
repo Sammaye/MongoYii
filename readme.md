@@ -497,7 +497,8 @@ The `criteria` option basically relates to the parts of a cursor.
 
 This extension does fully support `CGridView` (thanks to @acardinale for the fix) and it should also be able to take the `CListView` as well.
 
-As a side note to the above, `CGridView` is best used when you predefine the schema you wish to to display within the definition of the `CGridView` widget like so:
+As a side note to the above, `CGridView` is best used when you predefine the schema you wish to display within the definition of the `CGridView` widget. So, to display an example
+for a user model:
 
 	$this->widget('zii.widgets.grid.CGridView', array(
 		'id'=>'user-grid',
@@ -515,7 +516,7 @@ As a side note to the above, `CGridView` is best used when you predefine the sch
 		),
 	));
 
-For a user model. This is the best because, of course, MongoDB is schemaless (has a flexible schema is more appropriate) so sometimes it doesn't work so well in a rigid table.
+This is normally the best method because, of course, MongoDB is schemaless (has a flexible schema is more appropriate) so sometimes it doesn't work so well in a rigid table.
 
 ## Known Flaws
 
