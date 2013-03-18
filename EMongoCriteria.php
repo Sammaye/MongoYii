@@ -27,10 +27,10 @@ class EMongoCriteria{
 
 	public function mergeWith($criteria){
 		if(isset($criteria['condition']) && is_array($criteria['condition']))
-			$this->condition = Yii::app()->monogdb->merge($this->condition, $criteria['condition']);
+			$this->condition = CMap::mergeArray($this->condition, $criteria['condition']);
 
 		if(isset($criteria['sort']) && is_array($criteria['sort']))
-			$this->sort = Yii::app()->monogdb->merge($this->condition, $criteria['sort']);
+			$this->sort = CMap::mergeArray($this->condition, $criteria['sort']);
 
 		if(isset($criteria['skip'])&& is_numeric($criteria['skip']))
 			$this->skip = $criteria['skip'];

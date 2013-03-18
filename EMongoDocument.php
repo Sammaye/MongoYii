@@ -725,7 +725,7 @@ class EMongoDocument extends EMongoModel{
      * @param $newCriteria
      */
     public function mergeCriteria($oldCriteria, $newCriteria){
-		return $this->getDbConnection()->merge($oldCriteria, $newCriteria);
+		return CMap::mergeArray($oldCriteria, $newCriteria);
     }
 
     /**
