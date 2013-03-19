@@ -72,7 +72,7 @@ class EMongoUniqueValidator extends CValidator
 		$attributeName=$this->attributeName===null?$attribute:$this->attributeName;
 		
 		$conditions=array(
-			$attributeName => $value
+			$attributeName => $this->caseSensitive?$value:array('$regex'=>new MongoRegex('/^'.$value.'$/i'));
 		);
 		if(!$object->isNewRecord){
 			$conditions[$object->primaryKey()]=array('$ne'=>$object->getPrimaryKey());
