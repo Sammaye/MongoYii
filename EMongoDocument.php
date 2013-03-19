@@ -73,9 +73,6 @@ class EMongoDocument extends EMongoModel{
 		$this->setScenario($scenario);
 		$this->setIsNewRecord(true);
 
-		// Set the default scope now
-		$this->setDbCriteria($this->mergeCriteria($this->_criteria, $this->defaultScope()));
-
 		$this->init();
 
 		$this->attachBehaviors($this->behaviors());
@@ -512,8 +509,11 @@ class EMongoDocument extends EMongoModel{
 	public function findOne($criteria=array()){
 		$this->trace(__FUNCTION__);
 
-		$oc = isset($this->_criteria['condition']) ? $this->_criteria['condition'] : array();
-		if(($record=$this->getCollection()->findOne($this->mergeCriteria($oc, $criteria)))!==null){
+		$c=$this->getDbCriteria();
+		if((
+			$record=$this->getCollection()->findOne($this->mergeCriteria(
+										isset($c['condition']) ? $c['condition'] : array(), $criteria
+		)))!==null){
 
 			$this->resetScope();
 			return $this->populateRecord($record);
@@ -528,11 +528,12 @@ class EMongoDocument extends EMongoModel{
     public function find($criteria=array()){
     	$this->trace(__FUNCTION__);
 
-    	if($this->_criteria!==array()){
-    		$cursor = new EMongoCursor($this, $this->mergeCriteria(isset($this->_criteria['condition']) ? $this->_criteria['condition'] : array(), $criteria));
-			if(isset($this->_criteria['sort'])) $cursor->sort($this->_criteria['sort']);
-    		if(isset($this->_criteria['skip'])) $cursor->skip($this->_criteria['skip']);
-    		if(isset($this->_criteria['limit'])) $cursor->limit($this->_criteria['limit']);
+    	$c=$this->getDbCriteria();
+    	if($c!==array()){
+    		$cursor = new EMongoCursor($this, $this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria));
+			if(isset($c['sort'])) $cursor->sort($c['sort']);
+    		if(isset($c['skip'])) $cursor->skip($c['skip']);
+    		if(isset($c['limit'])) $cursor->limit($c['limit']);
 
     		$this->resetScope();
 	   		return $cursor;
@@ -622,31 +623,37 @@ class EMongoDocument extends EMongoModel{
 
 			$value = $this->{$attribute};
 			if($value !== null && $value !== ''){
-				if(is_array($value) || is_object($value))
-					$criteria->$attribute = $value;
-				elseif(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/',$value,$matches)){
+				if(is_array($value) || is_object($value)){
+					$query[$attribute] = $value;
+				}elseif(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/',$value,$matches)){
 					$value=$matches[2];
 					$op=$matches[1];
 
 					switch($op){
 						case "<>":
 							$query[$attribute] = array('$ne' => $value);
+							break;
 						case "<=":
 							$query[$attribute] = array('$lte' => $value);
+							break;
 						case ">=":
 							$query[$attribute] = array('$gte' => $value);
+							break;
 						case "<":
 							$query[$attribute] = array('$lt' => $value);
+							break;
 						case ">":
 							$query[$attribute] = array('$gt' => $value);
+							break;
 						case "=":
 						default:
 							$query[$attribute] = $value;
+							break;
 					}
 				}
 			}
 		}
-		return new EMongoDataProvider(array('condition' => $query));
+		return new EMongoDataProvider(get_class($this), array('criteria' => array('condition' => $query)));
 	}
 
 	/**
@@ -682,7 +689,7 @@ class EMongoDocument extends EMongoModel{
      */
 	public function getDbCriteria($createIfNull=true)
 	{
-		if($this->_criteria===null)
+		if(empty($this->_criteria))
 		{
 			if(($c=$this->defaultScope())!==array() || $createIfNull)
 				$this->_criteria=$c;
@@ -719,7 +726,7 @@ class EMongoDocument extends EMongoModel{
      * @param $newCriteria
      */
     public function mergeCriteria($oldCriteria, $newCriteria){
-		return $this->getDbConnection()->merge($oldCriteria, $newCriteria);
+		return CMap::mergeArray($oldCriteria, $newCriteria);
     }
 
     /**

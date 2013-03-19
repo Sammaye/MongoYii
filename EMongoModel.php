@@ -23,23 +23,19 @@ class EMongoModel extends CModel{
 	 */
 	public function __get($name){
 
-		$getter='get'.$name;
-		if(method_exists($this,$getter))
-			return $this->$getter();
-		elseif(isset($this->_related[$name])){
-			return $this->_related[$name];
-		}elseif(array_key_exists($name, $this->relations())){
-			return $this->_related[$name]=$this->getRelated($name);
-		}elseif(isset($this->_attributes[$name])){
+		if(isset($this->_attributes[$name]))
 			return $this->_attributes[$name];
-		}else{
+		elseif(isset($this->_related[$name]))
+			return $this->_related[$name];
+		elseif(array_key_exists($name, $this->relations()))
+			return $this->_related[$name]=$this->getRelated($name);
+		else{
 			try {
 				return parent::__get($name);
 			} catch (CException $e) {
 				return null;
 			}
 		}
-
 	}
 
 	/**
@@ -47,13 +43,18 @@ class EMongoModel extends CModel{
 	 * @see CComponent::__set()
 	 */
 	public function __set($name,$value){
-		$setter='set'.$name;
-		if(method_exists($this,$setter))
-			return $this->$setter($value);
-		elseif(isset($this->_related[$name]) || array_key_exists($name, $this->relations()))
+
+		if(isset($this->_related[$name]) || array_key_exists($name, $this->relations()))
 			$this->_related[$name]=$value;
-		elseif($this->setAttribute($name,$value)===false) // It should never be false, this is a white lie
-			parent::__set($name,$value);
+		else{
+			// This might be a little unperformant actually since Yiis own active record detects
+			// If an attribute can be set first to ensure speed of accessing local variables...hmmm
+			try {
+				return parent::__set($name,$value);
+			} catch (CException $e) {
+				return $this->setAttribute($name,$value);
+			}
+		}
 	}
 
 	/**
@@ -266,11 +267,11 @@ class EMongoModel extends CModel{
 		{
 			if($safeOnly){
 				if(isset($attributes[$name]))
-					$this->$name=$value;
+					$this->$name=!is_array($value) && preg_match('/^[0-9]+$/', $value) > 0 ? (int)$value : $value;
 				elseif($safeOnly)
 					$this->onUnsafeAttribute($name,$value);
 			}else
-				$this->$name=$value;
+				$this->$name=!is_array($value) && preg_match('/^[0-9]+$/', $value) > 0 ? (int)$value : $value;
 		}
 	}
 

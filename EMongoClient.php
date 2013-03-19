@@ -291,38 +291,7 @@ class EMongoClient extends CApplicationComponent{
 	    }
 	    return new MongoID($id);
 	}
-
-	/**
-	 * Recursively merges two arrays. Most useful for scope criteria objects
-	 */
-	public function merge(){
-		if (func_num_args() < 2) {
-			throw new CDbException(Yii::t('yii',__FUNCTION__ .' needs two or more array arguments'));
-			return;
-		}
-		$arrays = func_get_args();
-		$merged = array();
-
-		while ($arrays) {
-			$array = array_shift($arrays);
-			if (!is_array($array)) {
-				throw new CDbException(Yii::t('yii',__FUNCTION__ .' encountered a non array argument'));
-				return;
-			}
-			if (!$array)
-				continue;
-			foreach ($array as $key => $value)
-				if (is_string($key))
-				if (is_array($value) && array_key_exists($key, $merged) && is_array($merged[$key]))
-				$merged[$key] = call_user_func(array($this,__FUNCTION__), $merged[$key], $value);
-			else
-				$merged[$key] = $value;
-			else
-				$merged[] = $value;
-		}
-		return $merged;
-	}
-
+	
 	/**
 	 * Set read preference on MongoClient
 	 * @param $pref
