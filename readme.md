@@ -209,6 +209,15 @@ Returns a string representing the collection name. All active record models shou
 
 Currently only returns `_id` as the key. This function is `private` and cannot be overridden.
 
+If you are using a primary key that IS NOT a `ObjectId` (otherwise known as a `MongoId` in the PHP driver) then you should override the `getMongoId` function of the `EMongoDocument`
+to not return a `MongoId`:
+
+	public function getMongoId($value){
+		return $value;
+	}
+
+You can, of course, add whatever procedure or formatting code you need within this function to make sure that your primary key is ready for MongoDB when it comes to querying.
+
 ### Scopes
 
 Scopes are fully supported in all the normal ways as with `CActiveRecord` but with one difference; the terminology.
