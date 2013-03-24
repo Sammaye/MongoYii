@@ -71,7 +71,9 @@ class EMongoUniqueValidator extends CValidator
 		$className=$this->className===null?get_class($object):Yii::import($this->className);
 		$attributeName=$this->attributeName===null?$attribute:$this->attributeName;
 
-		if(EMongoDocument::model($className)->exists(array_merge($this->criteria, array($attributeName => $value)))){
+		if(
+				EMongoDocument::model($className)->exists(array_merge($this->criteria, array($attributeName => $this->caseSensitive?$value:new MongoRegex('/'.$value.'/i'))))
+		){
 			$message=$this->message!==null?$this->message:Yii::t('yii','{attribute} "{value}" has already been taken.');
 			$this->addError($object,$attribute,$message,array('{value}'=>CHtml::encode($value)));
 		}else{}
