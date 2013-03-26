@@ -73,6 +73,9 @@ class EMongoDocument extends EMongoModel{
 		$this->setScenario($scenario);
 		$this->setIsNewRecord(true);
 
+		// Set the default scope now
+		//$this->setDbCriteria($this->mergeCriteria($this->_criteria, $this->defaultScope()));
+
 		$this->init();
 
 		$this->attachBehaviors($this->behaviors());
@@ -499,7 +502,7 @@ class EMongoDocument extends EMongoModel{
 	 */
 	public function equals($record)
 	{
-		return $this->collectionName()===$record->collectionName() && (string)$this->{$this->primaryKey()}===(string)$record->{$this->primaryKey()};
+		return $this->collectionName()===$record->collectionName() && (string)$this->getPrimaryKey()===(string)$record->getPrimaryKey();
 	}
 
 	/**

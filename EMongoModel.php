@@ -292,7 +292,7 @@ class EMongoModel extends CModel{
 	/**
 	 * Atm you are not allowed to change the primary key
 	 */
-	protected function primaryKey(){
+	public function primaryKey(){
 		return '_id';
 	}
 

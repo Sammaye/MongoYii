@@ -71,9 +71,14 @@ class EMongoUniqueValidator extends CValidator
 		$className=$this->className===null?get_class($object):Yii::import($this->className);
 		$attributeName=$this->attributeName===null?$attribute:$this->attributeName;
 
-		if(
-				EMongoDocument::model($className)->exists(array_merge($this->criteria, array($attributeName => $this->caseSensitive?$value:new MongoRegex('/'.$value.'/i'))))
-		){
+		// We get a RAW document here to prevent the need to make yet another active record instance
+		$doc=EMongoDocument::model($className)->
+				getCollection()->findOne(array_merge($this->criteria, array($attributeName => $this->caseSensitive?$value:new MongoRegex('/'.$value.'/i'))));
+
+		// If a doc was fund and it isn't this doc, as decided by the primnary key
+		if($doc && (string)$doc[$object->primaryKey()] != (string)$object->getPrimaryKey()){
+
+			// Then it ain't unique
 			$message=$this->message!==null?$this->message:Yii::t('yii','{attribute} "{value}" has already been taken.');
 			$this->addError($object,$attribute,$message,array('{value}'=>CHtml::encode($value)));
 		}else{}
