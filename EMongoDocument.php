@@ -73,9 +73,6 @@ class EMongoDocument extends EMongoModel{
 		$this->setScenario($scenario);
 		$this->setIsNewRecord(true);
 
-		// Set the default scope now
-		//$this->setDbCriteria($this->mergeCriteria($this->_criteria, $this->defaultScope()));
-
 		$this->init();
 
 		$this->attachBehaviors($this->behaviors());
