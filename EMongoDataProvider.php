@@ -35,6 +35,11 @@ class EMongoDataProvider extends CActiveDataProvider{
 	private $_cursor;
 
 	/**
+	 * @var array The index hint to be used
+	 */
+	private $hint;
+
+	/**
 	 * Creates the EMongoDataProvider instance
 	 * @param string|EMongoDocument $modelClass
 	 * @param string $config
@@ -105,6 +110,9 @@ class EMongoDataProvider extends CActiveDataProvider{
 				$this->_cursor->sort($sort);
 			}
 		}
+		if($this->hint){
+			$this->_cursor->hint($this->hint);
+		}
 		return iterator_to_array($this->_cursor,false);
 	}
 
@@ -130,6 +138,9 @@ class EMongoDataProvider extends CActiveDataProvider{
 		if(!$this->_cursor){
 			$criteria=$this->getCriteria();
 			$this->_cursor=$this->model->find(isset($criteria['condition']) && is_array($criteria['condition']) ? $criteria['condition'] : array());
+		}
+		if($this->hint){
+			$this->_cursor->hint($this->hint);
 		}
 		return $this->_cursor->count();
 	}
