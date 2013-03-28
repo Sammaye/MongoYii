@@ -34,6 +34,8 @@ class EMongoDataProvider extends CActiveDataProvider{
 	 */
 	private $_cursor;
 
+	private $_sort;
+
 	/**
 	 * Creates the EMongoDataProvider instance
 	 * @param string|EMongoDocument $modelClass
@@ -137,10 +139,19 @@ class EMongoDataProvider extends CActiveDataProvider{
 	}
 
 	/**
-	 * getSort with 'EMongoSort' classname
-	 * @param string $classname
+	 * Returns the sort object. We don't use the neweer getSort function because it does not have the same functionality
+	 * between 1.1.10 and 1.1.13, the functionality we need is actually in 1.1.13 only
+	 * @return CSort|EMongoSort|mixed the sorting object. If this is false, it means the sorting is disabled.
 	 */
-	public function getSort($classname='EMongoSort') {
-		return parent::getSort($classname);
+	public function getSort($className='EMongoSort')
+	{
+		if($this->_sort===null)
+		{
+			$this->_sort=new $className;
+			if(($id=$this->getId())!='')
+				$this->_sort->sortVar=$id.'_sort';
+				$this->_sort->modelClass=$this->modelClass;
+		}
+		return $this->_sort;
 	}
 }
