@@ -90,7 +90,7 @@ class EMongoDataProvider extends CActiveDataProvider{
 			$this->_cursor->skip($criteria['skip']);
 		if(isset($criteria['limit']) && is_int($criteria['limit']))
 			$this->_cursor->limit($criteria['limit']);
-		if(isset($criteria['hint']) && is_array($criteria['hint']))
+		if(isset($criteria['hint']) && (is_array($criteria['hint']) || is_string($criteria['hint'])))
 			$this->_cursor->hint($criteria['hint']);
 
 		if(($pagination=$this->getPagination())!==false)
