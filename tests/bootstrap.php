@@ -1,9 +1,17 @@
 <?php
-$yiit='../../../../yii/framework/yiit.php';
-$config=dirname(__FILE__).'/config/test.php';
-require_once($yiit);
+$envFile=dirname(__FILE__).'/config/env.php';
+if (file_exists($envFile))
+	$env=require_once $envFile;
+else
+	$env=array();
+if (!isset($env['config']))
+	$env['config']=dirname(__FILE__).'/config/test.php';
+if (!isset($env['yiit']))
+	$env['yiit'] = '../../../../yii/framework/yiit.php';
+
+require_once($env['yiit']);
 //require_once(dirname(__FILE__).'/WebTestCase.php');
-Yii::createWebApplication($config);
+Yii::createWebApplication($env['config']);
 
 require_once 'models/User.php';
 require_once 'models/Interest.php';
