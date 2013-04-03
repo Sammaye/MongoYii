@@ -751,16 +751,15 @@ class EMongoDocument extends EMongoModel{
         return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
     }
 
-     /**
-     *
-	 * @example
-	 * return array(
-	 * 	'index_name'=>array('key'=>array('fieldName1'=>1, 'fieldName2'=>-1),
-	 * 	'index2_name'=>array('key'=>array('fieldName3'=>1, 'unique'=>true),
-	 * );
-	 * @return array list of indexes for this collection
-	 * @since v1.1
-	 */
+    /**
+     * The idea has been taken from YiiMongoDbSuite
+     * @example
+     * return array(
+     * 	'index_name'=>array('key'=>array('fieldName1'=>1, 'fieldName2'=>-1),
+     * 	'index2_name'=>array('key'=>array('fieldName3'=>1, 'unique'=>true),
+     * );
+     * @return array list of indexes for this collection
+     */
     public function indexes() {
         return array();
     }
@@ -768,11 +767,12 @@ class EMongoDocument extends EMongoModel{
     private static $_indexes = array();
 
     /**
-    *
-    * Check indexes and applies them to the collection if needed
-    */
+     *
+     * Check indexes and applies them to the collection if needed
+     */
     private function checkIndexes() {
         if (!isset(self::$_indexes[$this->collectionName()])) {
+            $this->trace(__FUNCTION__);
             $indexInfo = $this->getCollection()->getIndexInfo();
             array_shift($indexInfo); // strip out default _id index
             $indexes = array();
@@ -786,9 +786,10 @@ class EMongoDocument extends EMongoModel{
             $this->ensureIndexes();
         }
     }
-    
+
     private function ensureIndexes() {
         $indexNames = array_keys(self::$_indexes[$this->collectionName()]);
+        $this->trace(__FUNCTION__);
         foreach ($this->indexes() as $name => $index) {
             if (!in_array($name, $indexNames)) {
                 $this->getCollection()->ensureIndex(
