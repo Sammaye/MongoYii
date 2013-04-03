@@ -610,6 +610,23 @@ class EMongoDocument extends EMongoModel{
 		$this->trace(__FUNCTION__);
 		return $this->getCollection()->remove($criteria, array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see http://www.yiiframework.com/doc/api/1.1/CActiveRecord#saveCounters-detail
+	 */
+	public function saveCounters(array $counters) {
+		Yii::trace(get_class($this).'.'.$func.'()','extensions.MongoYii.EMongoDocument');
+		 
+		if ($this->getIsNewRecord())
+			throw new EMongoException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
+	
+		if(sizeof($counters)>0){
+			foreach($counters as $k => $v) $this->$k+=$v;
+			return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
+		}
+		return true; // Assume true since the action did run it just had nothing to update...
+	}	
 
 	/**
 	 * Gives basic searching abilities for things like CGridView
@@ -735,15 +752,5 @@ class EMongoDocument extends EMongoModel{
      */
     public function trace($func){
     	Yii::trace(get_class($this).'.'.$func.'()','extensions.MongoYii.EMongoDocument');
-    }
-
-	/**
-	 * (non-PHPdoc)
-	 * @see http://www.yiiframework.com/doc/api/1.1/CActiveRecord#saveCounters-detail
-	 */
-    public function saveCounters(array $counters) {
-        if ($this->getIsNewRecord())
-            throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
-        return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
     }
 }
