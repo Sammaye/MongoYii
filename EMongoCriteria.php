@@ -17,14 +17,12 @@ class EMongoCriteria extends CComponent {
             $this->$name=$value;
     }
 
+
     /**
-     * 
-     * @param string $column
-     * @param mixin $value
-     * @param string $operator
-     * @return EMongoCriteria
-     */
-    public function setCondition($column, $value, $operator = null) {
+    * 
+    * @param array $condition
+    */
+    public function setCondition(array $condition=array()) {
         $this->_condition[$column] = $operator === null ? $value : array($operator => $value);
         return $this;
     }
@@ -91,6 +89,17 @@ class EMongoCriteria extends CComponent {
         return $this;
     }
 
+    /**
+     * Append condition to previous ones
+     * @param string $column
+     * @param mixin $value
+     * @param string $operator
+     * @return EMongoCriteria
+     */
+    public function addCondition($column, $value, $operator = null) {
+        $this->_condition[$column] = $operator === null ? $value : array($operator => $value);
+        return $this;
+    }
     /**
      * Base search functionality
      * @param string $column
