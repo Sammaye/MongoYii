@@ -616,11 +616,11 @@ class EMongoDocument extends EMongoModel{
 	 * @see http://www.yiiframework.com/doc/api/1.1/CActiveRecord#saveCounters-detail
 	 */
 	public function saveCounters(array $counters) {
-		Yii::trace(get_class($this).'.'.$func.'()','extensions.MongoYii.EMongoDocument');
-		 
+		$this->trace(__FUNCTION__);
+
 		if ($this->getIsNewRecord())
 			throw new EMongoException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
-	
+
 		if(sizeof($counters)>0){
 			foreach($counters as $k => $v) $this->$k=$this->$k+$v;
 			return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
