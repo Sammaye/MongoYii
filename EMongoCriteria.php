@@ -7,8 +7,6 @@ class EMongoCriteria extends CComponent {
     private $_skip = 0;
     private $_limit = 0;
 
-    const SORT_DESC = -1;
-    const SORT_ASC = 1;
 
     /**
      * 
@@ -133,10 +131,10 @@ class EMongoCriteria extends CComponent {
     public function mergeWith($criteria) {
         if ($criteria instanceof EMongoCriteria) {
             if (isset($criteria->condition) && is_array($criteria->condition))
-                $this->_condition = Yii::app()->mongodb->merge($this->condition, $criteria->condition);
+                $this->_condition = CMap::mergeArray($this->condition, $criteria->condition);
 
             if (isset($criteria->sort) && is_array($criteria->sort))
-                $this->_sort = Yii::app()->mongodb->merge($this->condition, $criteria->sort);
+                $this->_sort = CMap::mergeArray($this->condition, $criteria->sort);
 
             if (isset($criteria->skip) && is_numeric($criteria->skip))
                 $this->_skip = $criteria->skip;
@@ -146,10 +144,10 @@ class EMongoCriteria extends CComponent {
             return $this;
         } elseif (is_array($criteria)) {
             if (isset($criteria['condition']) && is_array($criteria['condition']))
-                $this->_condition = Yii::app()->mongodb->merge($this->condition, $criteria['condition']);
+                $this->_condition = CMap::mergeArray($this->condition, $criteria['condition']);
 
             if (isset($criteria['sort']) && is_array($criteria['sort']))
-                $this->_sort = Yii::app()->mongodb->merge($this->condition, $criteria['sort']);
+                $this->_sort = CMap::mergeArray($this->condition, $criteria['sort']);
 
             if (isset($criteria['skip']) && is_numeric($criteria['skip']))
                 $this->_skip = $criteria['skip'];
