@@ -1,43 +1,191 @@
 <?php
 
-/**
- * EMongoCriteria
- *
- * Yes it is here but I am not sure why. I have made this incase it proves to more suitable to beginners with
- * MongoDB to have this class and whether it makes for better programming in general.
- *
- * My personal opinion is that MongoDB has a natural and easy to understand language that doesn't really require a
- * criteria class to build moduler queries from. Not only that but unlike SQL where you can form the entire query here
- * in MongoDB you still have to do tests to find out why limit and skip should truly be used since the Cursor is, of course,
- * an object.
- *
- * For these reasons this class is not relied on anywhere and can easily be taken out.
- */
-class EMongoCriteria{
+class EMongoCriteria extends CComponent {
 
-	public $condition = array();
-	public $sort = array();
-	public $skip = 0;
-	public $limit = 0;
+    private $_condition = array();
+    private $_sort = array();
+    private $_skip = 0;
+    private $_limit = 0;
 
-    public function __construct($data) {
-		foreach($data as $name=>$value)
-			$this->$name=$value;
+    /**
+     * Constructor.
+     * @param array $data criteria initial property values (indexed by property name)
+     */
+    public function __construct($data=array())
+    {
+        foreach($data as $name=>$value)
+            $this->$name=$value;
     }
 
-	public function mergeWith($criteria){
-		if(isset($criteria['condition']) && is_array($criteria['condition']))
-			$this->condition = CMap::mergeArray($this->condition, $criteria['condition']);
 
-		if(isset($criteria['sort']) && is_array($criteria['sort']))
-			$this->sort = CMap::mergeArray($this->condition, $criteria['sort']);
+    /**
+    * 
+    * @param array $condition
+    */
+    public function setCondition(array $condition=array()) {
+        $this->_condition = CMap::mergeArray($condition, $this->_condition);
+        return $this;
+    }
 
-		if(isset($criteria['skip'])&& is_numeric($criteria['skip']))
-			$this->skip = $criteria['skip'];
+    /**
+     * 
+     * @return array
+     */
+    public function getCondition() {
+        return $this->_condition;
+    }
 
-		if(isset($criteria['limit'])&& is_numeric($criteria['limit']))
-			$this->limit = $criteria['limit'];
+    /**
+     * 
+     * @return array
+     */
+    public function getSort() {
+        return $this->_sort;
+    }
 
-		return $this;
-	}
+    /**
+     * 
+     * @return int
+     */
+    public function getSkip() {
+        return $this->_skip;
+    }
+
+    /**
+     * 
+     * @return int
+     */
+    public function getLimit() {
+        return $this->_limit;
+    }
+
+    /**
+     * 
+     * @param array $sort
+     * @return EMongoCriteria
+     */
+    public function setSort(array $sort) {
+        $this->_sort = CMap::mergeArray($sort, $this->_sort);
+        return $this;
+    }
+
+    /**
+     * 
+     * @param int $skip
+     * @return EMongoCriteria
+     */
+    public function setSkip($skip) {
+        $this->_skip = (int)$skip;
+        return $this;
+    }
+
+    /**
+     * 
+     * @param int $limit
+     * @return EMongoCriteria
+     */
+    public function setLimit($limit) {
+        $this->_limit = (int)$limit;
+        return $this;
+    }
+
+    /**
+     * Append condition to previous ones
+     * @param string $column
+     * @param mixin $value
+     * @param string $operator
+     * @return EMongoCriteria
+     */
+    public function addCondition($column, $value, $operator = null) {
+        $this->_condition[$column] = $operator === null ? $value : array($operator => $value);
+        return $this;
+    }
+    /**
+     * Base search functionality
+     * @param string $column
+     * @param [null|string] $value
+     * @param boolean $strong
+     * @return EMongoCriteria
+     */
+    public function compare($column, $value = null, $strong = false) {
+        if (!$value)
+            return $this;
+        $query = array();
+        if (preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)) {
+            $value = $matches[2];
+            $op = $matches[1];
+            if (!$strong && !preg_match('/^[0-9]+$/', $value))
+                $value = new MongoRegex("/$value/i");
+            else {
+                if (preg_match('/^[0-9]+$/', $value))
+                    $value = (int) $value;
+            }
+            switch ($op) {
+                case "<>":
+                    $query[$column] = array('$ne' => $value);
+                case "<=":
+                    $query[$column] = array('$lte' => $value);
+                case ">=":
+                    $query[$column] = array('$gte' => $value);
+                case "<":
+                    $query[$column] = array('$lt' => $value);
+                case ">":
+                    $query[$column] = array('$gt' => $value);
+                default:
+                    $query[$column] = $value;
+            }
+        }
+        if (!$query)
+            $query[$column] = $value;
+        $this->_condition = CMap::mergeArray($query, $this->_condition);
+        return $this;
+    }
+
+    /**
+     * 
+     * @param [array|EMongoCriteria] $criteria
+     * @return EMongoCriteria
+     */
+    public function mergeWith($criteria) {
+        if ($criteria instanceof EMongoCriteria) {
+            if (isset($criteria->condition) && is_array($criteria->condition))
+                $this->_condition = CMap::mergeArray($this->condition, $criteria->condition);
+
+            if (isset($criteria->sort) && is_array($criteria->sort))
+                $this->_sort = CMap::mergeArray($this->condition, $criteria->sort);
+
+            if (isset($criteria->skip) && is_numeric($criteria->skip))
+                $this->_skip = $criteria->skip;
+
+            if (isset($criteria->limit) && is_numeric($criteria->limit))
+                $this->_limit = $criteria->limit;
+            return $this;
+        } elseif (is_array($criteria)) {
+            if (isset($criteria['condition']) && is_array($criteria['condition']))
+                $this->_condition = CMap::mergeArray($this->condition, $criteria['condition']);
+
+            if (isset($criteria['sort']) && is_array($criteria['sort']))
+                $this->_sort = CMap::mergeArray($this->condition, $criteria['sort']);
+
+            if (isset($criteria['skip']) && is_numeric($criteria['skip']))
+                $this->_skip = $criteria['skip'];
+
+            if (isset($criteria['limit']) && is_numeric($criteria['limit']))
+                $this->_limit = $criteria['limit'];
+
+            return $this;
+        }
+    }
+
+    /**
+     * 
+     * @return array native representation of the criteria
+     */
+    public function toArray() {
+        $result = array();
+        foreach (array('_condition', '_limit', '_skip', '_sort') as $name)
+            $result[substr($name, 1)] = $this->$name;
+        return $result;
+    }
+
 }
