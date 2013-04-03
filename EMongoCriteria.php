@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * This is the extensions version of CDbCriteria.
+ * 
+ * This class is by no means required however it can help in your programming.
+ */
 class EMongoCriteria extends CComponent {
 
     private $_condition = array();
@@ -11,15 +16,14 @@ class EMongoCriteria extends CComponent {
      * Constructor.
      * @param array $data criteria initial property values (indexed by property name)
      */
-    public function __construct($data=array())
-    {
+    public function __construct($data=array()){
         foreach($data as $name=>$value)
             $this->$name=$value;
     }
 
 
     /**
-    * 
+    * Sets the condition
     * @param array $condition
     */
     public function setCondition(array $condition=array()) {
@@ -28,7 +32,7 @@ class EMongoCriteria extends CComponent {
     }
 
     /**
-     * 
+     * Gets the condition
      * @return array
      */
     public function getCondition() {
@@ -36,7 +40,7 @@ class EMongoCriteria extends CComponent {
     }
 
     /**
-     * 
+     * Gets the sort
      * @return array
      */
     public function getSort() {
@@ -44,7 +48,7 @@ class EMongoCriteria extends CComponent {
     }
 
     /**
-     * 
+     * Gets the skip
      * @return int
      */
     public function getSkip() {
@@ -52,7 +56,7 @@ class EMongoCriteria extends CComponent {
     }
 
     /**
-     * 
+     * Gets the limit
      * @return int
      */
     public function getLimit() {
@@ -60,7 +64,7 @@ class EMongoCriteria extends CComponent {
     }
 
     /**
-     * 
+     * Sets the sort
      * @param array $sort
      * @return EMongoCriteria
      */
@@ -70,7 +74,7 @@ class EMongoCriteria extends CComponent {
     }
 
     /**
-     * 
+     * Sets the skip
      * @param int $skip
      * @return EMongoCriteria
      */
@@ -80,7 +84,7 @@ class EMongoCriteria extends CComponent {
     }
 
     /**
-     * 
+     * Sets the limit
      * @param int $limit
      * @return EMongoCriteria
      */
@@ -100,6 +104,7 @@ class EMongoCriteria extends CComponent {
         $this->_condition[$column] = $operator === null ? $value : array($operator => $value);
         return $this;
     }
+    
     /**
      * Base search functionality
      * @param string $column
@@ -142,7 +147,7 @@ class EMongoCriteria extends CComponent {
     }
 
     /**
-     * 
+     * Meges either an array of criteria or another criteria object with this one
      * @param [array|EMongoCriteria] $criteria
      * @return EMongoCriteria
      */
@@ -178,7 +183,7 @@ class EMongoCriteria extends CComponent {
     }
 
     /**
-     * 
+     * Returns the array notation of the criteria
      * @return array native representation of the criteria
      */
     public function toArray() {
@@ -187,5 +192,4 @@ class EMongoCriteria extends CComponent {
             $result[substr($name, 1)] = $this->$name;
         return $result;
     }
-
 }
