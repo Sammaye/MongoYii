@@ -404,7 +404,7 @@ class EMongoDocument extends EMongoModel{
 				}else
 					$values[$name]=$this->$name=$value;
 			}
-			if(!isset($this->_id) || $this->_id===null)
+			if(!isset($this->{$this->primaryKey()}) || $this->{$this->primaryKey()}===null)
 				throw new CDbException(Yii::t('yii','The active record cannot be updated because its _id is not set!'));
 
 			return $this->updateByPk($this->{$this->primaryKey()},$values);
@@ -425,7 +425,7 @@ class EMongoDocument extends EMongoModel{
 		{
 			$this->trace(__FUNCTION__);
 
-			if(!isset($this->_id)) $this->_id = new MongoId;
+			if(!isset($this->{$this->primaryKey()})) $this->{$this->primaryKey()} = new MongoId;
 			if($this->getCollection()->insert($this->getRawDocument(), $this->getDbConnection()->getDefaultWriteConcern())){
 				$this->afterSave();
 				$this->setIsNewRecord(false);
@@ -447,12 +447,12 @@ class EMongoDocument extends EMongoModel{
 		if($this->beforeSave())
 		{
 			$this->trace(__FUNCTION__);
-			if($this->_id===null)
+			if($this->{$this->primaryKey()}===null)
 				throw new CDbException(Yii::t('yii','The active record cannot be updated because it has no _id.'));
 
 			if($attributes!==null){
 				$attributes=$this->getAttributes($attributes);
-				unset($attributes['_id']);
+				unset($attributes[$this->primaryKey()]);
 				$this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
 			}else
 				$this->getCollection()->save($this->getAttributes($attributes));
@@ -549,7 +549,7 @@ class EMongoDocument extends EMongoModel{
     public function findBy_id($_id){
     	$this->trace(__FUNCTION__);
 		$_id = $this->getMongoId($_id);
-		return $this->findOne(array('_id' => $_id));
+		return $this->findOne(array($this->primaryKey() => $_id));
     }
 
     /**
@@ -672,7 +672,7 @@ class EMongoDocument extends EMongoModel{
     public function refresh(){
 
 		$this->trace(__FUNCTION__);
-		if(!$this->getIsNewRecord() && ($record=$this->getCollection()->findOne(array('_id' => $this->_id)))!==null){
+		if(!$this->getIsNewRecord() && ($record=$this->getCollection()->findOne(array($this->primaryKey() => $this->getMongoId($this->getPrimaryKey()))))!==null){
 			$this->clean();
 
 			foreach($record as $name=>$column)
