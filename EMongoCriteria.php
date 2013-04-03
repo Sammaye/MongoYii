@@ -7,6 +7,15 @@ class EMongoCriteria extends CComponent {
     private $_skip = 0;
     private $_limit = 0;
 
+    /**
+     * Constructor.
+     * @param array $data criteria initial property values (indexed by property name)
+     */
+    public function __construct($data=array())
+    {
+        foreach($data as $name=>$value)
+            $this->$name=$value;
+    }
 
     /**
      * 
