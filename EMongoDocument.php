@@ -672,7 +672,7 @@ class EMongoDocument extends EMongoModel{
     public function refresh(){
 
 		$this->trace(__FUNCTION__);
-		if(!$this->getIsNewRecord() && ($record=$this->getCollection()->findOne(array($this->primaryKey() => $this->_id)))!==null){
+		if(!$this->getIsNewRecord() && ($record=$this->getCollection()->findOne(array($this->primaryKey() => $this->getMongoId($this->getPrimaryKey()))))!==null){
 			$this->clean();
 
 			foreach($record as $name=>$column)
