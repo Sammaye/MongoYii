@@ -23,7 +23,7 @@ class EMongoCriteria extends CComponent {
     * @param array $condition
     */
     public function setCondition(array $condition=array()) {
-        $this->_condition[$column] = $operator === null ? $value : array($operator => $value);
+        $this->_condition = CMap::mergeArray($condition, $this->_condition);
         return $this;
     }
 
