@@ -100,6 +100,10 @@ class EMongoDocument extends EMongoModel{
 		return parent::__call($name,$parameters);
 	}
 
+    public function init(){
+        parent::init();
+        $this->checkIndexes();
+    }
 	/**
 	 * The scope attached to this model
 	 *
@@ -745,5 +749,53 @@ class EMongoDocument extends EMongoModel{
         if ($this->getIsNewRecord())
             throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
         return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
+    }
+
+     /**
+     *
+	 * @example
+	 * return array(
+	 * 	'index_name'=>array('key'=>array('fieldName1'=>1, 'fieldName2'=>-1),
+	 * 	'index2_name'=>array('key'=>array('fieldName3'=>1, 'unique'=>true),
+	 * );
+	 * @return array list of indexes for this collection
+	 * @since v1.1
+	 */
+    public function indexes() {
+        return array();
+    }
+
+    private static $_indexes = array();
+
+    /**
+    *
+    * Check indexes and applies them to the collection if needed
+    */
+    private function checkIndexes() {
+        if (!isset(self::$_indexes[$this->collectionName()])) {
+            $indexInfo = $this->getCollection()->getIndexInfo();
+            array_shift($indexInfo); // strip out default _id index
+            $indexes = array();
+            foreach ($indexInfo as $index) {
+                $indexes[$index['name']] = array(
+                    'key' => $index['key'],
+                    'unique' => isset($index['unique']) ? $index['unique'] : false,
+                );
+            }
+            self::$_indexes[$this->collectionName()] = $indexes;
+            $this->ensureIndexes();
+        }
+    }
+    
+    private function ensureIndexes() {
+        $indexNames = array_keys(self::$_indexes[$this->collectionName()]);
+        foreach ($this->indexes() as $name => $index) {
+            if (!in_array($name, $indexNames)) {
+                $this->getCollection()->ensureIndex(
+                        $index['key'], array('unique' => isset($index['unique']) ? $index['unique'] : false, 'name' => $name)
+                );
+            }
+            self::$_indexes[$this->collectionName()][$name] = $index;
+        }
     }
 }
