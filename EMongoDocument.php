@@ -622,7 +622,7 @@ class EMongoDocument extends EMongoModel{
 			throw new EMongoException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
 	
 		if(sizeof($counters)>0){
-			foreach($counters as $k => $v) $this->$k+=$v;
+			foreach($counters as $k => $v) $this->$k=$this->$k+$v;
 			return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
 		}
 		return true; // Assume true since the action did run it just had nothing to update...
