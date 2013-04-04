@@ -185,7 +185,7 @@ class EMongoCriteria extends CComponent {
     public function toArray($onlyCondition = false) {
         $result = array();
         if ($onlyCondition === true) {
-            $result['condition'] = $this->condition;
+            $result = $this->condition;
         } else {
             foreach (array('_condition', '_limit', '_skip', '_sort') as $name)
                 $result[substr($name, 1)] = $this->$name;
