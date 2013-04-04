@@ -614,6 +614,23 @@ class EMongoDocument extends EMongoModel{
 		$this->trace(__FUNCTION__);
 		return $this->getCollection()->remove($criteria, array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see http://www.yiiframework.com/doc/api/1.1/CActiveRecord#saveCounters-detail
+	 */
+	public function saveCounters(array $counters) {
+		$this->trace(__FUNCTION__);
+
+		if ($this->getIsNewRecord())
+			throw new EMongoException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
+
+		if(sizeof($counters)>0){
+			foreach($counters as $k => $v) $this->$k=$this->$k+$v;
+			return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
+		}
+		return true; // Assume true since the action did run it just had nothing to update...
+	}	
 
 	/**
 	 * Gives basic searching abilities for things like CGridView
@@ -741,62 +758,4 @@ class EMongoDocument extends EMongoModel{
     	Yii::trace(get_class($this).'.'.$func.'()','extensions.MongoYii.EMongoDocument');
     }
 
-	/**
-	 * (non-PHPdoc)
-	 * @see http://www.yiiframework.com/doc/api/1.1/CActiveRecord#saveCounters-detail
-	 */
-    public function saveCounters(array $counters) {
-        if ($this->getIsNewRecord())
-            throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
-        return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
-    }
-
-    /**
-     * The idea has been taken from YiiMongoDbSuite
-     * @example
-     * return array(
-     * 	'index_name'=>array('key'=>array('fieldName1'=>1, 'fieldName2'=>-1),
-     * 	'index2_name'=>array('key'=>array('fieldName3'=>1, 'unique'=>true),
-     * );
-     * @return array list of indexes for this collection
-     */
-    public function indexes() {
-        return array();
-    }
-
-    private static $_indexes = array();
-
-    /**
-     *
-     * Check indexes and applies them to the collection if needed
-     */
-    private function checkIndexes() {
-        if (!isset(self::$_indexes[$this->collectionName()])) {
-            $this->trace(__FUNCTION__);
-            $indexInfo = $this->getCollection()->getIndexInfo();
-            array_shift($indexInfo); // strip out default _id index
-            $indexes = array();
-            foreach ($indexInfo as $index) {
-                $indexes[$index['name']] = array(
-                    'key' => $index['key'],
-                    'unique' => isset($index['unique']) ? $index['unique'] : false,
-                );
-            }
-            self::$_indexes[$this->collectionName()] = $indexes;
-            $this->ensureIndexes();
-        }
-    }
-
-    private function ensureIndexes() {
-        $indexNames = array_keys(self::$_indexes[$this->collectionName()]);
-        $this->trace(__FUNCTION__);
-        foreach ($this->indexes() as $name => $index) {
-            if (!in_array($name, $indexNames)) {
-                $this->getCollection()->ensureIndex(
-                        $index['key'], array('unique' => isset($index['unique']) ? $index['unique'] : false, 'name' => $name)
-                );
-            }
-            self::$_indexes[$this->collectionName()][$name] = $index;
-        }
-    }
 }

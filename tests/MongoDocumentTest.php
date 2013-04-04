@@ -355,4 +355,22 @@ class MongoDocumentTest extends CTestCase{
 
 		$this->assertEquals('name', $c->getAttributeLabel('username'));
 	}
+	
+	function testSaveCounters(){
+		$c=new User;
+		$c->username='sammaye';
+		$this->assertTrue($c->save());
+	
+		$c->saveCounters(array('i' => 1));
+		$this->assertTrue($c->i == 1);
+		
+		$d=User::model()->findOne(array('username' => 'sammaye'));
+		$this->assertTrue($d->i==1);
+		
+		$c->saveCounters(array('i' => -1));
+		$this->assertTrue($c->i == 0);
+		
+		$e=User::model()->findOne(array('username' => 'sammaye'));
+		$this->assertTrue($e->i==0);		
+	}
 }
