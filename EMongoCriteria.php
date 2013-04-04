@@ -183,13 +183,19 @@ class EMongoCriteria extends CComponent {
     }
 
     /**
+     * @param boolean $onlyCondition indicates whether to return only condition part or criteria.
+     * Should be setted in "true" if criteria it is used at EMongoDocument::find() and common find methods.
      * Returns the array notation of the criteria
      * @return array native representation of the criteria
      */
-    public function toArray() {
+    public function toArray($onlyCondition = false) {
         $result = array();
-        foreach (array('_condition', '_limit', '_skip', '_sort') as $name)
-            $result[substr($name, 1)] = $this->$name;
+        if ($onlyCondition === true) {
+            $result = $this->condition;
+        } else {
+            foreach (array('_condition', '_limit', '_skip', '_sort') as $name)
+                $result[substr($name, 1)] = $this->$name;
+        }
         return $result;
     }
 }

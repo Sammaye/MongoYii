@@ -100,6 +100,10 @@ class EMongoDocument extends EMongoModel{
 		return parent::__call($name,$parameters);
 	}
 
+    public function init(){
+        parent::init();
+        $this->checkIndexes();
+    }
 	/**
 	 * The scope attached to this model
 	 *
@@ -753,4 +757,5 @@ class EMongoDocument extends EMongoModel{
     public function trace($func){
     	Yii::trace(get_class($this).'.'.$func.'()','extensions.MongoYii.EMongoDocument');
     }
+
 }
