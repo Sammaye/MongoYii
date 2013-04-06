@@ -682,6 +682,22 @@ class EMongoDocument extends EMongoModel{
 		$this->trace(__FUNCTION__);
 		return Yii::app()->mongodb->aggregate($this->collectionName(),$pipeline);
 	}
+	
+	/**
+	 * A distinct helper on the model, this is not the same as the aggregation framework 
+	 * distinct
+	 * @link http://docs.mongodb.org/manual/reference/command/distinct/
+	 * @param string $key
+	 * @param array $query
+	 */
+	public function distinct($key, $query = array()){
+		$this->trace(__FUNCTION__);
+		return Yii::app()->mongodb->command(array(
+			'distinct' => $this->collectionName(),
+			'key' => $key,
+			'query' => $query
+		));		
+	}
 
     /**
      * Refreshes the data from the database
