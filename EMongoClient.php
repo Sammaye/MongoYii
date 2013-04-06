@@ -199,6 +199,14 @@ class EMongoClient extends CApplicationComponent{
 		}
 		return $this->getDB()->$collection->aggregate($pipelines);
 	}
+	
+	/**
+	 * Command helper
+	 * @param array|sting $command
+	 */
+	public function command($command = array()){
+		return $this->getDB()->command($command);
+	}
 
 	/**
 	 * ATM does nothing but the original processing; ATM
