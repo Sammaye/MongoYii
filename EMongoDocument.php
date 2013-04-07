@@ -693,8 +693,8 @@ class EMongoDocument extends EMongoModel{
 	public function distinct($key, $query = array()){
 		$this->trace(__FUNCTION__);
 		$c=$this->getDbCriteria();
-		if(!empty($c))
-			$query=CMap::mergeArray($query, $c);
+		if(is_array($c) && isset($c['condition']) && !empty($c['condition']))
+			$query=CMap::mergeArray($query, $c['condition']);
 		
 		return Yii::app()->mongodb->command(array(
 			'distinct' => $this->collectionName(),
