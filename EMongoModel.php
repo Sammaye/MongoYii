@@ -475,25 +475,46 @@ class EMongoModel extends CModel{
 			unset($this->_errors[$attribute]);
 	}
 
-	/**
-	 * Returns the database connection used by active record.
-	 * By default, the "mongodb" application component is used as the database connection.
-	 * You may override this method if you want to use a different database connection.
-	 * @return EMongoClient the database connection used by active record.
-	 */
-	public function getDbConnection()
-	{
-		if(self::$db!==null)
-			return self::$db;
-		else
-		{
-			self::$db=Yii::app()->mongodb;
-			if(self::$db instanceof EMongoClient)
-				return self::$db;
-			else
-				throw new EMongoException(Yii::t('yii','MongoDB Active Record requires a "mongodb" EMongoClient application component.'));
-		}
-	}
+    /**
+     * It is ugly and must be refactored, I know :)
+     * Returns the database connection used by active record.
+     * By default, the "mongodb" application component is used as the database connection.
+     * You may override this method if you want to use a different database connection.
+     * @return EMongoClient the database connection used by active record.
+     */
+    public function getDbConnection($connectionType = false) {
+        if ($connectionType === EMongoClient::WRITE) {
+            if (self::$masterDb !== null)
+                return self::$masterDb;
+            else {
+                self::$masterDb = Yii::app()->mongodb->setConnectionType(EMongoClient::WRITE);
+                if (self::$masterDb instanceof EMongoClient)
+                    return self::$masterDb;
+                else
+                    throw new EMongoException(Yii::t('yii', 'MongoDB Active Record requires a "mongodb" EMongoClient application component.'));
+            }
+        } elseif ($connectionType === EMongoClient::READ) {
+            if (self::$slaveDb !== null)
+                return self::$slaveDb;
+            else {
+                self::$slaveDb = Yii::app()->mongodb->setConnectionType(EMongoClient::READ);
+                if (self::$slaveDb instanceof EMongoClient)
+                    return self::$slaveDb;
+                else
+                    throw new EMongoException(Yii::t('yii', 'MongoDB Active Record requires a "mongodb" EMongoClient application component.'));
+            }
+        } else {
+            if (self::$dummyDb !== null)
+                return self::$dummyDb;
+            else {
+                self::$dummyDb= Yii::app()->mongodb;
+                if (self::$dummyDb instanceof EMongoClient)
+                    return self::$dummyDb;
+                else
+                    throw new EMongoException(Yii::t('yii', 'MongoDB Active Record requires a "mongodb" EMongoClient application component.'));
+            }
+        }
+    }
 
 	/**
 	 * Cleans or rather resets the document
