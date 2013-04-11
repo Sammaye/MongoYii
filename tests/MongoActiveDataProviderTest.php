@@ -23,7 +23,7 @@ class MongoActiveDataProviderTest extends CTestCase{
 		$d = new EMongoDataProvider('User', array(
 			'criteria' => array(
 				'condition' => array('username' => 'sammaye'),
-				'sort' => array('username' => '-1'),
+				'sort' => array('username' => -1),
 			)
 		));
 
