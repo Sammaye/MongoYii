@@ -773,4 +773,13 @@ class EMongoDocument extends EMongoModel{
     public function trace($func){
     	Yii::trace(get_class($this).'.'.$func.'()','extensions.MongoYii.EMongoDocument');
     }
+
+    /**
+     * Counts the number of documents in this collection
+     * @param $criteria
+     */
+	public function count($criteria){
+		$this->trace(__FUNCTION__);
+		return $this->getCollection()->count($criteria->getCondition(), $criteria->getLimit(), $criteria->getSkip());
+	}
 }
