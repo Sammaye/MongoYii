@@ -778,8 +778,11 @@ class EMongoDocument extends EMongoModel{
      * Counts the number of documents in this collection
      * @param $criteria
      */
-	public function count($criteria){
+	public function count($criteria = array()){
 		$this->trace(__FUNCTION__);
-		return $this->getCollection()->count($criteria->getCondition(), $criteria->getLimit(), $criteria->getSkip());
+		if(empty($criteria))
+			return $this->getCollection()->count();
+		else
+			return $this->getCollection()->count($criteria->getCondition(), $criteria->getLimit(), $criteria->getSkip());
 	}
 }
