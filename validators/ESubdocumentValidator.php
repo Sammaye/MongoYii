@@ -38,7 +38,7 @@ class ESubdocumentValidator extends CValidator{
 		}
 
 		if($this->type == 'many'){
-			if(is_array($object->$attribute)){
+			if(is_array($object->$attribute) || ($object->$attribute instanceof EMongoArrayModel)){
 
 				$fieldErrors = array();
 				$fieldValue = array();

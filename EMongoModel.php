@@ -14,8 +14,10 @@ class EMongoModel extends CModel{
 
 	private $_errors=array();	// attribute name => array of errors
 
+	private $_arrayModels = array();
 	private $_attributes = array();
 	private $_related = array();
+
 
 	/**
 	 * (non-PHPdoc)
@@ -25,10 +27,14 @@ class EMongoModel extends CModel{
 
 		if(isset($this->_attributes[$name]))
 			return $this->_attributes[$name];
+		elseif(isset($this->_arrayModels[$name]))
+			return $this->_arrayModels[$name];
 		elseif(isset($this->_related[$name]))
 			return $this->_related[$name];
 		elseif(array_key_exists($name, $this->relations()))
 			return $this->_related[$name]=$this->getRelated($name);
+		elseif(array_key_exists($name, $this->subDocuments()))
+			return $this->_arrayModels[$name]=$this->getArrayModel($name);
 		else{
 			try {
 				return parent::__get($name);
@@ -46,6 +52,8 @@ class EMongoModel extends CModel{
 
 		if(isset($this->_related[$name]) || array_key_exists($name, $this->relations()))
 			$this->_related[$name]=$value;
+		if(isset($this->_arrayModels[$name]) || array_key_exists($name, $this->subDocuments()))
+			$this->setSubDocument($name, $value);
 		else{
 			// This might be a little unperformant actually since Yiis own active record detects
 			// If an attribute can be set first to ensure speed of accessing local variables...hmmm
@@ -67,6 +75,8 @@ class EMongoModel extends CModel{
 			return true;
 		elseif(isset($this->_related[$name]))
 			return true;
+		elseif(array_key_exists($name, $this->subDocuments()))
+			return true;
 		elseif(array_key_exists($name, $this->relations()))
 			return $this->getRelated($name)!==null;
 		else
@@ -84,9 +94,10 @@ class EMongoModel extends CModel{
 			unset($this->_attributes[$name]);
 		elseif(isset($this->_related[$name]))
 			unset($this->_related[$name]);
+		elseif(isset($this->_arrayModels[$name]))
+			unset($this->_arrayModels[$name]);
 		else
 			parent::__unset($name);
-
 	}
 
 	/**
@@ -147,7 +158,10 @@ class EMongoModel extends CModel{
 			);
 		}
 
+
 		$this->init();
+//		foreach($this->subDocuments() as $name=>$subDocument)
+//			$this->_arrayModel[];
 
 		$this->attachBehaviors($this->behaviors());
 		$this->afterConstruct();
@@ -171,7 +185,7 @@ class EMongoModel extends CModel{
 		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
 		$virtuals = $this->getDbConnection()->getVirtualObjCache(get_class($this));
 
-		$cols = array_merge(is_array($fields) ? $fields : array(), is_array($virtuals) ? $virtuals : array(), array_keys($this->_attributes));
+		$cols = array_merge(is_array($fields) ? $fields : array(), is_array($virtuals) ? $virtuals : array(), array_keys($this->_attributes, array_keys($this->subDocuments())));
 		return $cols!==null ? $cols : array();
 	}
 
@@ -180,6 +194,12 @@ class EMongoModel extends CModel{
 	 * @return array
 	 */
 	public function relations(){ return array(); }
+
+	/**
+	 * Holds all subDocuments
+	 * @return array
+	 */
+	public function subDocuments(){ return array(); }
 
 	/**
 	 * Finds out if a document attributes actually exists
@@ -192,6 +212,21 @@ class EMongoModel extends CModel{
 		return isset($attrs[$name])||isset($fields[$name])||property_exists($this, $name)?true:false;
 	}
 
+	public function setSubDocument($name, $value)
+	{
+		if(!isset($this->_arrayModels[$name]))
+			$this->_arrayModels[$name]=$this->getArrayModel($name);
+		if ($value instanceof EMongoArrayModel)
+			$this->_arrayModels[$name]=$value;
+		elseif(is_null($value))
+			$this->_arrayModels[$name]->populate(array());
+		elseif(is_array($value))
+			$this->_arrayModels[$name]->populate($value);
+		else
+			throw new EMongoException(Yii::t('yii','Unexpected type {type} of subDocument value (null, array or EMongoArrayModel expected)',
+				array('{type}'=>gettype($value))));
+	}
+
 	/**
 	 * Sets the attribute of the model
 	 * @param string $name
@@ -201,6 +236,8 @@ class EMongoModel extends CModel{
 
 		if(property_exists($this,$name))
 			$this->$name=$value;
+		elseif (array_key_exists($name,$this->subDocuments()))
+			$this->setSubDocument($name, $value);
 		else//if(isset($this->_attributes[$name]))
 			$this->_attributes[$name]=$value;
 		//else return false;
@@ -217,6 +254,8 @@ class EMongoModel extends CModel{
 			return $this->$name;
 		elseif(isset($this->_attributes[$name]))
 			return $this->_attributes[$name];
+		elseif(isset($this->_arrayModels[$name]))
+			return $this->_arrayModels[$name];
 	}
 
 	/**
@@ -233,6 +272,8 @@ class EMongoModel extends CModel{
 				$attributes[$name] = $this->$name;
 			}
 		}
+		foreach (array_keys($this->subDocuments()) as $name)
+			$attributes[$name]=isset($this->_arrayModels[$name]) ? $this->_arrayModels[$name] : null;
 
 		if(is_array($names))
 		{
@@ -242,12 +283,18 @@ class EMongoModel extends CModel{
 				if(property_exists($this,$name))
 					$attrs[$name]=$this->$name;
 				else
-					$attrs[$name]=isset($attributes[$name])?$attributes[$name]:null;
+					$attrs[$name]=isset($attributes[$name]) ? $attributes[$name] : null;
 			}
 			return $attrs;
 		}
 		else
 			return $attributes;
+	}
+
+
+	public function getRawAttributes($name=true)
+	{
+		return $this->filterRawAttributes($this->getAttributes($name));
 	}
 
 	/**
@@ -294,6 +341,22 @@ class EMongoModel extends CModel{
 	 */
 	public function primaryKey(){
 		return '_id';
+	}
+
+	/**
+	 * @param string $name name of subDocument
+	 * @param array $value
+	 * @throws EMongoException
+	 * @return \EMongoArrayModel
+	 */
+	public function getArrayModel($name,$value=array())
+	{
+		$subDocuments=$this->subDocuments();
+		if (!isset($subDocuments[$name][0]))
+			throw new EMongoException(Yii::t('yii','{class} does not have subDocument "{name}".',
+				array('{class}'=>get_class($this), '{name}'=>$name)));
+		return $this->_arrayModels[$name] = new EMongoArrayModel($subDocuments[$name][0], $value,
+			isset($subDocuments[$name]['index']) ? $subDocuments[$name]['index'] : null);
 	}
 
 	/**
@@ -528,7 +591,7 @@ class EMongoModel extends CModel{
 		if(is_array($attributes)){
 			foreach($attributes as $field) $doc[$field] = $this->$field;
 		}
-		return array_merge($doc, $this->_attributes);
+		return array_merge($doc, $this->_attributes, $this->_arrayModels);
 	}
 
 	/**
@@ -545,7 +608,9 @@ class EMongoModel extends CModel{
 	public function filterRawDocument($doc){
 		if(is_array($doc)){
 			foreach($doc as $k => $v){
-				if(is_array($v)){
+				if ($v instanceof EMongoArrayModel){
+					$doc[$k] = $this->{__FUNCTION__}($doc[$k]->getRawValues());
+				}elseif(is_array($v)){
 					$doc[$k] = $this->{__FUNCTION__}($doc[$k]);
 				}elseif($v instanceof EMongoModel || $v instanceof EMongoDocument){
 					$doc[$k] = $doc[$k]->getRawDocument();
@@ -553,6 +618,25 @@ class EMongoModel extends CModel{
 			}
 		}
 		return $doc;
+	}
+
+	/**
+	 * Filters a provided attributes
+	 * @param array $doc
+	 */
+	public function filterRawAttributes($attributes){
+		if(is_array($attributes)){
+			foreach($attributes as $k => $v){
+				if ($v instanceof EMongoArrayModel){
+					$attributes[$k] = $this->{__FUNCTION__}($attributes[$k]->getRawValues());
+				}elseif(is_array($v)){
+					$attributes[$k] = $this->{__FUNCTION__}($attributes[$k]);
+				}elseif($v instanceof EMongoModel || $v instanceof EMongoDocument){
+					$attributes[$k] = $attributes[$k]->getRawDocument();
+				}
+			}
+		}
+		return $attributes;
 	}
 
 	/**

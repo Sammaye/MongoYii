@@ -451,11 +451,11 @@ class EMongoDocument extends EMongoModel{
 				throw new CDbException(Yii::t('yii','The active record cannot be updated because it has no _id.'));
 
 			if($attributes!==null){
-				$attributes=$this->getAttributes($attributes);
+				$attributes=$this->getRawAttributes($attributes);
 				unset($attributes[$this->primaryKey()]);
 				$this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
 			}else
-				$this->getCollection()->save($this->getAttributes($attributes));
+				$this->getCollection()->save($this->getRawAttributes($attributes));
 			$this->afterSave();
 			return true;
 		}
