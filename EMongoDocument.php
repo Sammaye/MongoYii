@@ -596,7 +596,7 @@ class EMongoDocument extends EMongoModel{
 	 * @param array $updateDoc
 	 * @param array $options
 	 */
-	public function updateAll($criteria=array(),$updateDoc=array(),$options=array('multi'=>true)){
+	public function updateAll($criteria=array(),$updateDoc=array(),$options=array('multiple'=>true)){
 		$this->trace(__FUNCTION__);
 		return $this->getCollection()->update($criteria, $updateDoc, array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
@@ -610,7 +610,7 @@ class EMongoDocument extends EMongoModel{
 		$this->trace(__FUNCTION__);
 		return $this->getCollection()->remove($criteria, array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
-	
+
 	/**
 	 * (non-PHPdoc)
 	 * @see http://www.yiiframework.com/doc/api/1.1/CActiveRecord#saveCounters-detail
@@ -626,7 +626,7 @@ class EMongoDocument extends EMongoModel{
 			return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
 		}
 		return true; // Assume true since the action did run it just had nothing to update...
-	}	
+	}
 
 	/**
 	 * Gives basic searching abilities for things like CGridView
@@ -682,9 +682,9 @@ class EMongoDocument extends EMongoModel{
 		$this->trace(__FUNCTION__);
 		return Yii::app()->mongodb->aggregate($this->collectionName(),$pipeline);
 	}
-	
+
 	/**
-	 * A distinct helper on the model, this is not the same as the aggregation framework 
+	 * A distinct helper on the model, this is not the same as the aggregation framework
 	 * distinct
 	 * @link http://docs.mongodb.org/manual/reference/command/distinct/
 	 * @param string $key
@@ -695,12 +695,12 @@ class EMongoDocument extends EMongoModel{
 		$c=$this->getDbCriteria();
 		if(is_array($c) && isset($c['condition']) && !empty($c['condition']))
 			$query=CMap::mergeArray($query, $c['condition']);
-		
+
 		return Yii::app()->mongodb->command(array(
 			'distinct' => $this->collectionName(),
 			'key' => $key,
 			'query' => $query
-		));		
+		));
 	}
 
     /**
