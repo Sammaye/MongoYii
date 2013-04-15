@@ -291,10 +291,12 @@ class EMongoModel extends CModel{
 			return $attributes;
 	}
 
-
+	/**
+	 * @return array Array of raw attributes with MongoYii objects taken out
+	 */
 	public function getRawAttributes($name=true)
 	{
-		return $this->filterRawAttributes($this->getAttributes($name));
+		return $this->filterRawDocument($this->getAttributes($name));
 	}
 
 	/**
@@ -604,6 +606,7 @@ class EMongoModel extends CModel{
 	/**
 	 * Filters a provided document to take out MongoYii objects.
 	 * @param array $doc
+	 * @return array
 	 */
 	public function filterRawDocument($doc){
 		if(is_array($doc)){
@@ -618,25 +621,6 @@ class EMongoModel extends CModel{
 			}
 		}
 		return $doc;
-	}
-
-	/**
-	 * Filters a provided attributes
-	 * @param array $doc
-	 */
-	public function filterRawAttributes($attributes){
-		if(is_array($attributes)){
-			foreach($attributes as $k => $v){
-				if ($v instanceof EMongoArrayModel){
-					$attributes[$k] = $this->{__FUNCTION__}($attributes[$k]->getRawValues());
-				}elseif(is_array($v)){
-					$attributes[$k] = $this->{__FUNCTION__}($attributes[$k]);
-				}elseif($v instanceof EMongoModel || $v instanceof EMongoDocument){
-					$attributes[$k] = $attributes[$k]->getRawDocument();
-				}
-			}
-		}
-		return $attributes;
 	}
 
 	/**
