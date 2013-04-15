@@ -87,6 +87,8 @@ class MongoArrayModelTest extends CTestCase{
 		$this->assertInstanceOf('EMongoArrayModel', $account->dummies);
 		$account->swiftCode='1232';
 		$this->assertTrue($user->validate());
+		// Check validator does not change atribute type
+		$this->assertInstanceOf('EMongoArrayModel', $user->accounts);
 	}
 
 	public function testIterators()

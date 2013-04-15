@@ -43,7 +43,9 @@ class ESubdocumentValidator extends CValidator{
 				$fieldErrors = array();
 				$fieldValue = array();
 
-				foreach($object->$attribute as $row){
+				$array = $object->$attribute instanceof EMongoArrayModel ? $object->$attribute->getRawValues() : $object->$attribute;
+
+				foreach($array as $row){
 					$c->clean();
 					$val = $fieldValue[] = $row instanceof $c ? $row->getRawDocument() : $row;
 					$c->setAttributes($val);
