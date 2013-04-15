@@ -145,22 +145,30 @@ class EMongoArrayModel implements Iterator, Countable, ArrayAccess {
 
 	/**
 	 * Return's value of index attribute
-	 * @param $value
-	 * @return mixed
+	 *
+	 * @param EMongoModel|array $value
+	 * @param mixed $defaultValue
 	 * @throws EMongoException
+	 * @return mixed
 	 */
-	public function getIndex($value)
+	public function getIndex(&$value, $defaultValue=false)
 	{
 		if (is_object($value))
 			if (empty($value->{$this->index}))
-				throw new EMongoException(Yii::t('yii','class {className} has empty index attribute {index}',
-					array('{$className}'=>$this->modelClass, '{index}' => $this->index)));
+				if ($defaultValue===false)
+					throw new EMongoException(Yii::t('yii','class {className} has empty index attribute {index}',
+						array('{$className}'=>$this->modelClass, '{index}' => $this->index)));
+				else
+					return $value->{$this->index}=$defaultValue;
 			else
 				return $value->{$this->index};
 		if (is_array($value))
 			if (empty($value[$this->index]))
-				throw new EMongoException(Yii::t('yii','array has empty key {index}',
-					array('{index}' => $this->index)));
+				if ($defaultValue===false)
+					throw new EMongoException(Yii::t('yii','array has empty key {index}',
+						array('{index}' => $this->index)));
+				else
+					return $value[$this->index]=$defaultValue;
 			else
 				return $value[$this->index];
 		throw new EMongoException(Yii::t('yii','Value of subDocument must have array or EMongoArrayModel type.'));
@@ -248,18 +256,20 @@ class EMongoArrayModel implements Iterator, Countable, ArrayAccess {
 	}
 
 	/**
-	 * Set element at
+	 * Set element at offset
 	 * @param mixed $offset
-	 * @param mixed $value
+	 * @param array|EMongoModel $value
 	 * @throws EMongoException
 	 */
 	public function offsetSet($offset, $value) {
-		if (is_null($offset)){
+		$offset=$this->getIndex($value,$offset);
+		if($this->offsetExists($offset)){
+			$this->values[$this->getKey($offset)]=$value;
+		}else{
 			$this->values[]=$value;
-			if (!$this->index && $this->map!==null)
-				$this->map[$this->getIndex($value)]=count($this->values);
-		}else
-			throw new EMongoException("Can not change element at $offset");
+			if ($this->index && $this->map!==null)
+				$this->map[$offset]=count($this->values)-1;
+		}
 	}
 
 	/**

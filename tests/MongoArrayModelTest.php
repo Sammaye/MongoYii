@@ -27,6 +27,13 @@ class MongoArrayModelTest extends CTestCase{
 		$this->assertEquals(4, $am[0]->dum);
 		$this->assertEquals(1, count($am));
 
+		$am=new EMongoArrayModel('Dummy');
+		$am[100]=array('comment'=>1);	// ignore 100 here
+		$am[2]=array('comment'=>1, 'dum'=>'1');	// 2 ignored
+		$this->assertEquals(null, $am[0]->dum);
+		$this->assertEquals(1, $am[1]->dum);
+
+
 		// Indexed version
 		$am=new EMongoArrayModel('Dummy', array(), 'dum');
 		$am[]=array('dum'=>911);
@@ -43,6 +50,14 @@ class MongoArrayModelTest extends CTestCase{
 		unset($am['3']);
 		$this->assertEquals(4, $am[4]->dum);
 		$this->assertEquals(1, count($am));
+
+		$am=new EMongoArrayModel('Dummy', array(), 'dum');
+		$am[100]=array('comment'=>1);	// dum=100 here
+		$am[2]=array('comment'=>1, 'dum'=>'1'); // 2 ignored here
+		$this->assertInstanceof('Dummy', $am[100]);
+		$this->assertEquals(100, $am[100]->dum);
+		$this->assertEquals(1, $am[1]->dum);
+
 	}
 
 	public function testAttributesAndValidator(){
@@ -111,5 +126,4 @@ class MongoArrayModelTest extends CTestCase{
 		$this->assertCount(1, $user->phones);
 		$this->assertEquals('phone112', $user->phones['112']->comment);
 	}
-
 }
