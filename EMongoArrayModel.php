@@ -93,11 +93,6 @@ class EMongoArrayModel implements Iterator, Countable, ArrayAccess {
 	private $index=null;
 
 	/**
-	 * @var bool is subDocument indexed
-	 */
-	private $isIndexed;
-
-	/**
 	 * The constructor
 	 *
 	 * @param $modelClass
@@ -208,21 +203,6 @@ class EMongoArrayModel implements Iterator, Countable, ArrayAccess {
 	 */
 	public function getRawValues() {
 		return $this->values;
-	}
-
-	/**
-	 * Reindex domain using $this->index value
-	 *
-	 * @ignore
-	 */
-	private function index() {
-		if (!$this->isIndexed){
-			$this->isIndexed=true;
-			$result=array();
-			foreach($this->values as $val)
-				$result[$val[$this->index]]=$val;
-			$this->values=$result;
-		}
 	}
 
 	/**
