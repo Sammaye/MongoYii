@@ -174,7 +174,7 @@ class EMongoArrayModel implements Iterator, Countable, ArrayAccess {
 			return $offset;
 		if ($this->map===null)
 			$this->createMap();
-		return $this->map[$offset];
+		return isset($this->map[$offset]) ? $this->map[$offset] : null;
 	}
 
 	/**
@@ -189,9 +189,7 @@ class EMongoArrayModel implements Iterator, Countable, ArrayAccess {
 		if (!$this->values[$key] instanceof $this->modelClass){
 			$val=new $this->modelClass;
 			$val->setAttributes($this->values[$key],false);
-			//var_dump($this->values[$key]);
 			$this->values[$key]=$val;
-			//var_dump($this->values[$key]);
 		}
 		return $this->values[$key];
 	}
