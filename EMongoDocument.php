@@ -519,7 +519,7 @@ class EMongoDocument extends EMongoModel{
 
 		if($criteria instanceof EMongoCriteria){
 			$c = $criteria->mergeWith($this->getDbCriteria())->toArray();
-			$criteria=null;
+			$criteria=array();
 		}else{
 			$c=$this->getDbCriteria();
 		}
