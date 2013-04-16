@@ -264,7 +264,8 @@ class EMongoModel extends CModel{
 	}
 
 	/**
-	 * Atm you are not allowed to change the primary key
+	 * You can change the primarykey but due to how MongoDB
+	 * actually works this IS NOT RECOMMENDED
 	 */
 	public function primaryKey(){
 		return '_id';
