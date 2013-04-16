@@ -602,8 +602,8 @@ class EMongoDocument extends EMongoModel{
 	}
 
 	/**
-	 * Count() allows you to count all the documents returned by a certain condition, it is analogous to $db->collection->find()->count()
-	 * and basically does exactly that...
+	 * Count() allows you to count all the documents returned by a certain condition, it is analogous
+	 * to $db->collection->find()->count() and basically does exactly that...
 	 * @param EMongoCriteria|array $criteria
 	 */
 	public function count($criteria = array()){
