@@ -246,7 +246,7 @@ class EMongoClient extends CApplicationComponent{
 					$virtualFields[] = $prop->getName();
 				}
 			}
-			$this->getDbConnection()->setObjectCache(get_class($o),
+			$this->setObjectCache(get_class($o),
 				sizeof($virtualFields) > 0 ? $virtualFields : null,
 				sizeof($documentFields) > 0 ? $documentFields : null
 			);
