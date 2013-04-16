@@ -36,36 +36,9 @@ class EMongoDocument extends EMongoModel{
 	 *
 	 * @param string $scenario
 	 */
-	public function __construct($scenario='insert')
-	{
+	public function __construct($scenario='insert'){
 
-		// Run reflection and cache it if not already there
-		if(!$this->getDbConnection()->getObjCache(get_class($this)) && get_class($this) != 'EMongoDocument' /* We can't cache the model */){
-			$virtualFields = array();
-			$documentFields = array();
-
-			$reflect = new ReflectionClass(get_class($this));
-			$class_vars = $reflect->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED); // Pre-defined doc attributes
-
-			foreach ($class_vars as $prop) {
-
-				if($prop->isStatic())
-					continue;
-
-				$docBlock = $prop->getDocComment();
-
-				// If it is not public and it is not marked as virtual then assume it is document field
-				if($prop->isProtected() || preg_match('/@virtual/i', $docBlock) <= 0){
-					$documentFields[] = $prop->getName();
-				}else{
-					$virtualFields[] = $prop->getName();
-				}
-			}
-			$this->getDbConnection()->setObjectCache(get_class($this),
-				sizeof($virtualFields) > 0 ? $virtualFields : null,
-				sizeof($documentFields) > 0 ? $documentFields : null
-			);
-		}
+		$this->getDbConnection()->setDocumentCache($this);
 
 		if($scenario===null) // internally used by populateRecord() and model()
 			return;
