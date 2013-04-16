@@ -602,6 +602,22 @@ class EMongoDocument extends EMongoModel{
 	}
 
 	/**
+	 * Count() allows you to count all the documents returned by a certain condition, it is analogous to $db->collection->find()->count()
+	 * and basically does exactly that...
+	 * @param EMongoCriteria|array $criteria
+	 */
+	public function count($criteria = array()){
+	    $this->trace(__FUNCTION__);
+
+	    // If we provide a manual criteria via EMongoCriteria or an array we do not use the models own DbCriteria
+	    $criteria = !empty($criteria) && !$criteria instanceof EMongoCriteira ? $criteria : $this->getDbCriteria();
+
+	    if($criteria instanceof EMongoCriteria)
+	        $crtieria = $criteria->toArray();
+	    return $this->getCollection()->find(isset($criteria['condition']) ? $criteria['condition'] : array())->count();
+	}
+
+	/**
 	 * Gives basic searching abilities for things like CGridView
 	 *
 	 * @param $query allows you to specify a query which should always take hold along with the searched fields
