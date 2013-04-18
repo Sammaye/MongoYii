@@ -36,7 +36,7 @@ class ESubdocumentValidator extends CValidator{
 						array('{class}'=>get_class($this))));
 			}
 		}
-
+		$c->scenario = $object->scenario;
 		if($this->type == 'many'){
 			if(is_array($object->$attribute)){
 
