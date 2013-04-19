@@ -236,15 +236,26 @@ class EMongoModel extends CModel{
 		if(!is_array($values))
 			return;
 		$attributes=array_flip($safeOnly ? $this->getSafeAttributeNames() : $this->attributeNames());
+		$_meta = $this->getDbConnection()->getDocumentCache(get_class($this));
 		foreach($values as $name=>$value)
 		{
+			$field_meta = isset($_meta[$name]) ? $meta[$name] : array();
 			if($safeOnly){
 				if(isset($attributes[$name]))
-					$this->$name=!is_array($value) && preg_match('/^[0-9]+$/', $value) > 0 ? (int)$value : $value;
+					if(isset($field_meta['type']) && ($field_meta['type'] == 'int' || $field_meta['type'] == 'string')){
+						$this->$name = $field_meta['type'] == 'int' ? (int)$value : (string)$value;
+					}else{
+						$this->$name=!is_array($value) && preg_match('/^[0-9]+$/', $value) > 0 ? (int)$value : $value;
+					}
 				elseif($safeOnly)
 					$this->onUnsafeAttribute($name,$value);
-			}else
-				$this->$name=!is_array($value) && preg_match('/^[0-9]+$/', $value) > 0 ? (int)$value : $value;
+			}else{
+				if(isset($field_meta['type']) && ($field_meta['type'] == 'int' || $field_meta['type'] == 'string')){
+					$this->$name = $field_meta['type'] == 'int' ? (int)$value : (string)$value;
+				}else{
+					$this->$name=!is_array($value) && preg_match('/^[0-9]+$/', $value) > 0 ? (int)$value : $value;
+				}
+			}
 		}
 	}
 
