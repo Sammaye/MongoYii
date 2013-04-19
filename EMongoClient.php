@@ -246,7 +246,6 @@ class EMongoClient extends CApplicationComponent{
 				// Lets fetch the data type for this field
 				// Since we always fetch the data type for this field we make a regex that will only pick out the first
 				if(preg_match('/@var ([a-zA-Z]+)/', $docBlock, $matches) > 0){
-					//var_dump($matches);
 					$field_meta['type'] = $matches[1];
 				}
 				$_meta[$prop->getName()] = $field_meta;
