@@ -36,36 +36,9 @@ class EMongoDocument extends EMongoModel{
 	 *
 	 * @param string $scenario
 	 */
-	public function __construct($scenario='insert')
-	{
+	public function __construct($scenario='insert'){
 
-		// Run reflection and cache it if not already there
-		if(!$this->getDbConnection()->getObjCache(get_class($this)) && get_class($this) != 'EMongoDocument' /* We can't cache the model */){
-			$virtualFields = array();
-			$documentFields = array();
-
-			$reflect = new ReflectionClass(get_class($this));
-			$class_vars = $reflect->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED); // Pre-defined doc attributes
-
-			foreach ($class_vars as $prop) {
-
-				if($prop->isStatic())
-					continue;
-
-				$docBlock = $prop->getDocComment();
-
-				// If it is not public and it is not marked as virtual then assume it is document field
-				if($prop->isProtected() || preg_match('/@virtual/i', $docBlock) <= 0){
-					$documentFields[] = $prop->getName();
-				}else{
-					$virtualFields[] = $prop->getName();
-				}
-			}
-			$this->getDbConnection()->setObjectCache(get_class($this),
-				sizeof($virtualFields) > 0 ? $virtualFields : null,
-				sizeof($documentFields) > 0 ? $documentFields : null
-			);
-		}
+		$this->getDbConnection()->setDocumentCache($this);
 
 		if($scenario===null) // internally used by populateRecord() and model()
 			return;
@@ -165,18 +138,31 @@ class EMongoDocument extends EMongoModel{
 
 	/**
 	 * Returns MongoId based on $value
+	 *
+	 * @deprecated This function will become deprecated in favour of consistently
+	 * using the getPrimaryKey() function instead. Atm, however, the getPrimaryKey
+	 * function actually chains onto this method. If you see this and are wondering
+	 * about what you should do if you want custom primary keys etc just use the getPrimaryKey
+	 * function as you would the getMongoId function. These two functions should never have been separate
+	 * for they are the same essentially.
+	 *
+	 * As to what version this will become deprecated:- I dunno. It will not be soon since it will be a
+	 * functionality breaker...
+	 *
 	 * @param string|MongoId $value
 	 * @return MongoId
 	 */
-	public function getMongoId($value){
+	public function getMongoId($value=null){
 		return $value instanceof MongoId ? $value : new MongoId($value);
 	}
 
 	/**
 	 * Returns the value of the primary key
 	 */
-	public function getPrimaryKey(){
-		return $this->{$this->primaryKey()};
+	public function getPrimaryKey($value=null){
+		if($value===null)
+			$value=$this->{$this->primaryKey()};
+		return $this->getMongoId($value);
 	}
 
 	/**
@@ -488,6 +474,9 @@ class EMongoDocument extends EMongoModel{
 	 */
 	public function exists($criteria=array()){
 		$this->trace(__FUNCTION__);
+
+		if($criteria instanceof EMongoCriteria)
+			$criteria = $criteria->getCondition();
 		return $this->getCollection()->findOne($criteria)!==null;
 	}
 
@@ -509,12 +498,12 @@ class EMongoDocument extends EMongoModel{
 	public function findOne($criteria=array()){
 		$this->trace(__FUNCTION__);
 
+		if($criteria instanceof EMongoCriteria)
+			$criteria = $criteria->getCondition();
 		$c=$this->getDbCriteria();
 		if((
-			$record=$this->getCollection()->findOne($this->mergeCriteria(
-										isset($c['condition']) ? $c['condition'] : array(), $criteria
-		)))!==null){
-
+			$record=$this->getCollection()->findOne($this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria))
+		)!==null){
 			$this->resetScope();
 			return $this->populateRecord($record);
 		}else
@@ -528,7 +517,13 @@ class EMongoDocument extends EMongoModel{
     public function find($criteria=array()){
     	$this->trace(__FUNCTION__);
 
-    	$c=$this->getDbCriteria();
+		if($criteria instanceof EMongoCriteria){
+			$c = $criteria->mergeWith($this->getDbCriteria())->toArray();
+			$criteria=array();
+		}else{
+			$c=$this->getDbCriteria();
+		}
+
     	if($c!==array()){
     		$cursor = new EMongoCursor($this, $this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria));
 			if(isset($c['sort'])) $cursor->sort($c['sort']);
@@ -548,7 +543,7 @@ class EMongoDocument extends EMongoModel{
      */
     public function findBy_id($_id){
     	$this->trace(__FUNCTION__);
-		$_id = $this->getMongoId($_id);
+		$_id = $this->getPrimaryKey($_id);
 		return $this->findOne(array($this->primaryKey() => $_id));
     }
 
@@ -570,7 +565,9 @@ class EMongoDocument extends EMongoModel{
 	public function deleteByPk($pk,$criteria=array(),$options=array()){
 		$this->trace(__FUNCTION__);
 
-		$pk = $this->getMongoId($pk);
+		if($criteria instanceof EMongoCriteria)
+			$criteria = $criteria->getCondition();
+		$pk = $this->getPrimaryKey($pk);
 		return $this->getCollection()->remove(array_merge(array($this->primaryKey() => $pk), $criteria),
 					array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
@@ -585,7 +582,9 @@ class EMongoDocument extends EMongoModel{
 	public function updateByPk($pk, $updateDoc = array(), $criteria = array(), $options = array()){
 		$this->trace(__FUNCTION__);
 
-		$pk = $this->getMongoId($pk);
+		if($criteria instanceof EMongoCriteria)
+			$criteria = $criteria->getCondition();
+		$pk = $this->getPrimaryKey($pk);
 		return $this->getCollection()->update($this->mergeCriteria($criteria, array($this->primaryKey() => $pk)),$updateDoc,
 				array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
@@ -598,6 +597,9 @@ class EMongoDocument extends EMongoModel{
 	 */
 	public function updateAll($criteria=array(),$updateDoc=array(),$options=array('multiple'=>true)){
 		$this->trace(__FUNCTION__);
+
+		if($criteria instanceof EMongoCriteria)
+			$criteria = $criteria->getCondition();
 		return $this->getCollection()->update($criteria, $updateDoc, array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 
@@ -608,6 +610,9 @@ class EMongoDocument extends EMongoModel{
 	 */
 	public function deleteAll($criteria=array(),$options=array()){
 		$this->trace(__FUNCTION__);
+
+		if($criteria instanceof EMongoCriteria)
+			$criteria = $criteria->getCondition();
 		return $this->getCollection()->remove($criteria, array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 	}
 
@@ -626,6 +631,22 @@ class EMongoDocument extends EMongoModel{
 			return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
 		}
 		return true; // Assume true since the action did run it just had nothing to update...
+	}
+
+	/**
+	 * Count() allows you to count all the documents returned by a certain condition, it is analogous
+	 * to $db->collection->find()->count() and basically does exactly that...
+	 * @param EMongoCriteria|array $criteria
+	 */
+	public function count($criteria = array()){
+	    $this->trace(__FUNCTION__);
+
+	    // If we provide a manual criteria via EMongoCriteria or an array we do not use the models own DbCriteria
+	    $criteria = !empty($criteria) && !$criteria instanceof EMongoCriteira ? $criteria : $this->getDbCriteria();
+
+	    if($criteria instanceof EMongoCriteria)
+	        $crtieria = $criteria->getCondition();
+	    return $this->getCollection()->find(isset($criteria) ? $criteria : array())->count();
 	}
 
 	/**
@@ -709,7 +730,7 @@ class EMongoDocument extends EMongoModel{
     public function refresh(){
 
 		$this->trace(__FUNCTION__);
-		if(!$this->getIsNewRecord() && ($record=$this->getCollection()->findOne(array($this->primaryKey() => $this->getMongoId($this->getPrimaryKey()))))!==null){
+		if(!$this->getIsNewRecord() && ($record=$this->getCollection()->findOne(array($this->primaryKey() => $this->getPrimaryKey())))!==null){
 			$this->clean();
 
 			foreach($record as $name=>$column)

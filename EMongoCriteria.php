@@ -106,6 +106,14 @@ class EMongoCriteria extends CComponent {
     }
 
     /**
+     * Adds an $or condition to the criteria
+     * @param array $condition
+     */
+    public function addOrCondition($condition){
+    	$this->_condition['$or'] = $condition;
+    }
+
+    /**
      * Base search functionality
      * @param string $column
      * @param [null|string] $value

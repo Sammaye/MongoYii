@@ -199,7 +199,7 @@ class EMongoClient extends CApplicationComponent{
 		}
 		return $this->getDB()->$collection->aggregate($pipelines);
 	}
-	
+
 	/**
 	 * Command helper
 	 * @param array|sting $command
@@ -214,6 +214,43 @@ class EMongoClient extends CApplicationComponent{
 	 */
 	public function selectCollection($name){
 		return $this->getDB()->selectCollection($name);
+	}
+
+	/**
+	 * Sets the document cache for any particular document (EMongoDocument/EMongoModel)
+	 * sent in as the first parameter of this function
+	 * @param $o
+	 */
+	function setDocumentCache($o){
+		if(
+			!$this->getObjCache(get_class($o)) && // Run reflection and cache it if not already there
+			(get_class($o) != 'EMongoDocument' && get_class($o) != 'EMongoModel') /* We can't cache the model */
+		){
+			$virtualFields = array();
+			$documentFields = array();
+
+			$reflect = new ReflectionClass(get_class($o));
+			$class_vars = $reflect->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED); // Pre-defined doc attributes
+
+			foreach ($class_vars as $prop) {
+
+				if($prop->isStatic())
+					continue;
+
+				$docBlock = $prop->getDocComment();
+
+				// If it is not public and it is not marked as virtual then assume it is document field
+				if($prop->isProtected() || preg_match('/@virtual/i', $docBlock) <= 0){
+					$documentFields[] = $prop->getName();
+				}else{
+					$virtualFields[] = $prop->getName();
+				}
+			}
+			$this->setObjectCache(get_class($o),
+				sizeof($virtualFields) > 0 ? $virtualFields : null,
+				sizeof($documentFields) > 0 ? $documentFields : null
+			);
+		}
 	}
 
 	/**
@@ -299,7 +336,7 @@ class EMongoClient extends CApplicationComponent{
 	    }
 	    return new MongoID($id);
 	}
-	
+
 	/**
 	 * Set read preference on MongoClient
 	 * @param $pref
