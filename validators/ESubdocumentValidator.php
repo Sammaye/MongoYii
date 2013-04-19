@@ -40,7 +40,7 @@ class ESubdocumentValidator extends CValidator{
 		}
 		
 		if(is_object($this->scenario) && ($this->scenario instanceof Closure)){
-			$c->scenario = $this->scenario();
+			$c->scenario = $this->scenario($object);
 		}else{
 			$c->scenario = $this->scenario;
 		}
