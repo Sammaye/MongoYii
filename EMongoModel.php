@@ -142,10 +142,9 @@ class EMongoModel extends CModel{
 	 */
 	public function attributeNames(){
 
-		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
-		$virtuals = $this->getDbConnection()->getVirtualObjCache(get_class($this));
+		$fields = $this->getDbConnection()->getFieldCache(get_class($this),true);
 
-		$cols = array_merge(is_array($fields) ? $fields : array(), is_array($virtuals) ? $virtuals : array(), array_keys($this->_attributes));
+		$cols = array_merge($fields, array_keys($this->_attributes));
 		return $cols!==null ? $cols : array();
 	}
 
@@ -162,7 +161,7 @@ class EMongoModel extends CModel{
 	public function hasAttribute($name)
 	{
 		$attrs = $this->_attributes;
-		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
+		$fields = $this->getDbConnection()->getFieldCache(get_class($this));
 		return isset($attrs[$name])||isset($fields[$name])||property_exists($this, $name)?true:false;
 	}
 
@@ -200,7 +199,7 @@ class EMongoModel extends CModel{
 	public function getAttributes($names=true)
 	{
 		$attributes=$this->_attributes;
-		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
+		$fields = $this->getDbConnection()->getFieldCache(get_class($this));
 
 		if(is_array($fields)){
 			foreach($fields as $name){
@@ -478,17 +477,9 @@ class EMongoModel extends CModel{
 		$this->_related=array();
 
 		// blank class properties
-		$cache = $this->getDbConnection()->getObjCache(get_class($this));
-
-		if(isset($cache['document'])){
-			foreach($cache['document'] as $field)
-				$this->$field = null;
-		}
-
-		if(isset($cache['virtual'])){
-			foreach($cache['virtual'] as $field)
-				$this->$field = null;
-		}
+		$cache = $this->getDbConnection()->getDocumentCache(get_class($this));
+		foreach($cache as $k => $v)
+			$this->$k = null;
 		return true;
     }
 
@@ -497,7 +488,7 @@ class EMongoModel extends CModel{
 	 */
 	public function getDocument(){
 
-		$attributes = $this->getDbConnection()->getFieldObjCache(get_class($this));
+		$attributes = $this->getDbConnection()->getFieldCache(get_class($this));
 		$doc = array();
 
 		if(is_array($attributes)){
