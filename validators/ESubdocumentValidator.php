@@ -12,6 +12,8 @@ class ESubdocumentValidator extends CValidator{
 
 	public $type;
 	public $rules;
+	
+	public $scenario;
 
 	public function validateAttribute($object, $attribute){
 
@@ -35,6 +37,12 @@ class ESubdocumentValidator extends CValidator{
 					throw new CException(Yii::t('yii','{class} has an invalid validation rule. The rule must specify attributes to be validated and the validator name.',
 						array('{class}'=>get_class($this))));
 			}
+		}
+		
+		if(is_object($this->scenario) && ($this->scenario instanceof Closure)){
+			$c->scenario = $this->scenario();
+		}else{
+			$c->scenario = $this->scenario;
 		}
 
 		if($this->type == 'many'){
