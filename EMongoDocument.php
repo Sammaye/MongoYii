@@ -26,7 +26,7 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * Holds criteria information for scopes
 	 */
-	private $_criteria = array();
+	private $_criteria;
 
 	/**
 	 * Sets up our model and set the field cache just like in EMongoModel
