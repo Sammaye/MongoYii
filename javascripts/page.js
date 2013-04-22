@@ -17,7 +17,7 @@ window.onload = function () {
     			}
 
     			level = parseInt(openLevel);
-
+//console.log('here');
     			var anchor = titleText.replace(/ /g, "_");
 	    		toc += "<li><a href=\"#" + anchor + "\">" + titleText
 	    			+ "</a></li>";
