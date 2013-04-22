@@ -33,255 +33,156 @@
 
     <div class="wrapper">
       <section id="contents">
-        <h1>MongoYii</h1>
-
+ <h1 id="mongoyii">MongoYii</h1>
 <p>Another active record handler for the Yii framework that supports MongoDB.</p>
-
-<h2>Rationale</h2>
-
+<h2 id="rationale">Rationale</h2>
 <p>There is already a great extension called YiiMongoDBSuite out for Yii so why make another? YiiMongoDBSuite has certain flaws which I wish to address:</p>
-
 <ul>
 <li>Does not support <code>$or</code> natively</li>
 <li>Very large and complicated code base</li>
 <li>Does not support the later versions of the PHP driver (1.3.x series) that well</li>
 <li>Obscured the MongoDB query language, layering a query language over the top</li>
-</ul><p>After some spare time I decided that I would take the liberty to make a MongoDB extension for Yii. It is really basically a "glue" between MongoDB and
+</ul>
+<p>After some spare time I decided that I would take the liberty to make a MongoDB extension for Yii. It is really basically a "glue" between MongoDB and
 Yii and it is designed to be quite free form in that respect.</p>
-
 <p>There are a few points of design I wished to enforce:</p>
-
 <ul>
 <li>expose the MongoDB query language in its raw form</li>
 <li>make the programming of this extension simple and easy to maintain for all parties</li>
 <li>make sure this extension worked with both the new and old versions of the MongoDB driver</li>
 <li>attempt to make things a little more performant</li>
-<li>try to follow Yiis own CActiveRecord API as much as possible without compromising MongoDB "semantics" such as the name for query operators and the use of a <code>MongoCursor</code>
-</li>
-</ul><p>Ok so we have got some of the rationale in place it is time to actually talk about the extension.</p>
-
-<h2>Setting up the extension</h2>
-
+<li>try to follow Yiis own CActiveRecord API as much as possible without compromising MongoDB "semantics" such as the name for query operators and the use of a <code>MongoCursor</code></li>
+</ul>
+<p>Ok so we have got some of the rationale in place it is time to actually talk about the extension.</p>
+<h2 id="setting-up-the-extension">Setting up the extension</h2>
 <p>In order to use the extension you first need to set it up. The first thing to do is to download the source code and place it somewhere accessible within your applications structure, I have chosen
 <code>protected/extensions/MongoYii</code>.</p>
-
 <p>Once you have the source code in place you need to edit your <code>main.php</code> configuration file (<code>console.php</code> will need modifying too if you intend to use this extension in the console) with
 the following type of configuration:</p>
-
 <pre><code>'mongodb' =&gt; array(
     'class' =&gt; 'EMongoClient',
     'server' =&gt; 'mongodb://localhost:27017',
     'db' =&gt; 'super_test'
 ),
 </code></pre>
-
 <p>And add the MongoYii directories to your <code>import</code> section:</p>
-
 <pre><code>'application.extensions.MongoYii.*',
 'application.extensions.MongoYii.validators.*',
 'application.extensions.MongoYii.behaviors.*'
 </code></pre>
-
 <p>That is the basic setup of the extension.</p>
-
 <p>You will notice that I use a <code>EMongoClient</code>. This is a bit deceptive since it actually represents <code>MongoClient</code> and <code>MongoDB</code> combined.  This means that whenever you call the magic <code>__call</code>
 on the <code>EMongoClient</code> like so:</p>
-
 <pre><code>Yii::app()-&gt;mongodb-&gt;getSomething();
 </code></pre>
-
 <p>It will either try and call a function of <code>getSomething</code> in <code>EMongoClient</code> or, if the function does not exist, try and call it within the <code>MongoDB</code> class.</p>
-
 <p>If you wish to call a function on the <code>MongoClient</code> or <code>Mongo</code> class you will need to retrieve the connection object like so:</p>
-
 <pre><code>Yii::app()-&gt;mongodb-&gt;getConnection()-&gt;getSomething();
 </code></pre>
-
 <p><code>EMongoClient</code> is also designed to handle full write concern and read preferences in a compatible manner with all versions of the driver.</p>
-
 <p><strong>Note:</strong> The models will by default seek a <code>mongodb</code> component within your configuration so please make sure that unless you modify the extension, or use it without active record, to
 make your default (master) connection be a component called <code>mongodb</code>.</p>
-
-<h3>Write Concern (formally "safe" writes)</h3>
-
+<h3 id="write-concern-formally-safe-writes">Write Concern (formally "safe" writes)</h3>
 <p>This extension uses the new <code>w</code> variable globally to handle the level of write concern you wish to impose on MongoDB.</p>
-
 <p>By default the extension will assume acknowledged writes, this means <code>safe=true</code> or <code>w=1</code> depending on the version of your driver. To change this simply add <code>w</code> to your <code>mongodb</code> components configuration
 and give it a value according to the <a href="http://php.net/manual/en/mongo.writeconcerns.php">PHP documentation</a>.</p>
-
 <p>For those using the 1.3.x series of the driver there is also a <code>j</code> option which can be set to either <code>true</code> or <code>false</code> within the configuration which allows you to control
 whether or not the write is journal acknowledged.</p>
-
 <p><strong>Note:</strong> Write Concern is abstracted from the driver itself to make this variable compatible across all versions of the driver so please use the configuration or the <code>EMongoClient</code> <code>w</code> and
 <code>j</code> class variables to set the write concern when you need to, otherwise that write concern will not be used within active record.</p>
-
 <p><strong>Note:</strong> Write Concern works differently when you touch the database directly and the write concern issued within the <code>EMongoCLient</code> class will have no
 effect. Instead you should always ensure in this case you specify the write concern manually according to your driver version.</p>
-
 <p>This may change in the future but at the moment when you want the active record to go away it just will.</p>
-
-<h3>Read Preference</h3>
-
+<h3 id="read-preference">Read Preference</h3>
 <p>For those using the old driver there is only one extra configuration variable available to you, <code>setSlaveOkay</code>. Set this to either <code>true</code> or <code>false</code> in your configuration to make it
 possible to read from members of a replica set.</p>
-
 <p>For those using the 1.3.x series of the driver you have the <code>RP</code> configuration variable. The RP configuration variable is a 1-1 relation to the options of <code>setReadPreference</code>
 on the <code>MongoClient</code> class with one exception. The first parameter is not a constant but instead the name of the constant. An example of using read preferences in your configuration
 would be:</p>
-
 <pre><code>'RP' =&gt; array('RP_SECONDARY' /* The name of the constant from the documentation */,
     array(/* Would normally be read tags, if any */))
 </code></pre>
-
 <p>Please refer to the <a href="http://php.net/manual/en/mongo.readpreferences.php">drivers documentation for a full set of options here</a>.</p>
-
 <p>To change the Read Preference at any time please use the function applicable to your driver; for 1.3.x series:</p>
-
 <pre><code>Yii::app()-&gt;mongodb-&gt;setReadPreference(MongoClient::RP_PRIMARY, array());
 </code></pre>
-
 <p>and for pre-1.3:</p>
-
 <pre><code>Yii::app()-&gt;mongodb-&gt;setSlaveOkay(true);
 </code></pre>
-
 <p><strong>Note:</strong> Unlike write concern, the <code>RP</code> and <code>setSlaveOkay</code> variables do not inter-lock between different versions of the driver, using the <code>EMongoClient</code> <code>RP</code> variable
 will not translate to <code>slaveOkay</code>.</p>
-
-<h2>Using MongoDB without Active Record</h2>
-
+<h2 id="using-mongodb-without-active-record">Using MongoDB without Active Record</h2>
 <p>You can call the database directly at any time using the same implemented methods as you would using the driver normally. As an example, to query the database:</p>
-
 <pre><code>Yii::app()-&gt;mongodb-&gt;collection-&gt;find(array('name' =&gt; 'sammaye'));
 </code></pre>
-
 <p>So the active record element of MongoYii can quickly disappear if needed.</p>
-
-<h2>EMongoModel</h2>
-
+<h2 id="emongomodel">EMongoModel</h2>
 <p>The <code>EMongoModel</code> is a stripped down version of the <code>EMongoDocument</code>.</p>
-
 <p>This was made separate from <code>EMongoDocument</code> to provide a small and slim active model for use on subdocuments. Whenever you make a class based subdocument you can extend this class.</p>
-
 <p>The <code>EMongoModel</code> implements all that <code>CModel</code> does but with a few added and changed features.</p>
-
-<h3>Magic functions</h3>
-
-<h4>This has been changed</h4>
-
-<p>Changed as of this issue: <a href="https://github.com/Sammaye/MongoYii/issues/7">https://github.com/Sammaye/MongoYii/issues/7</a> whereby
-<a href="https://github.com/f10i">@f10i</a> gives over a pull request that can actually fix the schemaless issue completely.</p>
-
-<p>The <code>__get</code> and <code>__set</code> have been completely re-written around his ideas and should now have all the same power as Yiis own <code>CActiveRecord</code> class.</p>
-
-<p>The below is still shown as a note to people who use old checkouts:</p>
-
-<p>In order to support the schema-less nature of MongoDB without using hacks like behaviours I have changed the way that the magic functions in Yii work slightly.
-The <code>__set</code> and <code>__get</code> will no longer seek out behaviour properties or call variable function events.</p>
-
-<p>Behaviours tend to manipulate a <code>owner</code> within its own self contained context while allowing the calling of events from the magic functions is role blurring. Events should be
-called as functions if you want to use them. In my opinion the <code>__set</code> and <code>__get</code> functions have been made clearer by this.</p>
-
-<h3>Virtual Attributes</h3>
-
+<h3 id="magic-functions">Magic functions</h3>
+<p>The getters and setters should inherit all of Yiis own functionality.</p>
+<h3 id="virtual-attributes">Virtual Attributes</h3>
 <p>This extension supports virtual attributes via a doc block notation syntax of <code>@virtual</code>, for example:</p>
-
 <pre><code>class User extends EMongoModel{
     /** @virtual */
     public $somevar;
 }
 </code></pre>
-
 <p>These variables can be used in the same way as everything else except they will never be saved in MongoDB.</p>
-
 <p><strong>Note:</strong> due to how PHP OO accession works it is a good idea to make all your record fields, virtual or not, <code>public</code>.</p>
-
-<h3>Relations</h3>
-
+<h3 id="relations">Relations</h3>
 <p>Unlike in SQL where you have many complicated types of relations, in MongoDB you tend to only have two:- <code>one</code> and <code>many</code>.</p>
-
 <p>As you have guessed, you can only define two types of relation in this extension - <code>one</code> and <code>many</code>. Lets take a look at an example:</p>
-
 <pre><code>function relations(){
     return array(
         'others' =&gt; array('many', 'Other', 'otherId')
     );
 }
 </code></pre>
-
 <p>You will recognise a lot of this from Yiis own active record, in fact a lot is the same. We define a name for the relation as a key and then we define either <code>one</code> or <code>many</code> in text
 (constants seemed useless with only two types) and then we define a class name, <code>Other</code> in this case, and then we define the foreign key in that class, <code>otherId</code>.</p>
-
 <p>The default behaviour of relations is to attempt to use the primary key, <code>_id</code>, of the current model to query the foreign key. This is a problem for <code>EMongoModel</code>
 since it has no primary key. Make sure that if you use this in <code>EMongoModel</code> you define a <code>on</code> clause to replace the primary key of the current model.</p>
-
 <p>The <code>on</code> clause supports multiple field types. It can take a <code>DBRef</code> or an <code>ObjectId</code> or an array of <code>ObjectId</code>s depending on how you define your document.</p>
-
 <p>You can also, just like in Yii, define a <code>where</code> clause. This is a 1-1 relation to the syntax used within normal querying in MongoDB and the extension will basically merge this
 clause with the primary key field you define in order to query for the relation.</p>
-
 <p>All relations are returned as <code>EMongoCursor</code>s which is basically the Yii active record implementation of <code>MongoCursor</code>. There is no eager loading, if you wish to use eager loading
 please look into using <code>iterator_to_array()</code> on the return value from calling the relation.</p>
-
-<h3>getDocument()</h3>
-
+<h3 id="getdocument">getDocument()</h3>
 <p>Just gets the docuemnt "as-it-is". This means that if you put meta objects in like nested <code>EMongoModel</code>s it will get these back in the output.</p>
-
-<h3>getRawDocument()</h3>
-
+<h3 id="getrawdocument">getRawDocument()</h3>
 <p>Will strip away all classes used by the extension and return a document suitable for use with MongoDB.</p>
-
-<h3>getJSONDocument()</h3>
-
+<h3 id="getjsondocument">getJSONDocument()</h3>
 <p>Will run <code>getRawDocument()</code> and then return its output as a JSON string.</p>
-
-<h3>getBSONDocument()</h3>
-
+<h3 id="getbsondocument">getBSONDocument()</h3>
 <p>Will run <code>getRawDocument()</code> and then return its output as a BSON string.</p>
-
-<h2>EMongoDocument</h2>
-
+<h2 id="emongodocument">EMongoDocument</h2>
 <p>The <code>EMongoDocument</code> extends <code>EMongoModel</code> and implements all of its features along with the needed features for database accession. It also implements as much as possible of
 <code>CActiveRecord</code>.</p>
-
 <p><strong>Note:</strong> The functions that allow database usage are not defined within this section of the documentation. Instead those functions are actually defined within the "Querying" section of this
 documentation. Please move to the "Querying" section if you wish to read about this part of the <code>EMongoDocument</code>.</p>
-
-<h3>collectionName()</h3>
-
+<h3 id="collectionname">collectionName()</h3>
 <p>Returns a string representing the collection name. All active record models should implement this function although it is not <code>abstract</code>.</p>
-
-<h3>primaryKey()</h3>
-
+<h3 id="primarykey">primaryKey()</h3>
 <p>Currently only returns <code>_id</code> as the key. This function is <code>private</code> and cannot be overridden.</p>
-
 <p>If you are using a primary key that IS NOT a <code>ObjectId</code> (otherwise known as a <code>MongoId</code> in the PHP driver) then you should override the <code>getMongoId</code> function of the <code>EMongoDocument</code>
 to not return a <code>MongoId</code>:</p>
-
 <pre><code>public function getMongoId($value){
     return $value;
 }
 </code></pre>
-
 <p>You can, of course, add whatever procedure or formatting code you need within this function to make sure that your primary key is ready for MongoDB when it comes to querying.</p>
-
-<h3>Scopes</h3>
-
+<h3 id="scopes">Scopes</h3>
 <p>Scopes are fully supported in all the normal ways as with <code>CActiveRecord</code> but with one difference; the terminology.</p>
-
 <p>The scopes, and queries, in this extension use these words to describe their parts:</p>
-
 <ul>
-<li>
-<code>condition</code> to describe the condition itself</li>
-<li>
-<code>sort</code> to describe the sort</li>
-<li>
-<code>skip</code> to describe offset</li>
-<li>
-<code>limit</code> to describe limit</li>
-</ul><p>As an example of a full default scope which omits deleted models to get the latest 10 skipping the first one:</p>
-
+<li><code>condition</code> to describe the condition itself</li>
+<li><code>sort</code> to describe the sort</li>
+<li><code>skip</code> to describe offset</li>
+<li><code>limit</code> to describe limit</li>
+</ul>
+<p>As an example of a full default scope which omits deleted models to get the latest 10 skipping the first one:</p>
 <pre><code>array(
     'condition' =&gt; array('deleted' =&gt; array('$ne' =&gt; 1)),
     'sort' =&gt; array('date' =&gt; -1),
@@ -289,9 +190,7 @@ to not return a <code>MongoId</code>:</p>
     'limit' =&gt; 11
 )
 </code></pre>
-
 <p>You can also define your own scopes, however, it is a little different to how you are used to doing it in Yii:</p>
-
 <pre><code>function someScope(){
     $this-&gt;mergeDbCriteria(array(
         'condition'=&gt;array('scoped' =&gt; true),
@@ -301,14 +200,10 @@ to not return a <code>MongoId</code>:</p>
     ));
 }
 </code></pre>
-
-<p>As you will notice the <code>_certeria</code> variable within the EMongoDocument which would normally be a <code>EMongoCriteria</code> object is actually completely array based.</p>
-
+<p>As you will notice the <code>_criteria</code> variable within the EMongoDocument which would normally be a <code>EMongoCriteria</code> object is actually completely array based.</p>
 <p>This applies to all scope actions; they are all array based.</p>
-
 <p>To help you in not having the <code>EMongoCriteria</code> object the <code>EMongoDocument</code> provides a helper function for merging criteria objects called <code>mergeCriteria</code>. Using this function will
 have no impact on the model itself and merely merges criteria to be returned. As an example of using the <code>mergeCriteria</code> function:</p>
-
 <pre><code>function someScope(){
 
     $criteria = array(
@@ -325,36 +220,21 @@ have no impact on the model itself and merely merges criteria to be returned. As
     reutrn $this;
 }
 </code></pre>
-
 <p><strong>Note:</strong> Just like in Yii, normally scopes are not reset automatically, please use <code>resetScope()</code> to reset the scope.</p>
-
-<h3>equals()</h3>
-
+<h3 id="equals">equals()</h3>
 <p>Checks if the current model equals another sent in as a parameter.</p>
-
-<h3>exists()</h3>
-
+<h3 id="exists">exists()</h3>
 <p>Checks if a document exists in the database with the criteria supplied as the first parameter.</p>
-
-<h3>clean()</h3>
-
+<h3 id="clean">clean()</h3>
 <p>Cleans the document of all properties and relations.</p>
-
-<h3>refresh()</h3>
-
+<h3 id="refresh">refresh()</h3>
 <p>Runs <code>clean()</code> and then re-populates the model from the database.</p>
-
-<h3>getCollection()</h3>
-
+<h3 id="getcollection">getCollection()</h3>
 <p>Returns the raw <code>MongoCollection</code>.</p>
-
 <p>It is normally best not to use this and instead to use the extension wrapped editions - <code>updateAll</code> and <code>deleteAll</code>. The only difference of said functions
 from doing it manually on <code>getCollection()</code> is that the functions understand the write concern of the extension.</p>
-
-<h3>Example</h3>
-
+<h3 id="example">Example</h3>
 <p>So now that we have discussed the <code>EMongoDocument</code> lets look at the most base of example:</p>
-
 <pre><code>class User extends EMongoDocument{
     function collectionName(){
         return 'users';
@@ -365,12 +245,9 @@ from doing it manually on <code>getCollection()</code> is that the functions und
     }
 }
 </code></pre>
-
 <p>This is the most basic document that can exist - no predefined schema and only a <code>model</code> function (same as Yii active record) and the <code>tableName</code>, otherwise known as the <code>collectionName</code>,
 are needed.</p>
-
 <p>As time goes on you will want to add certain fields like virtual attributes and such to make your life easier:</p>
-
 <pre><code>class User extends EMongoDocument{
 
     /** @virtual */
@@ -387,135 +264,78 @@ are needed.</p>
     }
 }
 </code></pre>
-
 <p>Notice how I have added the <code>addresses</code> field despite not needing to? I do this due to the way that PHP uses magic functions.</p>
-
 <p>If you access an array magically you cannot, in the same breath, manipulate it since it is an indirect accession of the variable. So a good tip here: if you plan on having subdocuments
 in your document it might be good to explicitly declare the field as a variable within the class.</p>
-
-<h2>Querying</h2>
-
+<h2 id="querying">Querying</h2>
 <p>Querying attempts to expose the native MongoDB querying language as much as possible. A <code>EMongoCriteria</code> class is provided, however, it is not required and does not provide any more functionality
 than just doing it via arrays. The <code>EMongoCriteria</code> class is not relied on anywhere and is not needed.</p>
-
-<h3>find()</h3>
-
+<h3 id="find">find()</h3>
 <p><code>find()</code> is really simple. It is essentially a 1-1 to the drivers own <code>find()</code> function and implements the same specifics. Just like the drivers edition, it also returns a cursor
 instance (<code>EMongoCursor</code>) which can be used to lazy load results from the database.</p>
-
 <p>It will return a cursor irrespective of whether it finds results or not. However if it cannot find results then <code>count</code> will return <code>0</code> and the iterator will not have any iterations
 to it.</p>
-
 <p><strong>Note:</strong> The cursor does not eager load documents, instead if you wish to accomplish this please wrap the call to <code>find</code> in a <code>iterator_to_array</code> function.</p>
-
-<h3>findOne() and findBy_id()</h3>
-
+<h3 id="findone-and-findby_id">findOne() and findBy_id()</h3>
 <p><code>findOne</code>, just like <code>findBy_id</code> is a straight 1-1 implementation of the drivers own <code>findOne</code> method and returns an active record record model if something was found, otherwise <code>null</code>.</p>
-
 <p>The <code>findBy_id</code> function takes either a hexadecimal representation of a <code>ObjectId</code> in string form or wrapped in the <code>MongoId</code> class and will seek out a record with that <code>_id</code> using
 the <code>findOne</code> function, returning the exact same. It is basically a helper for <code>findOne</code> to make your life a little easier.</p>
-
-<h3>Scopes</h3>
-
+<h3 id="scopes_1">Scopes</h3>
 <p>The read functions of this extension have full support for scopes within models.</p>
-
-<h3>Example</h3>
-
+<h3 id="example_1">Example</h3>
 <p>Ok so now we have a basic grasp of querying lets look at an example:</p>
-
 <pre><code>$c = User::model()-&gt;recently()-&gt;find(array('deleted' =&gt; 0))-&gt;sort(array('joined' =&gt; -1))-&gt;skip(2)-&gt;limit(3);
 </code></pre>
-
 <p>This may look complicated but I will now break it down for you:</p>
-
 <ul>
-<li>
-<code>User::model()</code> gets our model</li>
-<li>
-<code>-&gt;recently()</code> is actually a scope, this is not needed but good for demonstration purposes</li>
-<li>
-<code>-&gt;find(/*...*/)</code> is basically the MongoDB drivers <code>find</code> method and returns a <code>EMongoCursor</code> which implements a <code>MongoCursor</code>
-</li>
-<li>
-<code>-&gt;sort()</code> is basically the MongoDB drivers <code>sort</code> method on the <code>MongoCursor</code>
-</li>
-<li>
-<code>-&gt;limit()</code> is, again, basically the MongoDB drivers own <code>limit</code> function on the <code>MongoCursor</code>
-</li>
-</ul><p>For a reference on what operators are supported please refer to the MongoDB documentation: <a href="http://docs.mongodb.org/manual/reference/operators/">http://docs.mongodb.org/manual/reference/operators/</a></p>
-
+<li><code>User::model()</code> gets our model</li>
+<li><code>-&gt;recently()</code> is actually a scope, this is not needed but good for demonstration purposes</li>
+<li><code>-&gt;find(/*...*/)</code> is basically the MongoDB drivers <code>find</code> method and returns a <code>EMongoCursor</code> which implements a <code>MongoCursor</code></li>
+<li><code>-&gt;sort()</code> is basically the MongoDB drivers <code>sort</code> method on the <code>MongoCursor</code></li>
+<li><code>-&gt;limit()</code> is, again, basically the MongoDB drivers own <code>limit</code> function on the <code>MongoCursor</code></li>
+</ul>
+<p>For a reference on what operators are supported please refer to the MongoDB documentation: <a href="http://docs.mongodb.org/manual/reference/operators/">http://docs.mongodb.org/manual/reference/operators/</a></p>
 <p><strong>Note:</strong> Other functions like <code>findByAttributes</code> have been omitted since it seems pointless with MongoDBs querying language to implement those.</p>
-
-<h3>save()</h3>
-
+<h3 id="save">save()</h3>
 <p>This <code>save</code>s the document and is used externally as a means to access either <code>insert</code> or <code>update</code> on the active record model, i.e.:</p>
-
 <pre><code>if($user-&gt;validate()) $user-&gt;save();
 </code></pre>
-
 <p>If the document is new it will insert otherwise it will update.</p>
-
-<h3>insert()</h3>
-
+<h3 id="insert">insert()</h3>
 <p>This is used internally by the active record model. If the record is new it will attempt to insert it instead of updating it otherwise it will throw
 an error.</p>
-
-<h3>update()</h3>
-
+<h3 id="update">update()</h3>
 <p>This is used internally by the active record model. If the record is not new it will attempt to update it otherwise it will throw an error.</p>
-
 <p>If you send in attributes into either this function or the <code>save</code> function it will attempt to do a <code>$set</code> on those attributes otherwise it will <code>save</code> the model.</p>
-
-<h3>delete()</h3>
-
+<h3 id="delete">delete()</h3>
 <p>This is used to delete the current active record.</p>
-
-<h3>deleteByPk() and updateByPk()</h3>
-
+<h3 id="deletebypk-and-updatebypk">deleteByPk() and updateByPk()</h3>
 <p>These are helpers to the update and delete functions except they act on the database directly, instead of through active record.</p>
-
 <p>To show by example:</p>
-
 <pre><code>User::model()-&gt;deleteByPk($_id[, array('deleted' =&gt; 1)[, array('w' =&gt; 2)]]);
 User::model()-&gt;updateByPk($_id, array('$set' =&gt; array('d' =&gt; 1)[, array('deleted' =&gt; 1)[, array('w' =&gt; 2)]]);
 </code></pre>
-
 <p>Arguments shown in <code>[]</code> are optional.</p>
-
 <p>These functions can take both a string and a <code>MongoId</code> as the <code>$_id</code> parameter.</p>
-
-<h3>updateAll() and deleteAll()</h3>
-
+<h3 id="updateall-and-deleteall">updateAll() and deleteAll()</h3>
 <p>Same as above really except these translate directly to the MongoDB drivers own <code>update</code> and <code>delete</code> functions.</p>
-
 <p><strong>Note:</strong> <code>UpdateAll</code> is <code>multi</code> <code>true</code> by default</p>
-
-<h2>Validation</h2>
-
+<h2 id="validation">Validation</h2>
 <p>The validation has pretty much not changed except for one validator which required some rewriting, the unique validator.</p>
-
 <p>Basically the <code>CUniqueValidator</code> has been retro-fitted to work for MongoDB so the call to the validator is the same but you must take into account that the name of the
 validator is now <code>EMongoUniqueValidator</code>.</p>
-
-<h2>Subdocuments</h2>
-
+<h2 id="subdocuments">Subdocuments</h2>
 <p>Subdocuments are, mostly, not automatically supported by this extension. There a couple of reasons, firstly due to performance - automating subdocument usage requires a lot of
 loaded classes to handle different subdocuments and their validation.</p>
-
 <p>The other main reason is that, in any project I have done, whenever I tried to automate subdocuments through active record it has always resulted in me actually ditching
 it and doing the process manually. It has been proven many times that you rarely actually want automated subdocuments and normally you want greater control over their storage than
 this extension could provide.</p>
-
 <p>So that is a brief understanding of the rationale behind the idea to ditch automatic subdocument handling within the active record.</p>
-
 <p>This does not mean you cannot embed subdocument classes at all; when saving, the active record will iterate the document and attempt to strip any <code>EMongoModel</code> or <code>EMongoDocument</code>
 classes that have sprung up.</p>
-
 <p>This all aside, there is a subdocument validator and technically it can even accept multi-level nesting. Please bare in mind, though, that it will cause repitition
 for every level you use it on. This WILL have a performance implication on your application.</p>
-
 <p>An example of using an array based subdocument is:</p>
-
 <pre><code>function rules(){
     return array(
         array('addresses', 'subdocument', 'type' =&gt; 'many', 'rules' =&gt; array(
@@ -525,23 +345,17 @@ for every level you use it on. This WILL have a performance implication on your 
     );
 }
 </code></pre>
-
 <p>While an example of a class based one is:</p>
-
 <pre><code>function rules(){
     return array(
         array('addresses', 'subdocument', 'type' =&gt; 'many', 'class' =&gt; 'Other'),
     );
 }
 </code></pre>
-
 <p><code>type</code> defines the type of subdocument, as with relations this is either <code>one</code> or <code>many</code>.</p>
-
 <p>The validator will evaluate the rules as though they are completely separate from the originating model so in theory there is nothing stopping you from using any validator you want.</p>
-
 <p>The error output for the validator will differ between the <code>one</code> and <code>many</code> types of subdocument. With <code>one</code> the validator will output the model errors directly onto the field
 however with <code>many</code> it will create a new element for each model (row) with embedded errors in that new element in the field on the parent, for example:</p>
-
 <pre><code>array(
     'addresses' =&gt; array(
         0 =&gt; array(
@@ -552,16 +366,11 @@ however with <code>many</code> it will create a new element for each model (row)
     )
 )
 </code></pre>
-
 <p><strong>Note:</strong> While on the subject, to avoid the iteration every time you save the root document (since validation is run by default in Yii on save) you should confine your subdocument
 validators to specific scenarios where they will be actively used.</p>
-
-<h2>Using the ActiveDataProvider</h2>
-
+<h2 id="using-the-activedataprovider">Using the ActiveDataProvider</h2>
 <p>This extension comes with a <code>CActiveDataProvider</code> helper called <code>EMongoDataProvider</code>. It works exactly the same way except for how it is called.</p>
-
 <p>Instead of using a <code>EMongoCriteria</code> or something similar you use arrays like so:</p>
-
 <pre><code>new EMongoDataProvider(array(
     'criteria' =&gt; array(
         'condition' =&gt; array(),
@@ -572,14 +381,10 @@ validators to specific scenarios where they will be actively used.</p>
     /* All other options */
 ));
 </code></pre>
-
 <p>The <code>criteria</code> option basically relates to the parts of a cursor.</p>
-
-<p>This extension does fully support <code>CGridView</code> (thanks to <a href="https://github.com/acardinale" class="user-mention">@acardinale</a> for the fix) and it should also be able to take the <code>CListView</code> as well.</p>
-
+<p>This extension does fully support <code>CGridView</code> (thanks to @acardinale for the fix) and it should also be able to take the <code>CListView</code> as well.</p>
 <p>As a side note to the above, <code>CGridView</code> is best used when you predefine the schema you wish to display within the definition of the <code>CGridView</code> widget. So, to display an example
 for a user model:</p>
-
 <pre><code>$this-&gt;widget('zii.widgets.grid.CGridView', array(
     'id'=&gt;'user-grid',
     'dataProvider'=&gt;$model-&gt;search(),
@@ -596,35 +401,101 @@ for a user model:</p>
     ),
 ));
 </code></pre>
-
 <p>This is normally the best method because, of course, MongoDB is schemaless (has a flexible schema is more appropriate) so sometimes it doesn't work so well in a rigid table.</p>
+<h2 id="emongocriteria">EMongoCriteria</h2>
+<p>The <code>EMongoCriteria</code> class can help build modular queries across many segments of your application providing an abstracted layer with helper functions enabling you to better create complex 
+queries.</p>
+<p>A brief, yet complete, example of using the <code>EMongoCriteria</code> would be:</p>
+<pre><code>$c = new EMongoCriteria();
+User::model()-&gt;find($c
+                -&gt;addCondition(array('name' =&gt; 'sammaye')) // This is basically a select
+                -&gt;addOrCondition(array(array('interest' =&gt; 'Drinking'), array('interest' =&gt; 'Clubbing'))) // This is adding a $or condition to our select
+                -&gt;skip(2) // This skips a number of rows
+                -&gt;limit(3) // This limits by a number of rows
+                    );
+</code></pre>
+<p>So you can see that quickly we can build very complex queries with ease.</p>
+<p>Just like with <code>CDbCriteria</code> you can also set all of these properties of the query straight from the constructor like so:</p>
+<pre><code>$c = new EMongoCriteria(array(
+    'condition' =&gt; array('name'=&gt;'sammaye'),
+    'limit' =&gt; 10
+));
+</code></pre>
+<p>The EMongoCriteria class implements many of the functions you would expect of CDbCriteria.</p>
+<h3 id="setcondition-getcondition">setCondition() / getCondition()</h3>
+<p>These basically just sets and gets the condition of the query.</p>
+<h3 id="addcondition">addCondition()</h3>
+<p>Adds a normal, non <code>$or</code> condition to the query and take an <code>array</code> as its only parameter.</p>
+<h3 id="addorcondition">addOrCondition()</h3>
+<p>Adds an <code>$or</code> condition and takes an array of <code>arrays</code> as its only parameter with each nested <code>array</code> being a condition within the <code>$or</code> (just like in the driver). </p>
+<p>It would be wise to note it will overwrite any <code>$or</code> previously placed in. </p>
+<h3 id="getsort-setsort">getSort() / setSort()</h3>
+<p>These simply get and set the sort of the query.</p>
+<h3 id="getskip-setskip">getSkip() / setSkip()</h3>
+<p>These simply get and set the skip of the query.</p>
+<h3 id="getlimit-setlimit">getLimit() / setLimit()</h3>
+<p>These simply get and set the limit of the query.</p>
+<h3 id="compare">compare()</h3>
+<p>This works a lot like <code>CDbCriteria</code>s and it heavily based on it.</p>
+<p>You simply enter <code>column</code>, <code>value</code> and <code>strong</code> parameter values (in that order) and the <code>EMongoCriteria</code> class will create a condition and merge it into your current condition 
+based upon the entered data. As examples:</p>
+<pre><code>$c-&gt;compare('name', 'sammaye');
 
-<h2>Known Flaws</h2>
-
+$c-&gt;compare('i', '&lt;4');
+</code></pre>
+<p>The compare funtion, as seen in the second example, will accept a certai number of operators. The operators supported are: <code>&lt;&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>=</code>.</p>
+<p>It is good to note that the function currently only accepts <code>AND</code> conditioning. </p>
+<h3 id="mergewith">mergeWith()</h3>
+<p>Just like in <code>CDbCriteria</code> this merges either an array or another <code>EMongoCriteria</code> object into this one, transferring all of its properties.</p>
+<p>As an example:</p>
+<pre><code>$c-&gt;mergeWith($otherC);
+</code></pre>
+<p>Now <code>$c</code> will have all the merged properties of <code>$otherC</code>.</p>
+<h3 id="toarray">toArray()</h3>
+<p>This basically will convert your EMongoCriteria into array form of the syntax:</p>
+<pre><code>array(
+    'condition' =&gt; array(),
+    'skip' =&gt; 1,
+    'limit' =&gt; 1,
+    'sort' =&gt; array()
+)
+</code></pre>
+<p>and, by default, is called like:</p>
+<pre><code>$c-&gt;toArray();
+</code></pre>
+<h3 id="important-for-contributors">Important for Contributors</h3>
+<p>If you are intending to contribute changes to MongoYii I should explain my own position on the existance of the <code>EMongoCriteria</code> class. I, personally, believe it is not needed.</p>
+<p>There are a number of reasons why. In SQL an abstraction is justified by, some but not all, of these reasons:</p>
+<ul>
+<li>Different implementations (i.e. MySQL and MSSQL and PostgreSQL) creates slightly different syntax</li>
+<li>SQL is a string based querying language as such it makes sense to have an object orientated abstraction layer</li>
+<li>SQL has some rather complex and difficult to form queries in it that would make an abstraction layer useful</li>
+</ul>
+<p>MongoDB suffers from none of these problems; first it has OO querying interface already, secondly it is easily to merge different queries together simply using <code>CMap::MergeArray()</code> 
+and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying 
+and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do <code>$or</code>s in this class). </p>
+<p>As such I believe that the <code>EMongoCriteria</code> class is just dead weight consuming memory which I could use for other tasks.</p>
+<p>This extension does not rely on <code>EMongoCriteria</code> internally.</p>
+<p>So I expect all modifications to certain parts of MongoYii to be both compatible with <code>EMongoCriteria</code> but also without. I will not accept pull requests which are biased to <code>EMongoCriteria</code> 
+usage, however, in the same breath I will not accept pull requests which do not accomodate for the class.</p>
+<h2 id="known-flaws">Known Flaws</h2>
 <ul>
 <li>Covered queries are not supported, but then as I am unsure if they really fit with active record</li>
 <li>Subdocuments are not automated, however, I have stated why above</li>
 <li>the aggregation framework does not fit well with active record as such it is not directly supported within the models</li>
-</ul><p>I am sure there are more but that is the immediate flaws you need to consider in this extension.</p>
-
-<h2>Bugs</h2>
-
+</ul>
+<p>I am sure there are more but that is the immediate flaws you need to consider in this extension.</p>
+<h2 id="bugs">Bugs</h2>
 <p>Probably some, however, I will endeavour to accept pull requests and fix reported bugs.</p>
-
-<h2>Examples</h2>
-
+<h2 id="examples">Examples</h2>
 <p>Please look to the tests folder for further examples of how to use this extension, it is quite comprehensive.</p>
-
-<h2>Running the Tests</h2>
-
+<h2 id="running-the-tests">Running the Tests</h2>
 <p>The tests require the PHPUnit plugin with all dependencies compiled. Using PEAR you can initiate the following command:</p>
-
 <pre><code>sudo pear install --force --alldeps phpunit/PHPUnit &amp;&amp;
 pear install phpunit/dbUnit &amp;&amp;
 pear install phpunit/PHPUnit_Story &amp;&amp;
 pear install phpunit/PHPUnit_Selenium
 </code></pre>
-
 <p>After that you can just tell PHPUnit to run all tests within the <code>tests/</code> folder with no real order.</p>
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
