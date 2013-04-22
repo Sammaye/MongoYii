@@ -127,10 +127,10 @@ class EMongoCriteria extends CComponent {
         if (preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)) {
             $value = $matches[2];
             $op = $matches[1];
-            if (!$strong && !preg_match('/^[0-9]+$/', $value))
+            if (!$strong && !preg_match('/^([0-9]|[1-9]{1}\d+)$/', $value))
                 $value = new MongoRegex("/$value/i");
             else {
-                if (preg_match('/^[0-9]+$/', $value))
+                if (preg_match('/^([0-9]|[1-9]{1}\d+)$/', $value))
                     $value = (int) $value;
             }
 
