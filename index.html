@@ -538,6 +538,69 @@ however with <code>many</code> it will create a new element for each model (row)
 <p><strong>Note:</strong> While on the subject, to avoid the iteration every time you save the root document (since validation is run by default in Yii on save) you should confine your subdocument
 validators to specific scenarios where they will be actively used.</p>
 
+<h3>Handling Subdocuments</h3>
+
+<p>As we already know MongoYii does not handle subdocuments automatically for you. if you wish to have an automatic handler for subdocuments it is normally considered good advice to make 
+your own based on the scenarios you require. One reason for this is because many people have many different document setups and since there is no predefined schema for the subdocuments I 
+cannot provide automated usage without short of taking every single possibility of subdocument existence into account.</p>
+
+<p>For this explanation we will assume you do not wish to make your own subdocument handler, but instead, are fine using MongoYiis and PHP owns built in abilities.</p>
+
+<p>As to how you go about handling subdocuments depends heavily upon how you intend to manage and use them.</p>
+
+<p>Okay, let's start at the top; are you using a class for these subdocuments? If the answer is "Yes sir!" then chance are that your subdocuments are quite complex and has a section in your 
+application all to itself with its own controller and everything like, for example, comments on a bog post.  </p>
+
+<p>Now the second question you must ask yourself; are you replacing these subdocuments every time you save them or do you want to use modifiers such as <code>$push</code>, <code>$pull</code>, <code>$pullAll</code>, <code>$pushAll</code>, 
+<code>$addToSet</code> ectera?</p>
+
+<p>If you wish to use modifiers each time then the best way to manage these type of documents is to make the subdocument singular class extend <code>EMongoModel</code>, for example, <code>Comment</code> 
+would extend <code>EMongoModel</code>.</p>
+
+<p>When, say, adding a comment to a post you would do:</p>
+
+<pre><code>if(isset($_POST['Comment'])){
+    $comment=new Comment;
+    $comment-&gt;attributes=$_POST['Comment'];
+    if($comment-&gt;validate())
+        $response = Post::model()-&gt;updateAll(array('_id' =&gt; $someId), array('$push' =&gt; $comment-&gt;getRawDocument()));
+}
+</code></pre>
+
+<p>And you would use relatively similar behaviour for most other operations you need to perform. In this case MongoYii merely acts as a helper and glue for you to make life a little easier, 
+however, at the end of the day it will not auto manage subdocuments for you.</p>
+
+<p>There are plans in the works to give helper functions to make your life easier on this front however, for the minute, this is the best method.</p>
+
+<p>If you are not using a class then chances are your subdocuments are quite primative and most likely are just detail to the root document and you are replacing them each time. This scenario 
+also applies if you are using complex classes but you are replacing the subdocument list on each save.</p>
+
+<p>If this is the case you can either use the subdocument validator mentioned above to process your subdocuments or you can actually programmably do this:</p>
+
+<pre><code>$user=User::model()-&gt;findBy_id($uid);
+if(isset($_POST['numbers'])){
+    foreach($_POST['numbers'] as $row){
+        $d=new Model();
+        $d-&gt;attributes = $row;
+        $valid=$d-&gt;validate()&amp;&amp;$valid;
+        $user-&gt;numbers[] = $d;            
+    }
+}
+if($valid) $user-&gt;save();
+</code></pre>
+
+<p>as an example.</p>
+
+<p>As an added side note you can actually treat the array fields witin your document that contain the subdocuments the same as any other field. For example this will work:</p>
+
+<pre><code>$m=new Something();
+$m-&gt;name='thing';
+$parentClass-&gt;things[6] = $m;
+$parentClass-&gt;save();
+</code></pre>
+
+<p>So subdocuments are very flexible in this extension and they do not corner you into thinking one way and one way only, much like MongoDB itself really.</p>
+
 <h2>Using the ActiveDataProvider</h2>
 
 <p>This extension comes with a <code>CActiveDataProvider</code> helper called <code>EMongoDataProvider</code>. It works exactly the same way except for how it is called.</p>
@@ -687,7 +750,7 @@ $c-&gt;compare('i', '&lt;4');
 
 <ul>
 <li>Different implementations (i.e. MySQL and MSSQL and PostgreSQL) creates slightly different syntax</li>
-<li>SQL is a string based querying language as such it makes sense to have an object orientated abstraction layer</li>
+<li>SQL is a string based querying language as such it makes sense to have an object oriented abstraction layer</li>
 <li>SQL has some rather complex and difficult to form queries in it that would make an abstraction layer useful</li>
 </ul>
 
@@ -700,7 +763,7 @@ and make life a little harder and maybe even create unperformant queries (especi
 <p>This extension does not rely on <code>EMongoCriteria</code> internally.</p>
 
 <p>So I expect all modifications to certain parts of MongoYii to be both compatible with <code>EMongoCriteria</code> but also without. I will not accept pull requests which are biased to <code>EMongoCriteria</code> 
-usage, however, in the same breath I will not accept pull requests which do not accomodate for the class.</p>
+usage, however, in the same breath I will not accept pull requests which do not accommodate for the class.</p>
 
 <h2>Known Flaws</h2>
 
