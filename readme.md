@@ -249,7 +249,7 @@ You can also define your own scopes, however, it is a little different to how yo
 		));
 	}
 
-As you will notice the `_certeria` variable within the EMongoDocument which would normally be a `EMongoCriteria` object is actually completely array based.
+As you will notice the `_criteria` variable within the EMongoDocument which would normally be a `EMongoCriteria` object is actually completely array based.
 
 This applies to all scope actions; they are all array based.
 
@@ -527,6 +527,119 @@ for a user model:
 
 This is normally the best method because, of course, MongoDB is schemaless (has a flexible schema is more appropriate) so sometimes it doesn't work so well in a rigid table.
 
+## EMongoCriteria
+
+The `EMongoCriteria` class can help build modular queries across many segments of your application providing an abstracted layer with helper functions enabling you to better create complex 
+queries.
+
+A brief, yet complete, example of using the `EMongoCriteria` would be:
+
+	$c = new EMongoCriteria();
+	User::model()->find($c
+					->addCondition(array('name' => 'sammaye')) // This is basically a select
+					->addOrCondition(array(array('interest' => 'Drinking'), array('interest' => 'Clubbing'))) // This is adding a $or condition to our select
+					->skip(2) // This skips a number of rows
+					->limit(3) // This limits by a number of rows
+						);
+
+So you can see that quickly we can build very complex queries with ease.
+
+Just like with `CDbCriteria` you can also set all of these properties of the query straight from the constructor like so:
+
+	$c = new EMongoCriteria(array(
+		'condition' => array('name'=>'sammaye'),
+		'limit' => 10
+	));
+
+The EMongoCriteria class implements many of the functions you would expect of CDbCriteria.
+
+### setCondition() / getCondition()
+
+These basically just sets and gets the condition of the query.
+
+### addCondition()
+
+Adds a normal, non `$or` condition to the query and take an `array` as its only parameter.
+
+### addOrCondition()
+
+Adds an `$or` condition and takes an array of `arrays` as its only parameter with each nested `array` being a condition within the `$or` (just like in the driver). 
+
+It would be wise to note it will overwrite any `$or` previously placed in. 
+
+### getSort() / setSort()
+
+These simply get and set the sort of the query.
+
+### getSkip() / setSkip()
+
+These simply get and set the skip of the query.
+
+### getLimit() / setLimit()
+
+These simply get and set the limit of the query.
+
+### compare()
+
+This works a lot like `CDbCriteria`s and it heavily based on it.
+
+You simply enter `column`, `value` and `strong` parameter values (in that order) and the `EMongoCriteria` class will create a condition and merge it into your current condition 
+based upon the entered data. As examples:
+
+	$c->compare('name', 'sammaye');
+	
+	$c->compare('i', '<4');
+	
+The compare funtion, as seen in the second example, will accept a certai number of operators. The operators supported are: `<>`, `<=`, `>=`, `<`, `>`, `=`.
+
+It is good to note that the function currently only accepts `AND` conditioning. 
+
+### mergeWith()
+
+Just like in `CDbCriteria` this merges either an array or another `EMongoCriteria` object into this one, transferring all of its properties.
+
+As an example:
+
+	$c->mergeWith($otherC);
+
+Now `$c` will have all the merged properties of `$otherC`.
+
+### toArray()
+
+This basically will convert your EMongoCriteria into array form of the syntax:
+
+	array(
+		'condition' => array(),
+		'skip' => 1,
+		'limit' => 1,
+		'sort' => array()
+	)
+
+and, by default, is called like:
+
+	$c->toArray();
+
+### Important for Contributors
+
+If you are intending to contribute changes to MongoYii I should explain my own position on the existance of the `EMongoCriteria` class. I, personally, believe it is not needed.
+
+There are a number of reasons why. In SQL an abstraction is justified by, some but not all, of these reasons:
+
+- Different implementations (i.e. MySQL and MSSQL and PostgreSQL) creates slightly different syntax
+- SQL is a string based querying language as such it makes sense to have an object orientated abstraction layer
+- SQL has some rather complex and difficult to form queries in it that would make an abstraction layer useful
+
+MongoDB suffers from none of these problems; first it has OO querying interface already, secondly it is easily to merge different queries together simply using `CMap::MergeArray()` 
+and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying 
+and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do `$or`s in this class). 
+
+As such I believe that the `EMongoCriteria` class is just dead weight consuming memory which I could use for other tasks.
+
+This extension does not rely on `EMongoCriteria` internally.
+
+So I expect all modifications to certain parts of MongoYii to be both compatible with `EMongoCriteria` but also without. I will not accept pull requests which are biased to `EMongoCriteria` 
+usage, however, in the same breath I will not accept pull requests which do not accomodate for the class.
+ 
 ## Known Flaws
 
 - Covered queries are not supported, but then as I am unsure if they really fit with active record
