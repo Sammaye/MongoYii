@@ -11,7 +11,7 @@ window.onload = function () {
     			}
 
     			if (openLevel > level) {
-    				toc += (new Array(openLevel - level + 1)).join("<ul>");
+    				toc += (new Array(openLevel - level + 1)).join("<ul class=\""+(openLevel!=1&&openLevel!=2?"indent":"")+"\">");
     			} else if (openLevel < level) {
     				toc += (new Array(level - openLevel + 1)).join("</ul>");
     			}
@@ -19,8 +19,8 @@ window.onload = function () {
     			level = parseInt(openLevel);
 
     			var anchor = titleText.replace(/ /g, "_");
-    			toc += "<li><a href=\"#" + anchor + "\">" + titleText
-    				+ "</a></li>";
+	    		toc += "<li><a href=\"#" + anchor + "\">" + titleText
+	    			+ "</a></li>";
 
     			return "<h" + openLevel + "><a name=\"" + anchor + "\">"
     				+ titleText + "</a></h" + closeLevel + ">";

@@ -335,7 +335,15 @@ a.buttons:hover {
 #toc ul{
 	list-style:none;
   padding:0;
-  margin:0 0 0 10px;
+}
+
+#toc ul.indent{
+	margin:0 0 0 10px;
+	list-style:disc;
+}
+
+#toc ul.indent li{
+	list-style-type:none;
 }
 
 #toc ul a{
