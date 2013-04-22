@@ -121,7 +121,7 @@ class EMongoCriteria extends CComponent {
      * @return EMongoCriteria
      */
     public function compare($column, $value = null, $strong = false) {
-        if (!$value)
+        if ($value===null)
             return $this;
         $query = array();
         if (preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)) {
