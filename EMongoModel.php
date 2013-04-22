@@ -114,38 +114,12 @@ class EMongoModel extends CModel{
 	 */
 	public function __construct($scenario = 'insert'){
 
+		$this->getDbConnection()->setDocumentCache($this);
+
 		if($scenario===null) // internally used by populateRecord() and model()
 			return;
 
 		$this->setScenario($scenario);
-
-		// Run reflection and cache it if not already there
-		if(!$this->getDbConnection()->getObjCache(get_class($this)) && get_class($this) != 'EMongoModel' /* We can't cache the model */){
-			$virtualFields = array();
-			$documentFields = array();
-
-			$reflect = new \ReflectionClass(get_class($this));
-			$class_vars = $reflect->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED); // Pre-defined doc attributes
-
-			foreach ($class_vars as $prop) {
-
-				if($prop->isStatic())
-					continue;
-
-				$docBlock = $prop->getDocComment();
-
-				// If it is not public and it is not marked as virtual then assume it is document field
-				if($prop->isProtected() || preg_match('/@virtual/i', $docBlock) <= 0){
-					$documentFields[] = $prop->getName();
-				}else{
-					$virtualFields[] = $prop->getName();
-				}
-			}
-			$this->getDbConnection()->setObjectCache(get_class($this),
-				sizeof($virtualFields) > 0 ? $virtualFields : null,
-				sizeof($documentFields) > 0 ? $documentFields : null
-			);
-		}
 
 		$this->init();
 
@@ -168,10 +142,9 @@ class EMongoModel extends CModel{
 	 */
 	public function attributeNames(){
 
-		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
-		$virtuals = $this->getDbConnection()->getVirtualObjCache(get_class($this));
+		$fields = $this->getDbConnection()->getFieldCache(get_class($this),true);
 
-		$cols = array_merge(is_array($fields) ? $fields : array(), is_array($virtuals) ? $virtuals : array(), array_keys($this->_attributes));
+		$cols = array_merge($fields, array_keys($this->_attributes));
 		return $cols!==null ? $cols : array();
 	}
 
@@ -188,7 +161,7 @@ class EMongoModel extends CModel{
 	public function hasAttribute($name)
 	{
 		$attrs = $this->_attributes;
-		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
+		$fields = $this->getDbConnection()->getFieldCache(get_class($this));
 		return isset($attrs[$name])||isset($fields[$name])||property_exists($this, $name)?true:false;
 	}
 
@@ -226,7 +199,7 @@ class EMongoModel extends CModel{
 	public function getAttributes($names=true)
 	{
 		$attributes=$this->_attributes;
-		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
+		$fields = $this->getDbConnection()->getFieldCache(get_class($this));
 
 		if(is_array($fields)){
 			foreach($fields as $name){
@@ -263,15 +236,18 @@ class EMongoModel extends CModel{
 		if(!is_array($values))
 			return;
 		$attributes=array_flip($safeOnly ? $this->getSafeAttributeNames() : $this->attributeNames());
+		$_meta = $this->getDbConnection()->getDocumentCache(get_class($this));
 		foreach($values as $name=>$value)
 		{
+			$field_meta = isset($_meta[$name]) ? $meta[$name] : array();
 			if($safeOnly){
 				if(isset($attributes[$name]))
-					$this->$name=!is_array($value) && preg_match('/^[0-9]+$/', $value) > 0 ? (int)$value : $value;
+					$this->$name=!is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0 ? (int)$value : $value;
 				elseif($safeOnly)
 					$this->onUnsafeAttribute($name,$value);
-			}else
-				$this->$name=!is_array($value) && preg_match('/^[0-9]+$/', $value) > 0 ? (int)$value : $value;
+			}else{
+				$this->$name=!is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$$/' /* Will only match real integers, unsigned */, $value) > 0 ? (int)$value : $value;
+			}
 		}
 	}
 
@@ -290,7 +266,8 @@ class EMongoModel extends CModel{
 	}
 
 	/**
-	 * Atm you are not allowed to change the primary key
+	 * You can change the primarykey but due to how MongoDB
+	 * actually works this IS NOT RECOMMENDED
 	 */
 	public function primaryKey(){
 		return '_id';
@@ -510,17 +487,9 @@ class EMongoModel extends CModel{
 		$this->_related=array();
 
 		// blank class properties
-		$cache = $this->getDbConnection()->getObjCache(get_class($this));
-
-		if(isset($cache['document'])){
-			foreach($cache['document'] as $field)
-				$this->$field = null;
-		}
-
-		if(isset($cache['virtual'])){
-			foreach($cache['virtual'] as $field)
-				$this->$field = null;
-		}
+		$cache = $this->getDbConnection()->getDocumentCache(get_class($this));
+		foreach($cache as $k => $v)
+			$this->$k = null;
 		return true;
     }
 
@@ -529,7 +498,7 @@ class EMongoModel extends CModel{
 	 */
 	public function getDocument(){
 
-		$attributes = $this->getDbConnection()->getFieldObjCache(get_class($this));
+		$attributes = $this->getDbConnection()->getFieldCache(get_class($this));
 		$doc = array();
 
 		if(is_array($attributes)){

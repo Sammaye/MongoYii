@@ -76,7 +76,7 @@ class EMongoClient extends CApplicationComponent{
 	 * to keep getting them
 	 * @var array
 	 */
-	private $_objCache = array();
+	private $_meta = array();
 
 	/**
 	 * The default action is to get a collection
@@ -199,7 +199,7 @@ class EMongoClient extends CApplicationComponent{
 		}
 		return $this->getDB()->$collection->aggregate($pipelines);
 	}
-	
+
 	/**
 	 * Command helper
 	 * @param array|sting $command
@@ -217,46 +217,64 @@ class EMongoClient extends CApplicationComponent{
 	}
 
 	/**
-	 * Provides a method by which to set some sort of cache for a model to
-	 * remember things such as reflection of fields
-	 * @param string $name
-	 * @param array $virtualFields
-	 * @param array $documentFields
+	 * Sets the document cache for any particular document (EMongoDocument/EMongoModel)
+	 * sent in as the first parameter of this function
+	 * @param $o
 	 */
-	public function setObjectCache($name, $virtualFields = null, $documentFields = null){
+	function setDocumentCache($o){
+		if(
+			$this->getDocumentCache(get_class($o))===array() && // Run reflection and cache it if not already there
+			(get_class($o) != 'EMongoDocument' && get_class($o) != 'EMongoModel') /* We can't cache the model */
+		){
 
-		if($virtualFields)
-			$this->_objCache[$name]['virtual'] = $virtualFields;
+			$_meta = array();
 
-		if($documentFields)
-			$this->_objCache[$name]['document'] = $documentFields;
+			$reflect = new ReflectionClass(get_class($o));
+			$class_vars = $reflect->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED); // Pre-defined doc attributes
+
+			foreach ($class_vars as $prop) {
+
+				if($prop->isStatic())
+					continue;
+
+				$docBlock = $prop->getDocComment();
+				$field_meta = array(
+					'name' => $prop->getName(),
+					'virtual' => $prop->isProtected() || preg_match('/@virtual/i', $docBlock) <= 0 ? false : true
+				);
+
+				// Lets fetch the data type for this field
+				// Since we always fetch the data type for this field we make a regex that will only pick out the first
+				if(preg_match('/@var ([a-zA-Z]+)/', $docBlock, $matches) > 0){
+					$field_meta['type'] = $matches[1];
+				}
+				$_meta[$prop->getName()] = $field_meta;
+			}
+			$this->_meta[get_class($o)] = $_meta;
+		}
 	}
 
 	/**
-	 * Gets the virtual fields of a model from cache
+	 * Get a list of the fields (attributes) for a document from cache
 	 * @param string $name
-	 * @return NULL|array
+	 * @param boolean $include_virtual
 	 */
-	public function getVirtualObjCache($name){
-		return isset($this->_objCache[$name], $this->_objCache[$name]['virtual']) ? $this->_objCache[$name]['virtual'] : null;
+	public function getFieldCache($name, $include_virtual = false){
+		$doc = isset($this->_meta[$name]) ? $this->_meta[$name] : array();
+		$fields = array();
+		
+		foreach($doc as $name => $opts)
+			if($include_virtual || !$opts['virtual']) $fields[] = $name;
+		return $fields;		
 	}
 
 	/**
-	 * Gets the field of a model from cache
+	 * Just gets the document cache for a model
 	 * @param string $name
 	 * @return NULL|array
 	 */
-	public function getFieldObjCache($name){
-		return isset($this->_objCache[$name], $this->_objCache[$name]['document']) ? $this->_objCache[$name]['document'] : null;
-	}
-
-	/**
-	 * Just gets the object cache for a model
-	 * @param string $name
-	 * @return NULL|array
-	 */
-	public function getObjCache($name){
-		return isset($this->_objCache[$name]) ? $this->_objCache[$name] : null;
+	public function getDocumentCache($name){
+		return isset($this->_meta[$name]) ? $this->_meta[$name] : array();
 	}
 
 	/**
@@ -299,7 +317,7 @@ class EMongoClient extends CApplicationComponent{
 	    }
 	    return new MongoID($id);
 	}
-	
+
 	/**
 	 * Set read preference on MongoClient
 	 * @param $pref
