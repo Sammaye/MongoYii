@@ -1,3 +1,5 @@
+**You can find a more user friendly version of this documentation on the extensions Github page: [http://sammaye.github.io/MongoYii](http://sammaye.github.io/MongoYii)**
+
 # MongoYii
 
 Another active record handler for the Yii framework that supports MongoDB.
