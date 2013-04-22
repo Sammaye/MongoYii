@@ -413,4 +413,8 @@ section {
     font-size:12pt;
     color:#444;
   }
+  
+  .sidebar{
+  	display:none;
+  }
 }
