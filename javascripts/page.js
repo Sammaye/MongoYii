@@ -1,6 +1,3 @@
-/**
- * @author smillman
- */
 window.onload = function () {
     var toc = "";
     var level = 0;
