@@ -26,7 +26,7 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * Holds criteria information for scopes
 	 */
-	private $_criteria = array();
+	private $_criteria;
 
 	/**
 	 * Sets up our model and set the field cache just like in EMongoModel
@@ -75,7 +75,7 @@ class EMongoDocument extends EMongoModel{
 
 	/**
 	 * The scope attached to this model
-	 *
+	 *	
 	 * It is very much like how Yii normally uses scopes except the params are slightly different.
 	 *
 	 * @example
@@ -121,9 +121,12 @@ class EMongoDocument extends EMongoModel{
 	 * Resets the scopes applied to the model clearing the _criteria variable
 	 * @return $this
 	 */
-	public function resetScope()
+	public function resetScope($resetDefault=true)
 	{
-		$this->_criteria = array();
+		if($resetDefault)
+			$this->_criteria = array();
+		else
+			$this->_criteria = null;
 		return $this;
 	}
 
@@ -747,10 +750,12 @@ class EMongoDocument extends EMongoModel{
      */
 	public function getDbCriteria($createIfNull=true)
 	{
-		if(empty($this->_criteria))
+		if($this->_criteria===null)
 		{
 			if(($c=$this->defaultScope())!==array() || $createIfNull)
 				$this->_criteria=$c;
+			else
+				return array();
 		}
 		return $this->_criteria;
 	}
