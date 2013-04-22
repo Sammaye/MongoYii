@@ -473,6 +473,66 @@ however with `many` it will create a new element for each model (row) with embed
 **Note:** While on the subject, to avoid the iteration every time you save the root document (since validation is run by default in Yii on save) you should confine your subdocument
 validators to specific scenarios where they will be actively used.
 
+### Handling Subdocuments
+
+As we already know MongoYii does not handle subdocuments automatically for you. if you wish to have an automatic handler for subdocuments it is normally considered good advice to make 
+your own based on the scenarios you require. One reason for this is because many people have many different document setups and since there is no predefined schema for the subdocuments I 
+cannot provide automated usage without short of taking every single possibility of subdocument existence into account.
+
+For this explanation we will assume you do not wish to make your own subdocument handler, but instead, are fine using MongoYiis and PHP owns built in abilities.
+
+As to how you go about handling subdocuments depends heavily upon how you intend to manage and use them.
+
+Okay, let's start at the top; are you using a class for these subdocuments? If the answer is "Yes sir!" then chance are that your subdocuments are quite complex and has a section in your 
+application all to itself with its own controller and everything like, for example, comments on a bog post.  
+
+Now the second question you must ask yourself; are you replacing these subdocuments every time you save them or do you want to use modifiers such as `$push`, `$pull`, `$pullAll`, `$pushAll`, 
+`$addToSet` ectera?
+
+If you wish to use modifiers each time then the best way to manage these type of documents is to make the subdocument singular class extend `EMongoModel`, for example, `Comment` 
+would extend `EMongoModel`.
+
+When, say, adding a comment to a post you would do:
+
+	if(isset($_POST['Comment'])){
+		$comment=new Comment;
+		$comment->attributes=$_POST['Comment'];
+		if($comment->validate())
+			$response = Post::model()->updateAll(array('_id' => $someId), array('$push' => $comment->getRawDocument()));
+	}
+	
+And you would use relatively similar behaviour for most other operations you need to perform. In this case MongoYii merely acts as a helper and glue for you to make life a little easier, 
+however, at the end of the day it will not auto manage subdocuments for you.
+
+There are plans in the works to give helper functions to make your life easier on this front however, for the minute, this is the best method.
+
+If you are not using a class then chances are your subdocuments are quite primative and most likely are just detail to the root document and you are replacing them each time. This scenario 
+also applies if you are using complex classes but you are replacing the subdocument list on each save.
+
+If this is the case you can either use the subdocument validator mentioned above to process your subdocuments or you can actually programmably do this:
+
+	$user=User::model()->findBy_id($uid);
+	if(isset($_POST['numbers'])){
+		foreach($_POST['numbers'] as $row){
+			$d=new Model();
+			$d->attributes = $row;
+			$valid=$d->validate()&&$valid;
+			$user->numbers[] = $d;			
+		}
+	}
+	if($valid) $user->save();
+	
+as an example.
+
+As an added side note you can actually treat the array fields witin your document that contain the subdocuments the same as any other field. For example this will work:
+
+	$m=new Something();
+	$m->name='thing';
+	$parentClass->things[6] = $m;
+	$parentClass->save();
+
+So subdocuments are very flexible in this extension and they do not corner you into thinking one way and one way only, much like MongoDB itself really.
+
 ## Using the ActiveDataProvider
 
 This extension comes with a `CActiveDataProvider` helper called `EMongoDataProvider`. It works exactly the same way except for how it is called.
@@ -613,7 +673,7 @@ If you are intending to contribute changes to MongoYii I should explain my own p
 There are a number of reasons why. In SQL an abstraction is justified by, some but not all, of these reasons:
 
 - Different implementations (i.e. MySQL and MSSQL and PostgreSQL) creates slightly different syntax
-- SQL is a string based querying language as such it makes sense to have an object orientated abstraction layer
+- SQL is a string based querying language as such it makes sense to have an object oriented abstraction layer
 - SQL has some rather complex and difficult to form queries in it that would make an abstraction layer useful
 
 MongoDB suffers from none of these problems; first it has OO querying interface already, secondly it is easily to merge different queries together simply using `CMap::MergeArray()` 
@@ -625,7 +685,7 @@ As such I believe that the `EMongoCriteria` class is just dead weight consuming 
 This extension does not rely on `EMongoCriteria` internally.
 
 So I expect all modifications to certain parts of MongoYii to be both compatible with `EMongoCriteria` but also without. I will not accept pull requests which are biased to `EMongoCriteria` 
-usage, however, in the same breath I will not accept pull requests which do not accomodate for the class.
+usage, however, in the same breath I will not accept pull requests which do not accommodate for the class.
  
 ## Known Flaws
 
