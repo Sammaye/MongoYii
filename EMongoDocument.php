@@ -516,7 +516,7 @@ class EMongoDocument extends EMongoModel{
 	 * Find some records
 	 * @param array $criteria
 	 */
-    public function find($criteria=array()){
+    public function find($criteria=array(), $fields=array()){
     	$this->trace(__FUNCTION__);
 
 		if($criteria instanceof EMongoCriteria){
@@ -527,7 +527,7 @@ class EMongoDocument extends EMongoModel{
 		}
 
     	if($c!==array()){
-    		$cursor = new EMongoCursor($this, $this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria));
+    		$cursor = new EMongoCursor($this, $this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria), $fields);
 			if(isset($c['sort'])) $cursor->sort($c['sort']);
     		if(isset($c['skip'])) $cursor->skip($c['skip']);
     		if(isset($c['limit'])) $cursor->limit($c['limit']);
@@ -535,7 +535,7 @@ class EMongoDocument extends EMongoModel{
     		$this->resetScope();
 	   		return $cursor;
     	}else{
-    		return new EMongoCursor($this, $criteria);
+    		return new EMongoCursor($this, $criteria, $fields);
     	}
     }
 
@@ -647,8 +647,12 @@ class EMongoDocument extends EMongoModel{
 	    $criteria = !empty($criteria) && !$criteria instanceof EMongoCriteira ? $criteria : $this->getDbCriteria();
 
 	    if($criteria instanceof EMongoCriteria)
-	        $crtieria = $criteria->getCondition();
-	    return $this->getCollection()->find(isset($criteria) ? $criteria : array())->count();
+	        $criteria = $criteria->getCondition();
+
+	    if(!isset($criteria))
+			return $this->getCollection()->count();
+		else
+			return $this->getCollection()->count($criteria);
 	}
 
 	/**

@@ -26,7 +26,7 @@ class EMongoCursor implements Iterator, Countable{
 	 * @param array|MongoCursor $condition Either a condition array (without sort,limit and skip) or a MongoCursor Object
 	 * @param string $class the class name for the active record
 	 */
-    public function __construct($modelClass,$criteria=array()) {
+    public function __construct($modelClass,$criteria=array(), $fields = array()) {
 
     	if(is_string($modelClass)){
 			$this->modelClass=$modelClass;
@@ -41,7 +41,7 @@ class EMongoCursor implements Iterator, Countable{
         	$this->cursor->reset();
     	}elseif($criteria instanceof EMongoCriteria){
     		$this->criteria = $criteria;
-			$this->cursor = $this->model->getCollection()->find($criteria->condition)->sort($criteria->sort);
+			$this->cursor = $this->model->getCollection()->find($criteria->condition, $fields)->sort($criteria->sort);
 			if($criteria->skip != 0)
 				$this->cursor->skip($criteria->skip);
 			if($criteria->limit!=0)
@@ -49,7 +49,7 @@ class EMongoCursor implements Iterator, Countable{
     	}else{
 			// Then we are doing an active query
 			$this->criteria = $criteria;
-			$this->cursor = $this->model->getCollection()->find($criteria);
+			$this->cursor = $this->model->getCollection()->find($criteria, $fields);
         }
 
         return $this; // Maintain chainability
