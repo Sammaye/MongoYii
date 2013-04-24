@@ -75,7 +75,7 @@ class EMongoDocument extends EMongoModel{
 
 	/**
 	 * The scope attached to this model
-	 *	
+	 *
 	 * It is very much like how Yii normally uses scopes except the params are slightly different.
 	 *
 	 * @example
@@ -440,11 +440,10 @@ class EMongoDocument extends EMongoModel{
 				throw new CDbException(Yii::t('yii','The active record cannot be updated because it has no _id.'));
 
 			if($attributes!==null){
-				$attributes=$this->getAttributes($attributes);
-				unset($attributes[$this->primaryKey()]);
+				$attributes=$this->filterRawDocument($attributes);
 				$this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
 			}else
-				$this->getCollection()->save($this->getAttributes($attributes));
+				$this->getCollection()->save($this->getRawDocument());
 			$this->afterSave();
 			return true;
 		}
