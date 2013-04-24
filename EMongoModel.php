@@ -309,7 +309,11 @@ class EMongoModel extends CModel{
 		// Let's get the parts of the relation to understand it entirety of its context
 		$cname = $relation[1];
 		$fkey = $relation[2];
+		$o = $cname::model();
 		$pk = isset($relation['on']) ? $this->{$relation['on']} : $this->{$this->primaryKey()};
+		
+		if($fkey==$o->primaryKey() && !($pk instanceof MongoID))
+			$pk = new MongoID($pk);
 
 		// Form the where clause
 		$where = array();
@@ -320,6 +324,7 @@ class EMongoModel extends CModel{
 
 			// It is an array of _ids
 			$clause = array_merge($where, array($fkey=>array('$in' => $pk)));
+
 		}elseif($pk instanceof MongoDBRef){
 
 			// If it is a DBRef I can only get one doc so I should probably just return it here
@@ -338,7 +343,9 @@ class EMongoModel extends CModel{
 			$clause = array_merge($where, array($fkey=>$pk));
 		}
 
-		$o = $cname::model();
+
+
+		
 		if($relation[0]==='one'){
 
 			// Lets find it and return it
