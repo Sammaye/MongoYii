@@ -647,7 +647,7 @@ class EMongoDocument extends EMongoModel{
 	    $criteria = !empty($criteria) && !$criteria instanceof EMongoCriteira ? $criteria : $this->getDbCriteria();
 
 	    if($criteria instanceof EMongoCriteria)
-	        $crtieria = $criteria->getCondition();
+	        $criteria = $criteria->getCondition();
 	    return $this->getCollection()->find(isset($criteria) ? $criteria : array())->count();
 	}
 
