@@ -21,12 +21,17 @@ class EMongoCursor implements Iterator, Countable{
 	private $cursor = array();
 	private $current;
 
+    private $isCertainFields = false;
+
 	/**
 	 * The cursor constructor
 	 * @param array|MongoCursor $condition Either a condition array (without sort,limit and skip) or a MongoCursor Object
 	 * @param string $class the class name for the active record
 	 */
     public function __construct($modelClass,$criteria=array(), $fields = array()) {
+
+        if(!empty($fields))
+            $this->isCertainFields = true;
 
     	if(is_string($modelClass)){
 			$this->modelClass=$modelClass;
@@ -82,7 +87,10 @@ class EMongoCursor implements Iterator, Countable{
     public function current() {
     	if($this->model === null)
 			throw new EMongoException(Yii::t('yii', "The MongoCursor must have a model"));
-    	return $this->current=$this->model->populateRecord($this->cursor()->current());
+        if($this->isCertainFields)
+            return $this->current=$this->cursor()->current();
+        else
+    	   return $this->current=$this->model->populateRecord($this->cursor()->current());
     }
 
     public function count($takeSkip = false /* Was true originally but it was to change the way the driver worked which seemed wrong */){
