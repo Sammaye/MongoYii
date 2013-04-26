@@ -713,12 +713,12 @@ Or as an element within the defined array:
 		);
 	}
 
-There is also a more direct method using the functions directly, as an example:
+There is also a more direct method using the read functions of the active record model, as an example:
 
 	User::model()->find(array(),array('_id'=>0,'d'=>1));
 
-These will return `partial` `EMongoDocument` instances, either eagerly or in a cursor object. This speicifcation is implemented within all currently existing read functions such as
-`findOne` and `findBy_id` and `findByPk` however, they are not accepted within the write function (`update`, `insert`, `save` etc).
+These will return `partial=true` `EMongoDocument` instances, either eagerly or in a cursor object. This specification is implemented within all currently existing read functions such as
+`findOne` and `findBy_id` and `findByPk` however, they are not accepted within the write functions (`update`, `insert`, `save` etc).
 
 When a document is returned as partial it will only save the root level fields that are included within the result of the query.
 
