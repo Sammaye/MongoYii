@@ -216,8 +216,10 @@ class EMongoDocument extends EMongoModel{
 	 * @param mixed $value
 	 */
 	public function setAttribute($name,$value){
-		if($this->getIsPartial())
-			$this->_projected_fields[$name] = 1;
+		// At the moment the projection is restricted to only fields returned in result set
+		// Uncomment this to change that
+		//if($this->getIsPartial())
+		//	$this->_projected_fields[$name] = 1;
 		return parent::setAttribute($name, $value);
 	}
 
@@ -555,7 +557,7 @@ class EMongoDocument extends EMongoModel{
 				$this->mergeCriteria(isset($c['project']) ? $c['project'] : array(), $fields))
 		)!==null){
 			$this->resetScope();
-			return $this->populateRecord($record);
+			return $this->populateRecord($record,true,$fields===array()?false:true);
 		}else
 			return null;
 	}
