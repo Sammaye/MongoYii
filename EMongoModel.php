@@ -334,21 +334,23 @@ class EMongoModel extends CModel{
 		if(isset($relation['where'])) $where = array_merge($relation['where'], $params);
 
 		// Find out what the pk is and what kind of condition I should apply to it
-		if(is_array($pk)){
-
+		if (is_array($pk)) {
+            	//It is an array of references
+            	if (MongoDBRef::isRef(reset($pk))) {
+                	$result = [];
+                	foreach ($pk as $singleReference) {
+                    		$row = $this->populateReference($singleReference, $cname);
+                    		if ($row) array_push($result, $row);
+                	}
+                	return $result;
+            	}
 			// It is an array of _ids
 			$clause = array_merge($where, array($fkey=>array('$in' => $pk)));
 		}elseif($pk instanceof MongoDBRef){
 
-			// If it is a DBRef I can only get one doc so I should probably just return it here
+			// I should probably just return it here
 			// otherwise I will continue on
-			$row = $pk::get();
-			if(isset($row['_id'])){
-				$o = $cname::model();
-				$o->populateRecord($row);
-				return $o;
-			}
-			return null;
+			return $this->populateReference($pk, $cname);
 
 		}else{
 
@@ -368,6 +370,21 @@ class EMongoModel extends CModel{
 		}
 		return $cursor;
 	}
+	
+	
+	
+	/**
+     	* @param mixed $reference Reference to populate
+     	* @param null|string $cname Class of model to populate. If not specified, populates data on current model
+     	* @return EMongoModel
+     	*/
+    	public function populateReference($reference, $cname = null)
+    	{
+        	$row = MongoDBRef::get(self::$db->getDB(), $reference);
+        	$o=(is_null($cname))?$this:$cname::model();
+        	return $o->populateRecord($row);
+    	}
+	
 
 	/**
 	 * Returns a value indicating whether the named related object(s) has been loaded.
