@@ -337,7 +337,7 @@ class EMongoModel extends CModel{
 		if (is_array($pk)) {
             	//It is an array of references
             	if (MongoDBRef::isRef(reset($pk))) {
-                	$result = [];
+                	$result = array();
                 	foreach ($pk as $singleReference) {
                     		$row = $this->populateReference($singleReference, $cname);
                     		if ($row) array_push($result, $row);
@@ -370,9 +370,9 @@ class EMongoModel extends CModel{
 		}
 		return $cursor;
 	}
-	
-	
-	
+
+
+
 	/**
      	* @param mixed $reference Reference to populate
      	* @param null|string $cname Class of model to populate. If not specified, populates data on current model
@@ -384,7 +384,7 @@ class EMongoModel extends CModel{
         	$o=(is_null($cname))?$this:$cname::model();
         	return $o->populateRecord($row);
     	}
-	
+
 
 	/**
 	 * Returns a value indicating whether the named related object(s) has been loaded.
