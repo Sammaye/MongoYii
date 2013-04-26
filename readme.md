@@ -477,21 +477,21 @@ validators to specific scenarios where they will be actively used.
 
 ### Handling Subdocuments
 
-As we already know MongoYii does not handle subdocuments automatically for you. if you wish to have an automatic handler for subdocuments it is normally considered good advice to make 
-your own based on the scenarios you require. One reason for this is because many people have many different document setups and since there is no predefined schema for the subdocuments I 
+As we already know MongoYii does not handle subdocuments automatically for you. if you wish to have an automatic handler for subdocuments it is normally considered good advice to make
+your own based on the scenarios you require. One reason for this is because many people have many different document setups and since there is no predefined schema for the subdocuments I
 cannot provide automated usage without short of taking every single possibility of subdocument existence into account.
 
 For this explanation we will assume you do not wish to make your own subdocument handler, but instead, are fine using MongoYiis and PHP owns built in abilities.
 
 As to how you go about handling subdocuments depends heavily upon how you intend to manage and use them.
 
-Okay, let's start at the top; are you using a class for these subdocuments? If the answer is "Yes sir!" then chance are that your subdocuments are quite complex and has a section in your 
-application all to itself with its own controller and everything like, for example, comments on a bog post.  
+Okay, let's start at the top; are you using a class for these subdocuments? If the answer is "Yes sir!" then chance are that your subdocuments are quite complex and has a section in your
+application all to itself with its own controller and everything like, for example, comments on a bog post.
 
-Now the second question you must ask yourself; are you replacing these subdocuments every time you save them or do you want to use modifiers such as `$push`, `$pull`, `$pullAll`, `$pushAll`, 
+Now the second question you must ask yourself; are you replacing these subdocuments every time you save them or do you want to use modifiers such as `$push`, `$pull`, `$pullAll`, `$pushAll`,
 `$addToSet` ectera?
 
-If you wish to use modifiers each time then the best way to manage these type of documents is to make the subdocument singular class extend `EMongoModel`, for example, `Comment` 
+If you wish to use modifiers each time then the best way to manage these type of documents is to make the subdocument singular class extend `EMongoModel`, for example, `Comment`
 would extend `EMongoModel`.
 
 When, say, adding a comment to a post you would do:
@@ -502,13 +502,13 @@ When, say, adding a comment to a post you would do:
 		if($comment->validate())
 			$response = Post::model()->updateAll(array('_id' => $someId), array('$push' => $comment->getRawDocument()));
 	}
-	
-And you would use relatively similar behaviour for most other operations you need to perform. In this case MongoYii merely acts as a helper and glue for you to make life a little easier, 
+
+And you would use relatively similar behaviour for most other operations you need to perform. In this case MongoYii merely acts as a helper and glue for you to make life a little easier,
 however, at the end of the day it will not auto manage subdocuments for you.
 
 There are plans in the works to give helper functions to make your life easier on this front however, for the minute, this is the best method.
 
-If you are not using a class then chances are your subdocuments are quite primative and most likely are just detail to the root document and you are replacing them each time. This scenario 
+If you are not using a class then chances are your subdocuments are quite primative and most likely are just detail to the root document and you are replacing them each time. This scenario
 also applies if you are using complex classes but you are replacing the subdocument list on each save.
 
 If this is the case you can either use the subdocument validator mentioned above to process your subdocuments or you can actually programmably do this:
@@ -519,11 +519,11 @@ If this is the case you can either use the subdocument validator mentioned above
 			$d=new Model();
 			$d->attributes = $row;
 			$valid=$d->validate()&&$valid;
-			$user->numbers[] = $d;			
+			$user->numbers[] = $d;
 		}
 	}
 	if($valid) $user->save();
-	
+
 as an example.
 
 As an added side note you can actually treat the array fields witin your document that contain the subdocuments the same as any other field. For example this will work:
@@ -578,7 +578,7 @@ This is normally the best method because, of course, MongoDB is schemaless (has 
 
 ## EMongoCriteria
 
-The `EMongoCriteria` class can help build modular queries across many segments of your application providing an abstracted layer with helper functions enabling you to better create complex 
+The `EMongoCriteria` class can help build modular queries across many segments of your application providing an abstracted layer with helper functions enabling you to better create complex
 queries.
 
 A brief, yet complete, example of using the `EMongoCriteria` would be:
@@ -612,9 +612,9 @@ Adds a normal, non `$or` condition to the query and take an `array` as its only 
 
 ### addOrCondition()
 
-Adds an `$or` condition and takes an array of `arrays` as its only parameter with each nested `array` being a condition within the `$or` (just like in the driver). 
+Adds an `$or` condition and takes an array of `arrays` as its only parameter with each nested `array` being a condition within the `$or` (just like in the driver).
 
-It would be wise to note it will overwrite any `$or` previously placed in. 
+It would be wise to note it will overwrite any `$or` previously placed in.
 
 ### getSort() / setSort()
 
@@ -628,20 +628,26 @@ These simply get and set the skip of the query.
 
 These simply get and set the limit of the query.
 
+### getProject() / setProject()
+
+** New in v1.1 **
+
+These simply set the projection of the criteria to state specific fields to include/omit.
+
 ### compare()
 
 This works a lot like `CDbCriteria`s and it heavily based on it.
 
-You simply enter `column`, `value` and `strong` parameter values (in that order) and the `EMongoCriteria` class will create a condition and merge it into your current condition 
+You simply enter `column`, `value` and `strong` parameter values (in that order) and the `EMongoCriteria` class will create a condition and merge it into your current condition
 based upon the entered data. As examples:
 
 	$c->compare('name', 'sammaye');
-	
+
 	$c->compare('i', '<4');
-	
+
 The compare funtion, as seen in the second example, will accept a certai number of operators. The operators supported are: `<>`, `<=`, `>=`, `<`, `>`, `=`.
 
-It is good to note that the function currently only accepts `AND` conditioning. 
+It is good to note that the function currently only accepts `AND` conditioning.
 
 ### mergeWith()
 
@@ -678,22 +684,55 @@ There are a number of reasons why. In SQL an abstraction is justified by, some b
 - SQL is a string based querying language as such it makes sense to have an object oriented abstraction layer
 - SQL has some rather complex and difficult to form queries in it that would make an abstraction layer useful
 
-MongoDB suffers from none of these problems; first it has OO querying interface already, secondly it is easily to merge different queries together simply using `CMap::MergeArray()` 
-and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying 
-and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do `$or`s in this class). 
+MongoDB suffers from none of these problems; first it has OO querying interface already, secondly it is easily to merge different queries together simply using `CMap::MergeArray()`
+and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying
+and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do `$or`s in this class).
 
 As such I believe that the `EMongoCriteria` class is just dead weight consuming memory which I could use for other tasks.
 
 This extension does not rely on `EMongoCriteria` internally.
 
-So I expect all modifications to certain parts of MongoYii to be both compatible with `EMongoCriteria` but also without. I will not accept pull requests which are biased to `EMongoCriteria` 
+So I expect all modifications to certain parts of MongoYii to be both compatible with `EMongoCriteria` but also without. I will not accept pull requests which are biased to `EMongoCriteria`
 usage, however, in the same breath I will not accept pull requests which do not accommodate for the class.
- 
+
+## Covered and Partial Queries
+
+**New in v1.1**
+
+When you do not wish to retrieve the entire document you can instead just return a partial result.
+
+Both the `EMongoCriteria` and normal array based querying supports projection through 2 methods. First as a `project` variable in either EMongoCriteria:
+
+	$c->project=array('_id'=>0,'d'=>1);
+
+Or as an element within the defined array:
+
+	functions scope(){
+		return array(
+			'project' => array('_id'=>0,'d'=>1)
+		);
+	}
+
+There is also a more direct method using the functions directly, as an example:
+
+	User::model()->find(array(),array('_id'=>0,'d'=>1));
+
+These will return `partial` `EMongoDocument` instances, either eagerly or in a cursor object. This speicifcation is implemented within all currently existing read functions such as
+`findOne` and `findBy_id` and `findByPk` however, they are not accepted within the write function (`update`, `insert`, `save` etc).
+
+When a document is returned as partial it will only save the root level fields that are included within the result of the query.
+
+**Note:** When using `$elemMatch` projection you must bare in mind that MongoYii will treat that result as the definitive result for that field. In other words when you go to save the
+root document MongoYii will consider that single projected subdocument the complete field value and will erase all other subdocuments within that field.
+
+**Note:** If `_id` is omitted via `'_id' => 0` from the root document then you will not be permitted to save it at all. The extension will instead throw an exception about the
+`_id` field not being set.
+
 ## Known Flaws
 
-- Covered queries are not supported, but then as I am unsure if they really fit with active record
 - Subdocuments are not automated, however, I have stated why above
-- the aggregation framework does not fit well with active record as such it is not directly supported within the models
+- the aggregation framework does not fit well with active record as such it is not directly supported within the models, however, there is a `aggregate` helper on each model but
+it will not return a model instance but instead the direct result of the MongoDB server response.
 
 I am sure there are more but that is the immediate flaws you need to consider in this extension.
 

@@ -12,6 +12,13 @@ class EMongoCriteria extends CComponent {
     private $_skip = 0;
     private $_limit = 0;
 
+	/**
+	 * Holds information for what should be projected from the cursor
+	 * into active models
+	 * @var array
+	 */
+	private $_project = array();
+
     /**
      * Constructor.
      * @param array $data criteria initial property values (indexed by property name)
@@ -64,6 +71,14 @@ class EMongoCriteria extends CComponent {
     }
 
     /**
+     * This means that the getters and setters for projection will be access like:
+     * $c->project(array('c','d'));
+     */
+    public function getProject(){
+		return $this->_project;
+    }
+
+    /**
      * Sets the sort
      * @param array $sort
      * @return EMongoCriteria
@@ -91,6 +106,15 @@ class EMongoCriteria extends CComponent {
     public function setLimit($limit) {
         $this->_limit = (int)$limit;
         return $this;
+    }
+
+    /**
+     * Sets the projection of the criteria
+     * @param $document The document specification for projection
+     */
+    public function setProject($document){
+		$this->_project=$document;
+		return $this;
     }
 
     /**
@@ -173,26 +197,32 @@ class EMongoCriteria extends CComponent {
                 $this->_condition = CMap::mergeArray($this->condition, $criteria->condition);
 
             if (isset($criteria->sort) && is_array($criteria->sort))
-                $this->_sort = CMap::mergeArray($this->condition, $criteria->sort);
+                $this->_sort = CMap::mergeArray($this->sort, $criteria->sort);
 
             if (isset($criteria->skip) && is_numeric($criteria->skip))
                 $this->_skip = $criteria->skip;
 
             if (isset($criteria->limit) && is_numeric($criteria->limit))
                 $this->_limit = $criteria->limit;
+
+            if (isset($criteria->project) && is_numeric($criteria->project))
+                $this->_project = CMap::mergeArray($this->project,$criteria->project);
             return $this;
         } elseif (is_array($criteria)) {
             if (isset($criteria['condition']) && is_array($criteria['condition']))
                 $this->_condition = CMap::mergeArray($this->condition, $criteria['condition']);
 
             if (isset($criteria['sort']) && is_array($criteria['sort']))
-                $this->_sort = CMap::mergeArray($this->condition, $criteria['sort']);
+                $this->_sort = CMap::mergeArray($this->sort, $criteria['sort']);
 
             if (isset($criteria['skip']) && is_numeric($criteria['skip']))
                 $this->_skip = $criteria['skip'];
 
             if (isset($criteria['limit']) && is_numeric($criteria['limit']))
                 $this->_limit = $criteria['limit'];
+
+            if (isset($criteria['project']) && is_numeric($criteria['project']))
+                $this->_project = CMap::mergeArray($this->project,$criteria['project']);
 
             return $this;
         }
@@ -208,7 +238,7 @@ class EMongoCriteria extends CComponent {
     	if ($onlyCondition === true) {
     		$result = $this->condition;
     	} else {
-    		foreach (array('_condition', '_limit', '_skip', '_sort') as $name)
+    		foreach (array('_condition', '_limit', '_skip', '_sort', '_project') as $name)
     			$result[substr($name, 1)] = $this->$name;
     	}
     	return $result;

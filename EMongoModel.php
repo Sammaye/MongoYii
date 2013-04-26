@@ -17,6 +17,8 @@ class EMongoModel extends CModel{
 	private $_attributes = array();
 	private $_related = array();
 
+	private $_partial=false;
+
 	/**
 	 * (non-PHPdoc)
 	 * @see yii/framework/CComponent::__get()
@@ -263,6 +265,22 @@ class EMongoModel extends CModel{
 			$names=$this->attributeNames();
 		foreach($names as $name)
 			$this->$name=null;
+	}
+
+	/**
+	 * Sets whether or not this is a partial document
+	 * @param $partial
+	 */
+	function setIsPartial($partial){
+		$this->_partial=$partial;
+	}
+
+	/**
+	 * Gets whether or not this is a partial document, i.e. it only has some
+	 * of its fields present
+	 */
+	function getIsPartial(){
+		return $this->_partial;
 	}
 
 	/**
