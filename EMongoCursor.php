@@ -78,7 +78,7 @@ class EMongoCursor implements Iterator, Countable{
 		if($this->cursor() instanceof MongoCursor && method_exists($this->cursor(), $method)){
 			return call_user_func_array(array($this->cursor(), $method), $params);
 		}
-		throw new EMongoException(Yii::t('yii', "Call to undefined function {method} on the cursor"), array('{method}' => $method));
+		throw new EMongoException(Yii::t('yii', "Call to undefined function {method} on the cursor", array('{method}' => $method)));
     }
 
     /**
