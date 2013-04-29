@@ -47,7 +47,7 @@ class MongoDocumentTest extends CTestCase{
 		$user_ids = array();
 		foreach($parentDocs as $doc){
 			$u = new User;
-			foreach($doc as $k=>$v) $i->$k=$v;
+			foreach($doc as $k=>$v) $u->$k=$v;
 			$u->interests = $interest_ids;
 			$this->assertTrue($u->save());
 
