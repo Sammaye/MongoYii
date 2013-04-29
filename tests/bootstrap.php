@@ -16,3 +16,4 @@ Yii::createWebApplication($env['config']);
 require_once 'models/User.php';
 require_once 'models/Interest.php';
 require_once 'models/Dummy.php';
+require_once 'models/Skill.php';
