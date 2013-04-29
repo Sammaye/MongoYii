@@ -26,31 +26,51 @@ class MongoDocumentTest extends CTestCase{
 			array('name' => 'cars')
 		);
 
-		// Lets save all the child docs
-		foreach($childDocs as $doc){
-			$i = new Interest;
-			foreach($doc as $k=>$v) $i->$k=$v;
-			$this->assertTrue($i->save());
-		}
+        $docsLinkedByDBRef=array(
+            array('name' => 'python'),
+            array('name' => 'java'),
+            array('name' => 'php'),
+            array('name' => 'lisp'),
+            array('name' => 'C'),
+            array('name' => 'Objective C'),
+            array('name' => 'C++'),
+            array('name' => 'ruby'),
+        );
 
-		// Lets make sure those child docs actually went in
-		$c=Interest::model()->find();
-		$this->assertTrue($c->count()>0);
-
+		foreach (array(array('class'=>'Interest','data'=>$childDocs),array('class'=>'Skill','data'=>$docsLinkedByDBRef)) as $subgroup){
+		    foreach($subgroup['data'] as $doc){
+			    $i = new $subgroup['class']();
+			    foreach($doc as $k=>$v) $i->$k=$v;
+			    $this->assertTrue($i->save());
+		    }
+        }
+        // Lets make sure those child docs actually went in
+        $skills=iterator_to_array(Skill::model()->find());
+        $this->assertTrue(count($skills)>0);
+        $c=Interest::model()->find();
+        $this->assertTrue($c->count()>0);
 		// Let's build an array of the all the _ids of the child docs
 		$interest_ids = array();
 		foreach($c as $row){
 			$interest_ids[] = $row->_id;
 		}
-
 		// Create the users with each doc having the value of the interest ids
 		$user_ids = array();
 		foreach($parentDocs as $doc){
-			$u = new User;
-			foreach($doc as $k=>$v) $i->$k=$v;
-			$u->interests = $interest_ids;
-			$this->assertTrue($u->save());
-
+            $u = new User();
+            foreach($doc as $k=>$v) $u->$k=$v;
+            $u->interests = $interest_ids;
+	    	//Let`s take random skill as primary for this user
+            $primarySkill=$skills[array_rand($skills)]->_id;
+            $u->mainSkill=MongoDBRef::create(Skill::model()->collectionName(),$primarySkill);
+            //Now, lets pick array of secondary skills
+            $allSecondarySkills=array();
+            foreach (array_rand($skills,rand(3,5)) as $secondarySkill){
+                if ($secondarySkill==$primarySkill)  continue;
+                array_push($allSecondarySkills,MongoDBRef::create(Skill::model()->collectionName(),$skills[$secondarySkill]->_id));
+            }
+            $u->otherSkills=$allSecondarySkills;
+            $this->assertTrue($u->save());
 			$user_ids[] = $u->_id;
 		}
 		
@@ -204,6 +224,23 @@ class MongoDocumentTest extends CTestCase{
 		$this->assertInstanceOf('EMongoCursor', $r->many_interests);
 		$this->assertTrue($r->many_interests->count()>0);
 	}
+
+
+    function testOneDBRefRelation(){
+        $this->setUpRelationalModel();
+        $r=User::model()->findOne();
+        $this->assertInstanceOf('Skill', $r->primarySkill);
+    }
+
+    function testManyDBRefRelation(){
+        $this->setUpRelationalModel();
+        $r=User::model()->findOne();
+        $secondarySkills=$r->secondarySkills;
+        $this->assertTrue(count($secondarySkills)>0);
+        foreach ($secondarySkills as $skill) $this->assertInstanceOf('Skill', $skill);
+    }
+
+
 
 	function testEmbeddedRelation(){
 		$this->setUpRelationalModel();
