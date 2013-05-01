@@ -53,16 +53,16 @@ class MongoDocumentTest extends CTestCase{
 
 			$user_ids[] = $u->_id;
 		}
-		
+
 		$interests = array_values(iterator_to_array($c));
 
 		// Now 50^6 times re-insert each interest with a parnt user _id
 		// So we have two forms of the document in interests, one without the parent user and one with
 		for($i=0;$i<50;$i++){
-			
+
 			$randInt = rand(0,sizeof($interests)-1);
 			$row =$interests[$randInt];
-				
+
 			$randPos = rand(0, sizeof($user_ids)-1);
 			$row->i_id = $user_ids[$randPos];
 
@@ -183,13 +183,35 @@ class MongoDocumentTest extends CTestCase{
 		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
-		
+
 		$c->job_title='programmer';
 		$r=$c->saveAttributes(array('username'));
 		$this->assertNull($r['err']);
 
 		$r=User::model()->findOne();
 		$this->assertFalse(isset($r->job_title));
+	}
+
+	function testPartialDocuments(){
+
+		$u=new User;
+		$u->username='sammaye';
+		$this->assertTrue($u->save());
+
+		$r=User::model()->findOne(array(),array('username' => 1));
+		$this->assertTrue($r->getIsPartial());
+
+		$p=$r->getProjectedFields();
+		$this->assertTrue(isset($p['username'],$p['_id']));
+		$this->assertFalse(isset($p['addresses']));
+
+		$r2=User::model()->find(array(),array('username' => 1));
+		foreach($r2 as $row)
+			$this->assertTrue($row->getIsPartial());
+
+		// Assume that the partial field cache since past this point both methods are initialised in the same way
+
+		$this->assertTrue($r->save());
 	}
 
 	function testOneRelation(){
@@ -243,7 +265,7 @@ class MongoDocumentTest extends CTestCase{
 		$c->setScenario('testUnqiue');
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
-	
+
 		$c=new User;
 		$c->setScenario('testUnqiue');
 		$c->username='sammaye';
@@ -252,7 +274,7 @@ class MongoDocumentTest extends CTestCase{
 	}
 
 	function testArraySubdocumentValidator(){
-	
+
 		$c=new User;
 		$c->username='sammaye';
 		$c->addresses = array(
@@ -266,7 +288,7 @@ class MongoDocumentTest extends CTestCase{
 				array('road' => 's', 'town' => 'yo', 'county' => 'sa', 'post_code' => 'g', 'telephone' => 23)
 		);
 		$this->assertTrue($c->validate());
-	}	
+	}
 
 	function testClassSubdocumentValidator(){
 		$c=new User;
@@ -330,23 +352,23 @@ class MongoDocumentTest extends CTestCase{
 		User::model()->resetScope();
 	}
 
-	
+
 	function testClean_Refresh(){
 		$c=new User;
 		User::model()->resetScope();
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
-		
+
 		$this->assertTrue($c->clean());
 		$this->assertNull($c->username);
-	
+
 		$r=User::model()->findOne();
 		$this->assertInstanceOf('EMongoDocument',$r);
-	
+
 		$r->username = 'fgfgfg';
 		$r->refresh();
 		$this->assertEquals('sammaye', $r->username);
-	}	
+	}
 
 	function testGetAttributeLabel(){
 		$c=new User;
@@ -355,22 +377,22 @@ class MongoDocumentTest extends CTestCase{
 
 		$this->assertEquals('name', $c->getAttributeLabel('username'));
 	}
-	
+
 	function testSaveCounters(){
 		$c=new User;
 		$c->username='sammaye';
 		$this->assertTrue($c->save());
-	
+
 		$c->saveCounters(array('i' => 1));
 		$this->assertTrue($c->i == 1);
-		
+
 		$d=User::model()->findOne(array('username' => 'sammaye'));
 		$this->assertTrue($d->i==1);
-		
+
 		$c->saveCounters(array('i' => -1));
 		$this->assertTrue($c->i == 0);
-		
+
 		$e=User::model()->findOne(array('username' => 'sammaye'));
-		$this->assertTrue($e->i==0);		
+		$this->assertTrue($e->i==0);
 	}
 }

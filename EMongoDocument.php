@@ -26,7 +26,14 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * Holds criteria information for scopes
 	 */
-	private $_criteria = array();
+	private $_criteria;
+
+	/**
+	 * Contains a list of fields that were projected, will only be taken into consideration
+	 * should _partial be true
+	 * @var array
+	 */
+	private $_projected_fields = array();
 
 	/**
 	 * Sets up our model and set the field cache just like in EMongoModel
@@ -121,9 +128,12 @@ class EMongoDocument extends EMongoModel{
 	 * Resets the scopes applied to the model clearing the _criteria variable
 	 * @return $this
 	 */
-	public function resetScope()
+	public function resetScope($resetDefault=true)
 	{
-		$this->_criteria = array();
+		if($resetDefault)
+			$this->_criteria = array();
+		else
+			$this->_criteria = null;
 		return $this;
 	}
 
@@ -183,6 +193,34 @@ class EMongoDocument extends EMongoModel{
 	 */
 	public function setIsNewRecord($value){
 		$this->_new=$value;
+	}
+
+	/**
+	 * Gets a list of the projected fields for the model
+	 */
+	public function getProjectedFields(){
+		return $this->_projected_fields;
+	}
+
+	/**
+	 * Sets the projected fields of the model
+	 * @param array $a
+	 */
+	public function setProjectedFields($a){
+		$this->_projected_fields=$a;
+	}
+
+	/**
+	 * Sets the attribute of the model
+	 * @param string $name
+	 * @param mixed $value
+	 */
+	public function setAttribute($name,$value){
+		// At the moment the projection is restricted to only fields returned in result set
+		// Uncomment this to change that
+		//if($this->getIsPartial())
+		//	$this->_projected_fields[$name] = 1;
+		return parent::setAttribute($name, $value);
 	}
 
 	/**
@@ -263,7 +301,7 @@ class EMongoDocument extends EMongoModel{
 	 * @return CActiveRecord the newly created active record. The class of the object is the same as the model class.
 	 * Null is returned if the input data is false.
 	 */
-	public function populateRecord($attributes,$callAfterFind=true)
+	public function populateRecord($attributes,$callAfterFind=true,$partial=false)
 	{
 		if($attributes!==false)
 		{
@@ -271,9 +309,17 @@ class EMongoDocument extends EMongoModel{
 			$record->setScenario('update');
 			$record->setIsNewRecord(false);
 			$record->init();
+
+			$labels=array();
 			foreach($attributes as $name=>$value)
 			{
+				$labels[$name]=1;
 				$record->$name=$value;
+			}
+
+			if($partial){
+				$record->setIsPartial(true);
+				$record->setProjectedFields($labels);
 			}
 			//$record->_pk=$record->primaryKey();
 			$record->attachBehaviors($record->behaviors());
@@ -436,12 +482,17 @@ class EMongoDocument extends EMongoModel{
 			if($this->{$this->primaryKey()}===null)
 				throw new CDbException(Yii::t('yii','The active record cannot be updated because it has no _id.'));
 
-			if($attributes!==null){
-				$attributes=$this->getRawAttributes($attributes);
-				unset($attributes[$this->primaryKey()]);
-				$this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
+			if($attributes!==null)
+				$attributes=$this->filterRawDocument($attributes);
+			elseif($this->getIsPartial()){
+				foreach($this->_projected_fields as $field => $v)
+					$attributes[$field] = $this->$field;
+				$attributes=$this->filterRawDocument($attributes);
 			}else
-				$this->getCollection()->save($this->getRawAttributes($attributes));
+				$attributes=$this->getRawDocument();
+			unset($attributes[$this->primaryKey()]);
+
+			$this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
 			$this->afterSave();
 			return true;
 		}
@@ -495,17 +546,18 @@ class EMongoDocument extends EMongoModel{
 	 * Find one record
 	 * @param array $criteria
 	 */
-	public function findOne($criteria=array()){
+	public function findOne($criteria=array(),$fields=array()){
 		$this->trace(__FUNCTION__);
 
 		if($criteria instanceof EMongoCriteria)
 			$criteria = $criteria->getCondition();
 		$c=$this->getDbCriteria();
 		if((
-			$record=$this->getCollection()->findOne($this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria))
+			$record=$this->getCollection()->findOne($this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria),
+				$this->mergeCriteria(isset($c['project']) ? $c['project'] : array(), $fields))
 		)!==null){
 			$this->resetScope();
-			return $this->populateRecord($record);
+			return $this->populateRecord($record,true,$fields===array()?false:true);
 		}else
 			return null;
 	}
@@ -514,7 +566,7 @@ class EMongoDocument extends EMongoModel{
 	 * Find some records
 	 * @param array $criteria
 	 */
-    public function find($criteria=array()){
+    public function find($criteria=array(),$fields=array()){
     	$this->trace(__FUNCTION__);
 
 		if($criteria instanceof EMongoCriteria){
@@ -525,7 +577,8 @@ class EMongoDocument extends EMongoModel{
 		}
 
     	if($c!==array()){
-    		$cursor = new EMongoCursor($this, $this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria));
+    		$cursor = new EMongoCursor($this, $this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria),
+    			$this->mergeCriteria(isset($c['project']) ? $c['project'] : array(), $fields));
 			if(isset($c['sort'])) $cursor->sort($c['sort']);
     		if(isset($c['skip'])) $cursor->skip($c['skip']);
     		if(isset($c['limit'])) $cursor->limit($c['limit']);
@@ -533,7 +586,7 @@ class EMongoDocument extends EMongoModel{
     		$this->resetScope();
 	   		return $cursor;
     	}else{
-    		return new EMongoCursor($this, $criteria);
+    		return new EMongoCursor($this, $criteria, $fields);
     	}
     }
 
@@ -541,19 +594,19 @@ class EMongoDocument extends EMongoModel{
      * Finds one by _id
      * @param $_id
      */
-    public function findBy_id($_id){
+    public function findBy_id($_id,$fields=array()){
     	$this->trace(__FUNCTION__);
 		$_id = $this->getPrimaryKey($_id);
-		return $this->findOne(array($this->primaryKey() => $_id));
+		return $this->findOne(array($this->primaryKey() => $_id),$fields);
     }
 
     /**
      * An alias for findBy_id() that relates to Yiis own findByPk
      * @param $pk
      */
-    public function findByPk($pk){
+    public function findByPk($pk,$fields=array()){
     	$this->trace(__FUNCTION__);
-		return $this->findBy_id($pk);
+		return $this->findBy_id($pk,$fields);
     }
 
     /**
@@ -747,10 +800,12 @@ class EMongoDocument extends EMongoModel{
      */
 	public function getDbCriteria($createIfNull=true)
 	{
-		if(empty($this->_criteria))
+		if($this->_criteria===null)
 		{
 			if(($c=$this->defaultScope())!==array() || $createIfNull)
 				$this->_criteria=$c;
+			else
+				return array();
 		}
 		return $this->_criteria;
 	}

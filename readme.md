@@ -1,3 +1,5 @@
+**You can find a more user friendly version of this documentation on the extensions Github page: [http://sammaye.github.io/MongoYii](http://sammaye.github.io/MongoYii)**
+
 # MongoYii
 
 Another active record handler for the Yii framework that supports MongoDB.
@@ -123,20 +125,7 @@ The `EMongoModel` implements all that `CModel` does but with a few added and cha
 
 ### Magic functions
 
-#### This has been changed
-
-Changed as of this issue: [https://github.com/Sammaye/MongoYii/issues/7](https://github.com/Sammaye/MongoYii/issues/7) whereby
-[@f10i](https://github.com/f10i) gives over a pull request that can actually fix the schemaless issue completely.
-
-The `__get` and `__set` have been completely re-written around his ideas and should now have all the same power as Yiis own `CActiveRecord` class.
-
-The below is still shown as a note to people who use old checkouts:
-
-In order to support the schema-less nature of MongoDB without using hacks like behaviours I have changed the way that the magic functions in Yii work slightly.
-The `__set` and `__get` will no longer seek out behaviour properties or call variable function events.
-
-Behaviours tend to manipulate a `owner` within its own self contained context while allowing the calling of events from the magic functions is role blurring. Events should be
-called as functions if you want to use them. In my opinion the `__set` and `__get` functions have been made clearer by this.
+The getters and setters should inherit all of Yiis own functionality.
 
 ### Virtual Attributes
 
@@ -249,7 +238,7 @@ You can also define your own scopes, however, it is a little different to how yo
 		));
 	}
 
-As you will notice the `_certeria` variable within the EMongoDocument which would normally be a `EMongoCriteria` object is actually completely array based.
+As you will notice the `_criteria` variable within the EMongoDocument which would normally be a `EMongoCriteria` object is actually completely array based.
 
 This applies to all scope actions; they are all array based.
 
@@ -486,6 +475,66 @@ however with `many` it will create a new element for each model (row) with embed
 **Note:** While on the subject, to avoid the iteration every time you save the root document (since validation is run by default in Yii on save) you should confine your subdocument
 validators to specific scenarios where they will be actively used.
 
+### Handling Subdocuments
+
+As we already know MongoYii does not handle subdocuments automatically for you. if you wish to have an automatic handler for subdocuments it is normally considered good advice to make
+your own based on the scenarios you require. One reason for this is because many people have many different document setups and since there is no predefined schema for the subdocuments I
+cannot provide automated usage without short of taking every single possibility of subdocument existence into account.
+
+For this explanation we will assume you do not wish to make your own subdocument handler, but instead, are fine using MongoYiis and PHP owns built in abilities.
+
+As to how you go about handling subdocuments depends heavily upon how you intend to manage and use them.
+
+Okay, let's start at the top; are you using a class for these subdocuments? If the answer is "Yes sir!" then chance are that your subdocuments are quite complex and has a section in your
+application all to itself with its own controller and everything like, for example, comments on a bog post.
+
+Now the second question you must ask yourself; are you replacing these subdocuments every time you save them or do you want to use modifiers such as `$push`, `$pull`, `$pullAll`, `$pushAll`,
+`$addToSet` ectera?
+
+If you wish to use modifiers each time then the best way to manage these type of documents is to make the subdocument singular class extend `EMongoModel`, for example, `Comment`
+would extend `EMongoModel`.
+
+When, say, adding a comment to a post you would do:
+
+	if(isset($_POST['Comment'])){
+		$comment=new Comment;
+		$comment->attributes=$_POST['Comment'];
+		if($comment->validate())
+			$response = Post::model()->updateAll(array('_id' => $someId), array('$push' => $comment->getRawDocument()));
+	}
+
+And you would use relatively similar behaviour for most other operations you need to perform. In this case MongoYii merely acts as a helper and glue for you to make life a little easier,
+however, at the end of the day it will not auto manage subdocuments for you.
+
+There are plans in the works to give helper functions to make your life easier on this front however, for the minute, this is the best method.
+
+If you are not using a class then chances are your subdocuments are quite primative and most likely are just detail to the root document and you are replacing them each time. This scenario
+also applies if you are using complex classes but you are replacing the subdocument list on each save.
+
+If this is the case you can either use the subdocument validator mentioned above to process your subdocuments or you can actually programmably do this:
+
+	$user=User::model()->findBy_id($uid);
+	if(isset($_POST['numbers'])){
+		foreach($_POST['numbers'] as $row){
+			$d=new Model();
+			$d->attributes = $row;
+			$valid=$d->validate()&&$valid;
+			$user->numbers[] = $d;
+		}
+	}
+	if($valid) $user->save();
+
+as an example.
+
+As an added side note you can actually treat the array fields witin your document that contain the subdocuments the same as any other field. For example this will work:
+
+	$m=new Something();
+	$m->name='thing';
+	$parentClass->things[6] = $m;
+	$parentClass->save();
+
+So subdocuments are very flexible in this extension and they do not corner you into thinking one way and one way only, much like MongoDB itself really.
+
 ## Using the ActiveDataProvider
 
 This extension comes with a `CActiveDataProvider` helper called `EMongoDataProvider`. It works exactly the same way except for how it is called.
@@ -527,11 +576,163 @@ for a user model:
 
 This is normally the best method because, of course, MongoDB is schemaless (has a flexible schema is more appropriate) so sometimes it doesn't work so well in a rigid table.
 
+## EMongoCriteria
+
+The `EMongoCriteria` class can help build modular queries across many segments of your application providing an abstracted layer with helper functions enabling you to better create complex
+queries.
+
+A brief, yet complete, example of using the `EMongoCriteria` would be:
+
+	$c = new EMongoCriteria();
+	User::model()->find($c
+					->addCondition(array('name' => 'sammaye')) // This is basically a select
+					->addOrCondition(array(array('interest' => 'Drinking'), array('interest' => 'Clubbing'))) // This is adding a $or condition to our select
+					->skip(2) // This skips a number of rows
+					->limit(3) // This limits by a number of rows
+						);
+
+So you can see that quickly we can build very complex queries with ease.
+
+Just like with `CDbCriteria` you can also set all of these properties of the query straight from the constructor like so:
+
+	$c = new EMongoCriteria(array(
+		'condition' => array('name'=>'sammaye'),
+		'limit' => 10
+	));
+
+The EMongoCriteria class implements many of the functions you would expect of CDbCriteria.
+
+### setCondition() / getCondition()
+
+These basically just sets and gets the condition of the query.
+
+### addCondition()
+
+Adds a normal, non `$or` condition to the query and take an `array` as its only parameter.
+
+### addOrCondition()
+
+Adds an `$or` condition and takes an array of `arrays` as its only parameter with each nested `array` being a condition within the `$or` (just like in the driver).
+
+It would be wise to note it will overwrite any `$or` previously placed in.
+
+### getSort() / setSort()
+
+These simply get and set the sort of the query.
+
+### getSkip() / setSkip()
+
+These simply get and set the skip of the query.
+
+### getLimit() / setLimit()
+
+These simply get and set the limit of the query.
+
+### getProject() / setProject()
+
+** New in v1.1 **
+
+These simply set the projection of the criteria to state specific fields to include/omit.
+
+### compare()
+
+This works a lot like `CDbCriteria`s and it heavily based on it.
+
+You simply enter `column`, `value` and `strong` parameter values (in that order) and the `EMongoCriteria` class will create a condition and merge it into your current condition
+based upon the entered data. As examples:
+
+	$c->compare('name', 'sammaye');
+
+	$c->compare('i', '<4');
+
+The compare funtion, as seen in the second example, will accept a certai number of operators. The operators supported are: `<>`, `<=`, `>=`, `<`, `>`, `=`.
+
+It is good to note that the function currently only accepts `AND` conditioning.
+
+### mergeWith()
+
+Just like in `CDbCriteria` this merges either an array or another `EMongoCriteria` object into this one, transferring all of its properties.
+
+As an example:
+
+	$c->mergeWith($otherC);
+
+Now `$c` will have all the merged properties of `$otherC`.
+
+### toArray()
+
+This basically will convert your EMongoCriteria into array form of the syntax:
+
+	array(
+		'condition' => array(),
+		'skip' => 1,
+		'limit' => 1,
+		'sort' => array()
+	)
+
+and, by default, is called like:
+
+	$c->toArray();
+
+### Important for Contributors
+
+If you are intending to contribute changes to MongoYii I should explain my own position on the existance of the `EMongoCriteria` class. I, personally, believe it is not needed.
+
+There are a number of reasons why. In SQL an abstraction is justified by, some but not all, of these reasons:
+
+- Different implementations (i.e. MySQL and MSSQL and PostgreSQL) creates slightly different syntax
+- SQL is a string based querying language as such it makes sense to have an object oriented abstraction layer
+- SQL has some rather complex and difficult to form queries in it that would make an abstraction layer useful
+
+MongoDB suffers from none of these problems; first it has OO querying interface already, secondly it is easily to merge different queries together simply using `CMap::MergeArray()`
+and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying
+and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do `$or`s in this class).
+
+As such I believe that the `EMongoCriteria` class is just dead weight consuming memory which I could use for other tasks.
+
+This extension does not rely on `EMongoCriteria` internally.
+
+So I expect all modifications to certain parts of MongoYii to be both compatible with `EMongoCriteria` but also without. I will not accept pull requests which are biased to `EMongoCriteria`
+usage, however, in the same breath I will not accept pull requests which do not accommodate for the class.
+
+## Covered and Partial Queries
+
+**New in v1.1**
+
+When you do not wish to retrieve the entire document you can instead just return a partial result.
+
+Both the `EMongoCriteria` and normal array based querying supports projection through 2 methods. First as a `project` variable in either EMongoCriteria:
+
+	$c->project=array('_id'=>0,'d'=>1);
+
+Or as an element within the defined array:
+
+	functions scope(){
+		return array(
+			'project' => array('_id'=>0,'d'=>1)
+		);
+	}
+
+There is also a more direct method using the read functions of the active record model, as an example:
+
+	User::model()->find(array(),array('_id'=>0,'d'=>1));
+
+These will return `partial=true` `EMongoDocument` instances, either eagerly or in a cursor object. This specification is implemented within all currently existing read functions such as
+`findOne` and `findBy_id` and `findByPk` however, they are not accepted within the write functions (`update`, `insert`, `save` etc).
+
+When a document is returned as partial it will only save the root level fields that are included within the result of the query.
+
+**Note:** When using `$elemMatch` projection you must bare in mind that MongoYii will treat that result as the definitive result for that field. In other words when you go to save the
+root document MongoYii will consider that single projected subdocument the complete field value and will erase all other subdocuments within that field.
+
+**Note:** If `_id` is omitted via `'_id' => 0` from the root document then you will not be permitted to save it at all. The extension will instead throw an exception about the
+`_id` field not being set.
+
 ## Known Flaws
 
-- Covered queries are not supported, but then as I am unsure if they really fit with active record
 - Subdocuments are not automated, however, I have stated why above
-- the aggregation framework does not fit well with active record as such it is not directly supported within the models
+- the aggregation framework does not fit well with active record as such it is not directly supported within the models, however, there is a `aggregate` helper on each model but
+it will not return a model instance but instead the direct result of the MongoDB server response.
 
 I am sure there are more but that is the immediate flaws you need to consider in this extension.
 

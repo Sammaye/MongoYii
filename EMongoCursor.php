@@ -22,11 +22,23 @@ class EMongoCursor implements Iterator, Countable{
 	private $current;
 
 	/**
+	 * This denotes a partial cursor which in turn will transpose onto the active record
+	 * to state a partial document. If any projection is supplied this will result in true since
+	 * I cannot detect if you are projecting the whole document or not...THERE IS NO PRE-DEFINED SCHEMA
+	 * @var boolean
+	 */
+	private $partial = false;
+
+	/**
 	 * The cursor constructor
 	 * @param array|MongoCursor $condition Either a condition array (without sort,limit and skip) or a MongoCursor Object
 	 * @param string $class the class name for the active record
 	 */
-    public function __construct($modelClass,$criteria=array()) {
+    public function __construct($modelClass,$criteria=array(),$fields=array()) {
+
+    	// If $fields has something in it
+    	if($fields!==array())
+    		$this->partial=true;
 
     	if(is_string($modelClass)){
 			$this->modelClass=$modelClass;
@@ -41,7 +53,7 @@ class EMongoCursor implements Iterator, Countable{
         	$this->cursor->reset();
     	}elseif($criteria instanceof EMongoCriteria){
     		$this->criteria = $criteria;
-			$this->cursor = $this->model->getCollection()->find($criteria->condition)->sort($criteria->sort);
+			$this->cursor = $this->model->getCollection()->find($criteria->condition,$criteria->project)->sort($criteria->sort);
 			if($criteria->skip != 0)
 				$this->cursor->skip($criteria->skip);
 			if($criteria->limit!=0)
@@ -49,7 +61,7 @@ class EMongoCursor implements Iterator, Countable{
     	}else{
 			// Then we are doing an active query
 			$this->criteria = $criteria;
-			$this->cursor = $this->model->getCollection()->find($criteria);
+			$this->cursor = $this->model->getCollection()->find($criteria,$fields);
         }
 
         return $this; // Maintain chainability
@@ -66,7 +78,7 @@ class EMongoCursor implements Iterator, Countable{
 		if($this->cursor() instanceof MongoCursor && method_exists($this->cursor(), $method)){
 			return call_user_func_array(array($this->cursor(), $method), $params);
 		}
-		throw new EMongoException(Yii::t('yii', "Call to undefined function {method} on the cursor"), array('{method}' => $method));
+		throw new EMongoException(Yii::t('yii', "Call to undefined function {method} on the cursor", array('{method}' => $method)));
     }
 
     /**
@@ -82,7 +94,7 @@ class EMongoCursor implements Iterator, Countable{
     public function current() {
     	if($this->model === null)
 			throw new EMongoException(Yii::t('yii', "The MongoCursor must have a model"));
-    	return $this->current=$this->model->populateRecord($this->cursor()->current());
+    	return $this->current=$this->model->populateRecord($this->cursor()->current(),true,$this->partial);
     }
 
     public function count($takeSkip = false /* Was true originally but it was to change the way the driver worked which seemed wrong */){

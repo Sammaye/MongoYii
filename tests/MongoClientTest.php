@@ -64,16 +64,4 @@ class MongoClientTest extends CTestCase{
 		$a = CMap::mergeArray(array('a' => 1, 'b' => array('c' => 2)), array('a' => 1, 'b' => array('c' => 2, 'd' => 3)));
 		$this->assertTrue(isset($a['a'], $a['b'], $a['b']['c'], $a['b']['d']));
 	}
-
-	function testObjCache(){
-		$mongo = Yii::app()->mongodb;
-		$mongo->setObjectCache('new', array('name', 'field'), array('bod', 'vfield'));
-
-		$virtualFields = $mongo->getVirtualObjCache('new');
-		$fields = $mongo->getFieldObjCache('new');
-
-		$this->assertTrue(is_array($fields) && sizeof($fields) > 0);
-		$this->assertTrue(is_array($virtualFields) && sizeof($virtualFields) > 0);
-	}
-
 }

@@ -18,6 +18,7 @@ class EMongoModel extends CModel{
 	private $_attributes = array();
 	private $_related = array();
 
+	private $_partial=false;
 
 	/**
 	 * (non-PHPdoc)
@@ -153,10 +154,8 @@ class EMongoModel extends CModel{
 	 */
 	public function attributeNames(){
 
-		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
-		$virtuals = $this->getDbConnection()->getVirtualObjCache(get_class($this));
-
-		$cols = array_merge(is_array($fields) ? $fields : array(), is_array($virtuals) ? $virtuals : array(), array_keys($this->_attributes, array_keys($this->subDocuments())));
+		$fields = $this->getDbConnection()->getFieldCache(get_class($this),true);
+		$cols = array_merge($fields, array_keys($this->_attributes), array_keys($this->subDocuments()));
 		return $cols!==null ? $cols : array();
 	}
 
@@ -179,7 +178,7 @@ class EMongoModel extends CModel{
 	public function hasAttribute($name)
 	{
 		$attrs = $this->_attributes;
-		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
+		$fields = $this->getDbConnection()->getFieldCache(get_class($this));
 		return isset($attrs[$name])||isset($fields[$name])||property_exists($this, $name)?true:false;
 	}
 
@@ -236,7 +235,7 @@ class EMongoModel extends CModel{
 	public function getAttributes($names=true)
 	{
 		$attributes=$this->_attributes;
-		$fields = $this->getDbConnection()->getFieldObjCache(get_class($this));
+		$fields = $this->getDbConnection()->getFieldCache(get_class($this));
 
 		if(is_array($fields)){
 			foreach($fields as $name){
@@ -283,15 +282,18 @@ class EMongoModel extends CModel{
 		if(!is_array($values))
 			return;
 		$attributes=array_flip($safeOnly ? $this->getSafeAttributeNames() : $this->attributeNames());
+		$_meta = $this->getDbConnection()->getDocumentCache(get_class($this));
 		foreach($values as $name=>$value)
 		{
+			$field_meta = isset($_meta[$name]) ? $_meta[$name] : array();
 			if($safeOnly){
 				if(isset($attributes[$name]))
-					$this->$name=!is_array($value) && preg_match('/^[0-9]+$/', $value) > 0 ? (int)$value : $value;
+					$this->$name=!is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0 ? (int)$value : $value;
 				elseif($safeOnly)
 					$this->onUnsafeAttribute($name,$value);
-			}else
-				$this->$name=!is_array($value) && preg_match('/^[0-9]+$/', $value) > 0 ? (int)$value : $value;
+			}else{
+				$this->$name=!is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$$/' /* Will only match real integers, unsigned */, $value) > 0 ? (int)$value : $value;
+			}
 		}
 	}
 
@@ -307,6 +309,22 @@ class EMongoModel extends CModel{
 			$names=$this->attributeNames();
 		foreach($names as $name)
 			$this->$name=null;
+	}
+
+	/**
+	 * Sets whether or not this is a partial document
+	 * @param $partial
+	 */
+	function setIsPartial($partial){
+		$this->_partial=$partial;
+	}
+
+	/**
+	 * Gets whether or not this is a partial document, i.e. it only has some
+	 * of its fields present
+	 */
+	function getIsPartial(){
+		return $this->_partial;
 	}
 
 	/**
@@ -376,21 +394,23 @@ class EMongoModel extends CModel{
 		if(isset($relation['where'])) $where = array_merge($relation['where'], $params);
 
 		// Find out what the pk is and what kind of condition I should apply to it
-		if(is_array($pk)){
-
+		if (is_array($pk)) {
+            	//It is an array of references
+            	if (MongoDBRef::isRef(reset($pk))) {
+                	$result = array();
+                	foreach ($pk as $singleReference) {
+                    		$row = $this->populateReference($singleReference, $cname);
+                    		if ($row) array_push($result, $row);
+                	}
+                	return $result;
+            	}
 			// It is an array of _ids
 			$clause = array_merge($where, array($fkey=>array('$in' => $pk)));
 		}elseif($pk instanceof MongoDBRef){
 
-			// If it is a DBRef I can only get one doc so I should probably just return it here
+			// I should probably just return it here
 			// otherwise I will continue on
-			$row = $pk::get();
-			if(isset($row['_id'])){
-				$o = $cname::model();
-				$o->populateRecord($row);
-				return $o;
-			}
-			return null;
+			return $this->populateReference($pk, $cname);
 
 		}else{
 
@@ -410,6 +430,21 @@ class EMongoModel extends CModel{
 		}
 		return $cursor;
 	}
+
+
+
+	/**
+     	* @param mixed $reference Reference to populate
+     	* @param null|string $cname Class of model to populate. If not specified, populates data on current model
+     	* @return EMongoModel
+     	*/
+    	public function populateReference($reference, $cname = null)
+    	{
+        	$row = MongoDBRef::get(self::$db->getDB(), $reference);
+        	$o=(is_null($cname))?$this:$cname::model();
+        	return $o->populateRecord($row);
+    	}
+
 
 	/**
 	 * Returns a value indicating whether the named related object(s) has been loaded.
@@ -540,17 +575,9 @@ class EMongoModel extends CModel{
 		$this->_related=array();
 
 		// blank class properties
-		$cache = $this->getDbConnection()->getObjCache(get_class($this));
-
-		if(isset($cache['document'])){
-			foreach($cache['document'] as $field)
-				$this->$field = null;
-		}
-
-		if(isset($cache['virtual'])){
-			foreach($cache['virtual'] as $field)
-				$this->$field = null;
-		}
+		$cache = $this->getDbConnection()->getDocumentCache(get_class($this));
+		foreach($cache as $k => $v)
+			$this->$k = null;
 		return true;
     }
 
@@ -559,7 +586,7 @@ class EMongoModel extends CModel{
 	 */
 	public function getDocument(){
 
-		$attributes = $this->getDbConnection()->getFieldObjCache(get_class($this));
+		$attributes = $this->getDbConnection()->getFieldCache(get_class($this));
 		$doc = array();
 
 		if(is_array($attributes)){
