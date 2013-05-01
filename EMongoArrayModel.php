@@ -62,6 +62,9 @@
  */
 class EMongoArrayModel implements Iterator, Countable, ArrayAccess {
 
+	private $_sortColumn;
+	private $_sortOrder;
+
 	/**
 	 * @var array index=>key map
 	 */
@@ -286,6 +289,32 @@ class EMongoArrayModel implements Iterator, Countable, ArrayAccess {
 	public function setValues($array) {
 		$this->values=$array;
 		$this->isIndexed=$this->index===null;
+	}
+
+	/**
+	 * Sorts subdocuments
+	 * @param $val
+	 * @return EMongoArrayModel
+	 */
+	public function sort($val) {
+		list($this->_sortColumn, $this->_sortOrder)=each($val);
+		$values=$this->getRawValues();
+		usort($values, array($this, 'sortCallback'));
+		$this->populate($values);
+		return $this;
+	}
+
+	/**
+	 * @ignore
+	 * @param $a
+	 * @param $b
+	 * @return int
+	 */
+	public function sortCallback($a, $b) {
+		$a = is_object($a) ? $a->{$this->_sortColumn} : $a[$this->_sortColumn];
+		$b = is_object($b) ? $b->{$this->_sortColumn} : $b[$this->_sortColumn];
+		if ($a==$b) return 0;
+		return $this->_sortOrder * (($a < $b) ? -1 : 1);
 	}
 
 	/**
