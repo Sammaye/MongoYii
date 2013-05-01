@@ -5,6 +5,8 @@ class User extends EMongoDocument{
 	public $username;
 	public $url = null;
 	public $interests = array();
+    public $mainSkill;
+    public $otherSkills;
 
 	function scopes(){
 		return array(
@@ -47,7 +49,9 @@ class User extends EMongoDocument{
 			'many_interests' => array('many', 'Interest', 'i_id'),
 			'one_interest' => array('one', 'Interest', 'i_id'),
 			'embedInterest' => array('many', 'Interest', '_id', 'on' => 'interests'),
-			'where_interest' => array('many', 'Interest', 'i_id', 'where' => array('name' => 'jogging'))
+			'where_interest' => array('many', 'Interest', 'i_id', 'where' => array('name' => 'jogging')),
+            'primarySkill' => array('one', 'Skill', '_id', 'on' => 'mainSkill'),
+            'secondarySkills' => array('many', 'Skill', '_id', 'on' => 'otherSkills'),
 		);
 	}
 
