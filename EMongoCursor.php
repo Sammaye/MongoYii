@@ -101,6 +101,11 @@ class EMongoCursor implements Iterator, Countable{
     	return $this->cursor()->count($takeSkip);
     }
 
+    public function slaveOkay($val = true){
+        $this->cursor()->slaveOkay($val);
+        return $this;
+    }
+
     public function sort(array $fields){
 		$this->cursor()->sort($fields);
 		return $this;
