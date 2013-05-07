@@ -71,7 +71,13 @@ class MongoArrayModelTest extends CTestCase{
 
 		// Set array with data (indexed)
 		$user->phones=array(array('num'=>'911', 'comment'=>'Urgent'), array('num'=>100, 'comment' => 'Home'));
-		//var_dump($user);
+		$homePhone=$user->phones[100];
+		$this->assertInstanceOf('Phone', $homePhone);
+		$this->assertEquals('Home', $homePhone->comment);
+
+		// Check populate use array keys as index columns
+		$user=new User;
+		$user->phones=array('911'=>array('comment'=>'Urgent'), '100'=>array('comment' => 'Home'));
 		$homePhone=$user->phones[100];
 		$this->assertInstanceOf('Phone', $homePhone);
 		$this->assertEquals('Home', $homePhone->comment);

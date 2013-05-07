@@ -271,6 +271,7 @@ class EMongoArrayModel implements Iterator, Countable, ArrayAccess {
 	 * @param $val
 	 */
 	public function populate($val) {
+		if ($this->index) foreach($val as $k=>$v) $this->getIndex($val[$k],$k);
 		$this->values=array_values($val);
 		$this->map=null;
 		$this->pointer=0;
