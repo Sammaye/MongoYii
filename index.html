@@ -700,7 +700,7 @@ User::model()-&gt;find($c
 
 <h3>getProject() / setProject()</h3>
 
-<p><em>* New in v1.1 *</em></p>
+<p><strong>New in v1.1</strong></p>
 
 <p>These simply set the projection of the criteria to state specific fields to include/omit.</p>
 
@@ -777,7 +777,7 @@ usage, however, in the same breath I will not accept pull requests which do not 
 
 <p>When you do not wish to retrieve the entire document you can instead just return a partial result.</p>
 
-<p>Both the <code>EMongoCriteria</code> and normal array based querying supports projection through 2 methods. First as a <code>project</code> variable in either EMongoCriteria:</p>
+<p>Both the <code>EMongoCriteria</code> and normal array based querying supports projection through two methods. First as a <code>project</code> variable in either EMongoCriteria:</p>
 
 <pre><code>$c-&gt;project=array('_id'=&gt;0,'d'=&gt;1);
 </code></pre>
@@ -791,7 +791,7 @@ usage, however, in the same breath I will not accept pull requests which do not 
 }
 </code></pre>
 
-<p>There is also a more direct method using the read functions of the active record model, as an example:</p>
+<p>And second, as a parameter injected into the read functions of the active record model, as an example:</p>
 
 <pre><code>User::model()-&gt;find(array(),array('_id'=&gt;0,'d'=&gt;1));
 </code></pre>
@@ -804,7 +804,7 @@ usage, however, in the same breath I will not accept pull requests which do not 
 <p><strong>Note:</strong> When using <code>$elemMatch</code> projection you must bare in mind that MongoYii will treat that result as the definitive result for that field. In other words when you go to save the
 root document MongoYii will consider that single projected subdocument the complete field value and will erase all other subdocuments within that field.</p>
 
-<p><strong>Note:</strong> If <code>_id</code> is omitted via <code>'_id' =&gt; 0</code> from the root document then you will not be permitted to save it at all. The extension will instead throw an exception about the
+<p><strong>Note:</strong> If <code>_id</code> is omitted via <code>'_id' =&gt; 0</code> from the root document then you will not be permitted to save the document at all. The extension will instead throw an exception about the
 <code>_id</code> field not being set.</p>
 
 <h2>Known Flaws</h2>
