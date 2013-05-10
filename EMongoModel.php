@@ -241,7 +241,7 @@ class EMongoModel extends CModel{
 		$_meta = $this->getDbConnection()->getDocumentCache(get_class($this));
 		foreach($values as $name=>$value)
 		{
-			$field_meta = isset($_meta[$name]) ? $meta[$name] : array();
+			$field_meta = isset($_meta[$name]) ? $_meta[$name] : array();
 			if($safeOnly){
 				if(isset($attributes[$name]))
 					$this->$name=!is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0 ? (int)$value : $value;
