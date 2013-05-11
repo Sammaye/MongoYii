@@ -479,7 +479,7 @@ class EMongoDocument extends EMongoModel{
 		if($this->beforeSave())
 		{
 			$this->trace(__FUNCTION__);
-			if($this->_id===null) // An _id is required
+			if($this->{$this->primaryKey()}===null) // An _id is required
 				throw new CDbException(Yii::t('yii','The active record cannot be updated because it has no _id.'));
 
 			if($attributes!==null)
