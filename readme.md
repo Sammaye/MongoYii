@@ -630,7 +630,7 @@ These simply get and set the limit of the query.
 
 ### getProject() / setProject()
 
-** New in v1.1 **
+**New in v1.1**
 
 These simply set the projection of the criteria to state specific fields to include/omit.
 
@@ -701,7 +701,7 @@ usage, however, in the same breath I will not accept pull requests which do not 
 
 When you do not wish to retrieve the entire document you can instead just return a partial result.
 
-Both the `EMongoCriteria` and normal array based querying supports projection through 2 methods. First as a `project` variable in either EMongoCriteria:
+Both the `EMongoCriteria` and normal array based querying supports projection through two methods. First as a `project` variable in either EMongoCriteria:
 
 	$c->project=array('_id'=>0,'d'=>1);
 
@@ -713,7 +713,7 @@ Or as an element within the defined array:
 		);
 	}
 
-There is also a more direct method using the read functions of the active record model, as an example:
+And second, as a parameter injected into the read functions of the active record model, as an example:
 
 	User::model()->find(array(),array('_id'=>0,'d'=>1));
 
@@ -725,7 +725,7 @@ When a document is returned as partial it will only save the root level fields t
 **Note:** When using `$elemMatch` projection you must bare in mind that MongoYii will treat that result as the definitive result for that field. In other words when you go to save the
 root document MongoYii will consider that single projected subdocument the complete field value and will erase all other subdocuments within that field.
 
-**Note:** If `_id` is omitted via `'_id' => 0` from the root document then you will not be permitted to save it at all. The extension will instead throw an exception about the
+**Note:** If `_id` is omitted via `'_id' => 0` from the root document then you will not be permitted to save the document at all. The extension will instead throw an exception about the
 `_id` field not being set.
 
 ## Known Flaws
