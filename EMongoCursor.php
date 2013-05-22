@@ -89,6 +89,14 @@ class EMongoCursor implements Iterator, Countable{
     }
 
     /**
+     * Get next doc in cursor
+     */
+    public function getNext(){
+		if($c=$this->cursor->getNext())
+			return $this->current=$this->model->populateRecord($c,true,$this->partial);
+    }
+
+    /**
      * Gets the active record for the current row
      */
     public function current() {
