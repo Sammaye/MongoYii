@@ -245,14 +245,16 @@ class EMongoArrayModel implements Iterator, Countable, ArrayAccess {
 	 * @throws EMongoException
 	 */
 	public function offsetSet($offset, $value) {
-		$offset=$this->getIndex($value,$offset);
-		if($this->offsetExists($offset)){
-			$this->values[$this->getKey($offset)]=$value;
-		}else{
-			$this->values[]=$value;
-			if ($this->index && $this->map!==null)
-				$this->map[$offset]=count($this->values)-1;
+		if ($this->index){
+			$offset=$this->getIndex($value,$offset);
+			if($this->offsetExists($offset)){
+				$this->values[$this->getKey($offset)]=$value;
+			}else{
+				if ($this->map!==null)
+					$this->map[$offset]=count($this->values);
+			}
 		}
+		$this->values[]=$value;
 	}
 
 	/**
