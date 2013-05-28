@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * EMongoModelArray class file
  * @author Pavel Tetyaev <pahanini@gmail.com>
