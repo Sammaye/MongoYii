@@ -712,7 +712,7 @@ class EMongoDocument extends EMongoModel{
 		foreach($this->getSafeAttributeNames() as $attribute){
 
 			$value = $this->{$attribute};
-			if($value !== null && $value !== ''){
+			if($value !== null && $value !== '' && (!$value instanceof EMongoArrayModel)){
 				if(is_array($value) || is_object($value)){
 					$query[$attribute] = $value;
 				}elseif(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/',$value,$matches)){

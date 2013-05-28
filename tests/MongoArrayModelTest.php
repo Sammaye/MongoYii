@@ -9,7 +9,14 @@ class MongoArrayModelTest extends CTestCase{
 		Yii::app()->mongodb->drop();
 	}
 
-	public function __testArrayAccessAndCountable(){
+	public function testDataProvider()
+	{
+		$user = new User();
+		$dataProvider = $user->search();
+		$this->assertEquals(0, $dataProvider->getTotalItemCount());
+	}
+
+	public function testArrayAccessAndCountable(){
 		// Not indexed version
 		$am=new EMongoArrayModel('Dummy');
 		$am[]=array('dum'=>1);
@@ -60,7 +67,7 @@ class MongoArrayModelTest extends CTestCase{
 
 	}
 
-	public function __testAttributesAndValidator(){
+	public function testAttributesAndValidator(){
 		$user=new User;
 		$this->assertInstanceOf('EMongoArrayModel', $user->phones);
 		$this->assertInstanceOf('EMongoArrayModel', $user->accounts);
@@ -97,7 +104,7 @@ class MongoArrayModelTest extends CTestCase{
 		$this->assertInstanceOf('EMongoArrayModel', $user->accounts);
 	}
 
-	public function __testIterators()
+	public function testIterators()
 	{
 		$user=new User;
 		$user->phones=array();
