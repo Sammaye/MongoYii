@@ -30,7 +30,7 @@ class User extends EMongoDocument{
 		return array(
 			array('username', 'EMongoUniqueValidator', 'className' => 'User', 'attributeName' => 'username', 'on' => 'testUnqiue'),
 			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
-				array('road,town,country,post_code', 'safe'),
+				array('road,town,county,post_code', 'safe'),
 				array('telephone', 'numerical', 'integerOnly' => true)
 			)),
             array('mainSkill,otherSkills','safe'),
