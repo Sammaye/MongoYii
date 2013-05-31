@@ -51,12 +51,12 @@ class ESubdocumentValidator extends CValidator{
 				$fieldErrors = array();
 				$fieldValue = array();
 
-				foreach($object->$attribute as $row){
+				foreach($object->$attribute as $index=>$row){
 					$c->clean();
-					$val = $fieldValue[] = $row instanceof $c ? $row->getRawDocument() : $row;
+					$val = $fieldValue[$index] = $row instanceof $c ? $row->getRawDocument() : $row;
 					$c->setAttributes($val);
 					if(!$c->validate()){
-						$fieldErrors[] = $c->getErrors();
+						$fieldErrors[$index] = $c->getErrors();
 					}
 				}
 
