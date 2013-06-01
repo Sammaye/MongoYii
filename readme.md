@@ -755,7 +755,7 @@ Probably some, however, I will endeavour to accept pull requests and fix reporte
 
 Please look to the tests folder for further examples of how to use this extension, it is quite comprehensive.
 
-There is also an example application which is in the process of being built to accomodate for providing examlpes usages of MongoYii and is worth a look at for most Yii users: 
+There is also an example application which is in the process of being built to accomodate for providing example usages of MongoYii and is worth a look at for most Yii users: 
 [here](https://github.com/Sammaye/MongoYii-test)
 
 ## Running the Tests
