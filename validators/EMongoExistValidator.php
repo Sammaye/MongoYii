@@ -15,7 +15,7 @@
  *
  * @see CExistValidator
  */
-class EExistValidator extends CValidator
+class EMongoExistValidator extends CValidator
 {
 	/**
 	 * @var boolean whether the comparison is case sensitive. Defaults to true.
