@@ -288,13 +288,13 @@ from doing it manually on `getCollection()` is that the functions understand the
 
 ### setAttributes()
 
-It is important, nay imperative that you understand exactly how, by default MongoYii assigns integers. since MongoDB has no strict handling of field types it is very easy 
+It is important, nay, imperative that you understand exactly how, by default MongoYii assigns integers. Since MongoDB has no strict handling of field types it is very easy 
 for boolean integers from the likes of checkboxes etc to end up as strings breaking your application and causing you to have to cast objects repeatedly or change the way you query 
 (since, of course, MongoDB is type aware when querying).
 
-MongoYii will convert any number, real integer, not starting with 0 and not possessing a letter to a `int`.
+MongoYii will convert any number, real integer (otherwise known as "positive" or "unsigned" integer), not starting with 0 and not possessing a letter to an `int`.
 
-This is important because the largets integer MongoDB can natively store is only 32bit. In order to make MongoDB store larger integers you must use the 
+This is important because the largest integer MongoDB can natively store is only 32bit. In order to make MongoDB store larger integers you must use the 
 [native_long](http://www.php.net/manual/en/mongo.configuration.php#ini.mongo.native-long) configuration variable available within the driver.
 
 ### Example
