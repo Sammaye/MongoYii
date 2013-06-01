@@ -562,6 +562,14 @@ class EMongoDocument extends EMongoModel{
 	}
 
 	/**
+	 * Alias of find
+	 * @param array $criteria
+	 */
+    public function findAll($criteria=array(),$fields=array()){
+    	return $this->find ($criteria,$fields);
+    }
+
+	/**
 	 * Find some records
 	 * @param array $criteria
 	 */

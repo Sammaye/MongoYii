@@ -12,7 +12,7 @@ class ESubdocumentValidator extends CValidator{
 
 	public $type;
 	public $rules;
-	
+
 	public $scenario;
 
 	public function validateAttribute($object, $attribute){
@@ -38,7 +38,7 @@ class ESubdocumentValidator extends CValidator{
 						array('{class}'=>get_class($this))));
 			}
 		}
-		
+
 		if(is_object($this->scenario) && ($this->scenario instanceof Closure)){
 			$c->scenario = $this->scenario($object);
 		}else{
@@ -53,12 +53,12 @@ class ESubdocumentValidator extends CValidator{
 
 				$array = $object->$attribute instanceof EMongoArrayModel ? $object->$attribute->getRawValues() : $object->$attribute;
 
-				foreach($array as $row){
+				foreach($array as $index=>$row){
 					$c->clean();
-					$val = $fieldValue[] = $row instanceof $c ? $row->getRawDocument() : $row;
+					$val = $fieldValue[$index] = $row instanceof $c ? $row->getRawDocument() : $row;
 					$c->setAttributes($val);
 					if(!$c->validate()){
-						$fieldErrors[] = $c->getErrors();
+						$fieldErrors[$index] = $c->getErrors();
 					}
 				}
 
