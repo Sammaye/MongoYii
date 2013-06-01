@@ -339,6 +339,17 @@ have no impact on the model itself and merely merges criteria to be returned. As
 <p>It is normally best not to use this and instead to use the extension wrapped editions - <code>updateAll</code> and <code>deleteAll</code>. The only difference of said functions
 from doing it manually on <code>getCollection()</code> is that the functions understand the write concern of the extension.</p>
 
+<h3>setAttributes()</h3>
+
+<p>It is important, nay, imperative that you understand exactly how, by default MongoYii assigns integers. Since MongoDB has no strict handling of field types it is very easy 
+for boolean integers from the likes of checkboxes etc to end up as strings breaking your application and causing you to have to cast objects repeatedly or change the way you query 
+(since, of course, MongoDB is type aware when querying).</p>
+
+<p>MongoYii will convert any number, real integer (otherwise known as "positive" or "unsigned" integer), not starting with 0 and not possessing a letter to an <code>int</code>.</p>
+
+<p>This is important because the largest integer MongoDB can natively store is only 32bit. In order to make MongoDB store larger integers you must use the 
+<a href="http://www.php.net/manual/en/mongo.configuration.php#ini.mongo.native-long">native_long</a> configuration variable available within the driver.</p>
+
 <h3>Example</h3>
 
 <p>So now that we have discussed the <code>EMongoDocument</code> lets look at the most base of example:</p>
@@ -540,21 +551,21 @@ validators to specific scenarios where they will be actively used.</p>
 
 <h3>Handling Subdocuments</h3>
 
-<p>As we already know MongoYii does not handle subdocuments automatically for you. if you wish to have an automatic handler for subdocuments it is normally considered good advice to make 
-your own based on the scenarios you require. One reason for this is because many people have many different document setups and since there is no predefined schema for the subdocuments I 
+<p>As we already know MongoYii does not handle subdocuments automatically for you. if you wish to have an automatic handler for subdocuments it is normally considered good advice to make
+your own based on the scenarios you require. One reason for this is because many people have many different document setups and since there is no predefined schema for the subdocuments I
 cannot provide automated usage without short of taking every single possibility of subdocument existence into account.</p>
 
 <p>For this explanation we will assume you do not wish to make your own subdocument handler, but instead, are fine using MongoYiis and PHP owns built in abilities.</p>
 
 <p>As to how you go about handling subdocuments depends heavily upon how you intend to manage and use them.</p>
 
-<p>Okay, let's start at the top; are you using a class for these subdocuments? If the answer is "Yes sir!" then chance are that your subdocuments are quite complex and has a section in your 
-application all to itself with its own controller and everything like, for example, comments on a bog post.  </p>
+<p>Okay, let's start at the top; are you using a class for these subdocuments? If the answer is "Yes sir!" then chance are that your subdocuments are quite complex and has a section in your
+application all to itself with its own controller and everything like, for example, comments on a bog post.</p>
 
-<p>Now the second question you must ask yourself; are you replacing these subdocuments every time you save them or do you want to use modifiers such as <code>$push</code>, <code>$pull</code>, <code>$pullAll</code>, <code>$pushAll</code>, 
+<p>Now the second question you must ask yourself; are you replacing these subdocuments every time you save them or do you want to use modifiers such as <code>$push</code>, <code>$pull</code>, <code>$pullAll</code>, <code>$pushAll</code>,
 <code>$addToSet</code> ectera?</p>
 
-<p>If you wish to use modifiers each time then the best way to manage these type of documents is to make the subdocument singular class extend <code>EMongoModel</code>, for example, <code>Comment</code> 
+<p>If you wish to use modifiers each time then the best way to manage these type of documents is to make the subdocument singular class extend <code>EMongoModel</code>, for example, <code>Comment</code>
 would extend <code>EMongoModel</code>.</p>
 
 <p>When, say, adding a comment to a post you would do:</p>
@@ -567,12 +578,12 @@ would extend <code>EMongoModel</code>.</p>
 }
 </code></pre>
 
-<p>And you would use relatively similar behaviour for most other operations you need to perform. In this case MongoYii merely acts as a helper and glue for you to make life a little easier, 
+<p>And you would use relatively similar behaviour for most other operations you need to perform. In this case MongoYii merely acts as a helper and glue for you to make life a little easier,
 however, at the end of the day it will not auto manage subdocuments for you.</p>
 
 <p>There are plans in the works to give helper functions to make your life easier on this front however, for the minute, this is the best method.</p>
 
-<p>If you are not using a class then chances are your subdocuments are quite primative and most likely are just detail to the root document and you are replacing them each time. This scenario 
+<p>If you are not using a class then chances are your subdocuments are quite primative and most likely are just detail to the root document and you are replacing them each time. This scenario
 also applies if you are using complex classes but you are replacing the subdocument list on each save.</p>
 
 <p>If this is the case you can either use the subdocument validator mentioned above to process your subdocuments or you can actually programmably do this:</p>
@@ -583,7 +594,7 @@ if(isset($_POST['numbers'])){
         $d=new Model();
         $d-&gt;attributes = $row;
         $valid=$d-&gt;validate()&amp;&amp;$valid;
-        $user-&gt;numbers[] = $d;            
+        $user-&gt;numbers[] = $d;
     }
 }
 if($valid) $user-&gt;save();
@@ -646,7 +657,7 @@ for a user model:</p>
 
 <h2>EMongoCriteria</h2>
 
-<p>The <code>EMongoCriteria</code> class can help build modular queries across many segments of your application providing an abstracted layer with helper functions enabling you to better create complex 
+<p>The <code>EMongoCriteria</code> class can help build modular queries across many segments of your application providing an abstracted layer with helper functions enabling you to better create complex
 queries.</p>
 
 <p>A brief, yet complete, example of using the <code>EMongoCriteria</code> would be:</p>
@@ -682,9 +693,9 @@ User::model()-&gt;find($c
 
 <h3>addOrCondition()</h3>
 
-<p>Adds an <code>$or</code> condition and takes an array of <code>arrays</code> as its only parameter with each nested <code>array</code> being a condition within the <code>$or</code> (just like in the driver). </p>
+<p>Adds an <code>$or</code> condition and takes an array of <code>arrays</code> as its only parameter with each nested <code>array</code> being a condition within the <code>$or</code> (just like in the driver).</p>
 
-<p>It would be wise to note it will overwrite any <code>$or</code> previously placed in. </p>
+<p>It would be wise to note it will overwrite any <code>$or</code> previously placed in.</p>
 
 <h3>getSort() / setSort()</h3>
 
@@ -698,11 +709,17 @@ User::model()-&gt;find($c
 
 <p>These simply get and set the limit of the query.</p>
 
+<h3>getProject() / setProject()</h3>
+
+<p><strong>New in v1.1</strong></p>
+
+<p>These simply set the projection of the criteria to state specific fields to include/omit.</p>
+
 <h3>compare()</h3>
 
 <p>This works a lot like <code>CDbCriteria</code>s and it heavily based on it.</p>
 
-<p>You simply enter <code>column</code>, <code>value</code> and <code>strong</code> parameter values (in that order) and the <code>EMongoCriteria</code> class will create a condition and merge it into your current condition 
+<p>You simply enter <code>column</code>, <code>value</code> and <code>strong</code> parameter values (in that order) and the <code>EMongoCriteria</code> class will create a condition and merge it into your current condition
 based upon the entered data. As examples:</p>
 
 <pre><code>$c-&gt;compare('name', 'sammaye');
@@ -712,7 +729,7 @@ $c-&gt;compare('i', '&lt;4');
 
 <p>The compare funtion, as seen in the second example, will accept a certai number of operators. The operators supported are: <code>&lt;&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>=</code>.</p>
 
-<p>It is good to note that the function currently only accepts <code>AND</code> conditioning. </p>
+<p>It is good to note that the function currently only accepts <code>AND</code> conditioning.</p>
 
 <h3>mergeWith()</h3>
 
@@ -754,23 +771,59 @@ $c-&gt;compare('i', '&lt;4');
 <li>SQL has some rather complex and difficult to form queries in it that would make an abstraction layer useful</li>
 </ul>
 
-<p>MongoDB suffers from none of these problems; first it has OO querying interface already, secondly it is easily to merge different queries together simply using <code>CMap::MergeArray()</code> 
-and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying 
-and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do <code>$or</code>s in this class). </p>
+<p>MongoDB suffers from none of these problems; first it has OO querying interface already, secondly it is easily to merge different queries together simply using <code>CMap::MergeArray()</code>
+and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying
+and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do <code>$or</code>s in this class).</p>
 
 <p>As such I believe that the <code>EMongoCriteria</code> class is just dead weight consuming memory which I could use for other tasks.</p>
 
 <p>This extension does not rely on <code>EMongoCriteria</code> internally.</p>
 
-<p>So I expect all modifications to certain parts of MongoYii to be both compatible with <code>EMongoCriteria</code> but also without. I will not accept pull requests which are biased to <code>EMongoCriteria</code> 
+<p>So I expect all modifications to certain parts of MongoYii to be both compatible with <code>EMongoCriteria</code> but also without. I will not accept pull requests which are biased to <code>EMongoCriteria</code>
 usage, however, in the same breath I will not accept pull requests which do not accommodate for the class.</p>
+
+<h2>Covered and Partial Queries</h2>
+
+<p><strong>New in v1.1</strong></p>
+
+<p>When you do not wish to retrieve the entire document you can instead just return a partial result.</p>
+
+<p>Both the <code>EMongoCriteria</code> and normal array based querying supports projection through two methods. First as a <code>project</code> variable in either EMongoCriteria:</p>
+
+<pre><code>$c-&gt;project=array('_id'=&gt;0,'d'=&gt;1);
+</code></pre>
+
+<p>Or as an element within the defined array:</p>
+
+<pre><code>functions scope(){
+    return array(
+        'project' =&gt; array('_id'=&gt;0,'d'=&gt;1)
+    );
+}
+</code></pre>
+
+<p>And second, as a parameter injected into the read functions of the active record model, as an example:</p>
+
+<pre><code>User::model()-&gt;find(array(),array('_id'=&gt;0,'d'=&gt;1));
+</code></pre>
+
+<p>These will return <code>partial=true</code> <code>EMongoDocument</code> instances, either eagerly or in a cursor object. This specification is implemented within all currently existing read functions such as
+<code>findOne</code> and <code>findBy_id</code> and <code>findByPk</code> however, they are not accepted within the write functions (<code>update</code>, <code>insert</code>, <code>save</code> etc).</p>
+
+<p>When a document is returned as partial it will only save the root level fields that are included within the result of the query.</p>
+
+<p><strong>Note:</strong> When using <code>$elemMatch</code> projection you must bare in mind that MongoYii will treat that result as the definitive result for that field. In other words when you go to save the
+root document MongoYii will consider that single projected subdocument the complete field value and will erase all other subdocuments within that field.</p>
+
+<p><strong>Note:</strong> If <code>_id</code> is omitted via <code>'_id' =&gt; 0</code> from the root document then you will not be permitted to save the document at all. The extension will instead throw an exception about the
+<code>_id</code> field not being set.</p>
 
 <h2>Known Flaws</h2>
 
 <ul>
-<li>Covered queries are not supported, but then as I am unsure if they really fit with active record</li>
 <li>Subdocuments are not automated, however, I have stated why above</li>
-<li>the aggregation framework does not fit well with active record as such it is not directly supported within the models</li>
+<li>the aggregation framework does not fit well with active record as such it is not directly supported within the models, however, there is a <code>aggregate</code> helper on each model but
+it will not return a model instance but instead the direct result of the MongoDB server response.</li>
 </ul>
 
 <p>I am sure there are more but that is the immediate flaws you need to consider in this extension.</p>
@@ -782,6 +835,9 @@ usage, however, in the same breath I will not accept pull requests which do not 
 <h2>Examples</h2>
 
 <p>Please look to the tests folder for further examples of how to use this extension, it is quite comprehensive.</p>
+
+<p>There is also an example application which is in the process of being built to accomodate for providing example usages of MongoYii and is worth a look at for most Yii users: 
+<a href="https://github.com/Sammaye/MongoYii-test">here</a></p>
 
 <h2>Running the Tests</h2>
 
