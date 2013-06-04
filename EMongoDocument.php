@@ -703,7 +703,7 @@ class EMongoDocument extends EMongoModel{
 	    $this->trace(__FUNCTION__);
 
 	    // If we provide a manual criteria via EMongoCriteria or an array we do not use the models own DbCriteria
-	    $criteria = !empty($criteria) && !$criteria instanceof EMongoCriteira ? $criteria : $this->getDbCriteria();
+	    $criteria = !empty($criteria) && !$criteria instanceof EMongoCriteria ? $criteria : $this->getDbCriteria();
 
 	    if($criteria instanceof EMongoCriteria)
 	        $crtieria = $criteria->getCondition();
