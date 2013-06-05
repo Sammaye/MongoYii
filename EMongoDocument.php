@@ -492,9 +492,9 @@ class EMongoDocument extends EMongoModel{
 				$attributes=$this->getRawDocument();
 			unset($attributes['_id']); // Unset the _id before update
 
-			$this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
+			$response=$this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
 			$this->afterSave();
-			return true;
+			return $response;
 		}
 		else
 			return false;
