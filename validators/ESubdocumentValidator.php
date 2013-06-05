@@ -12,8 +12,10 @@ class ESubdocumentValidator extends CValidator{
 
 	public $type;
 	public $rules;
-	
+
 	public $scenario;
+
+	public $preserveKeys=true;
 
 	public function validateAttribute($object, $attribute){
 
@@ -38,7 +40,7 @@ class ESubdocumentValidator extends CValidator{
 						array('{class}'=>get_class($this))));
 			}
 		}
-		
+
 		if(is_object($this->scenario) && ($this->scenario instanceof Closure)){
 			$c->scenario = $this->scenario($object);
 		}else{
@@ -53,10 +55,16 @@ class ESubdocumentValidator extends CValidator{
 
 				foreach($object->$attribute as $index=>$row){
 					$c->clean();
-					$val = $fieldValue[$index] = $row instanceof $c ? $row->getRawDocument() : $row;
+					if($this->preserveKeys)
+						$val = $fieldValue[$index] = $row instanceof $c ? $row->getRawDocument() : $row;
+					else
+						$val = $fieldValue[] = $row instanceof $c ? $row->getRawDocument() : $row;
 					$c->setAttributes($val);
 					if(!$c->validate()){
-						$fieldErrors[$index] = $c->getErrors();
+						if($this->preserveKeys)
+							$fieldErrors[$index] = $c->getErrors();
+						else
+							$fieldErrors[] = $c->getErrors();
 					}
 				}
 
