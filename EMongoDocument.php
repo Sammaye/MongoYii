@@ -458,11 +458,11 @@ class EMongoDocument extends EMongoModel{
 			$this->trace(__FUNCTION__);
 
 			if(!isset($this->{$this->primaryKey()})) $this->{$this->primaryKey()} = new MongoId;
-			if($this->getCollection()->insert($this->getRawDocument(), $this->getDbConnection()->getDefaultWriteConcern())){
+			if($response=$this->getCollection()->insert($this->getRawDocument(), $this->getDbConnection()->getDefaultWriteConcern())){
 				$this->afterSave();
 				$this->setIsNewRecord(false);
 				$this->setScenario('update');
-				return true;
+				return $response;
 			}
 		}
 		return false;
