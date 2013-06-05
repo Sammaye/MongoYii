@@ -36,6 +36,13 @@ class EMongoDocument extends EMongoModel{
 	private $_projected_fields = array();
 
 	/**
+	 * A bit deceptive, this var actually holds the last response from the server. The reason why it is called this
+	 * is because this is what MongoDB calls it.
+	 * @var mixed
+	 */
+	private $lastError;
+
+	/**
 	 * Sets up our model and set the field cache just like in EMongoModel
 	 *
 	 * It will also set the default scope on the model so be aware that if you want the default scope to not be applied you will
@@ -458,11 +465,11 @@ class EMongoDocument extends EMongoModel{
 			$this->trace(__FUNCTION__);
 
 			if(!isset($this->{$this->primaryKey()})) $this->{$this->primaryKey()} = new MongoId;
-			if($response=$this->getCollection()->insert($this->getRawDocument(), $this->getDbConnection()->getDefaultWriteConcern())){
+			if($this->lastError=$this->getCollection()->insert($this->getRawDocument(), $this->getDbConnection()->getDefaultWriteConcern())){
 				$this->afterSave();
 				$this->setIsNewRecord(false);
 				$this->setScenario('update');
-				return $response;
+				return true;
 			}
 		}
 		return false;
@@ -492,9 +499,9 @@ class EMongoDocument extends EMongoModel{
 				$attributes=$this->getRawDocument();
 			unset($attributes['_id']); // Unset the _id before update
 
-			$response=$this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
+			$this->lastError=$this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
 			$this->afterSave();
-			return $response;
+			return true;
 		}
 		else
 			return false;
@@ -800,6 +807,14 @@ class EMongoDocument extends EMongoModel{
 		}
 		else
 			return false;
+    }
+
+    /**
+     * A bit deceptive, this actually gets the last response from either save() or update(). The reason it is called this
+     * is because MongoDB calls it this and so it seems better to have unity on that front.
+     */
+    public function getLastError(){
+		return $this->lastError;
     }
 
     /**
