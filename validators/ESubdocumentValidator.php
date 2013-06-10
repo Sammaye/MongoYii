@@ -15,6 +15,8 @@ class ESubdocumentValidator extends CValidator{
 
 	public $scenario;
 
+	public $preserveKeys=true;
+
 	public function validateAttribute($object, $attribute){
 
 		if(!$this->type)
@@ -55,10 +57,16 @@ class ESubdocumentValidator extends CValidator{
 
 				foreach($array as $index=>$row){
 					$c->clean();
-					$val = $fieldValue[$index] = $row instanceof $c ? $row->getRawDocument() : $row;
+					if($this->preserveKeys)
+						$val = $fieldValue[$index] = $row instanceof $c ? $row->getRawDocument() : $row;
+					else
+						$val = $fieldValue[] = $row instanceof $c ? $row->getRawDocument() : $row;
 					$c->setAttributes($val);
 					if(!$c->validate()){
-						$fieldErrors[$index] = $c->getErrors();
+						if($this->preserveKeys)
+							$fieldErrors[$index] = $c->getErrors();
+						else
+							$fieldErrors[] = $c->getErrors();
 					}
 				}
 

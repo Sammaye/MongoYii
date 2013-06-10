@@ -288,11 +288,13 @@ class EMongoModel extends CModel{
 			$field_meta = isset($_meta[$name]) ? $_meta[$name] : array();
 			if($safeOnly){
 				if(isset($attributes[$name]))
-					$this->$name=!is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0 ? (int)$value : $value;
+					$this->$name=!is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0
+						&& (string)$value < '9223372036854775807' ? (int)$value : $value;
 				elseif($safeOnly)
 					$this->onUnsafeAttribute($name,$value);
 			}else{
-				$this->$name=!is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$$/' /* Will only match real integers, unsigned */, $value) > 0 ? (int)$value : $value;
+				$this->$name=!is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$$/' /* Will only match real integers, unsigned */, $value) > 0
+					&& (string)$value < '9223372036854775807' ? (int)$value : $value;
 			}
 		}
 	}
