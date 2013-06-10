@@ -4,6 +4,10 @@
 
 Another active record handler for the Yii framework that supports MongoDB.
 
+This fork adds some useful features:
+- lazy autoloading of subDocuments
+- write concern behavior
+
 ## Rationale
 
 There is already a great extension called YiiMongoDBSuite out for Yii so why make another? YiiMongoDBSuite has certain flaws which I wish to address:
@@ -288,13 +292,13 @@ from doing it manually on `getCollection()` is that the functions understand the
 
 ### setAttributes()
 
-It is important, nay, imperative that you understand exactly how, by default MongoYii assigns integers. Since MongoDB has no strict handling of field types it is very easy 
-for boolean integers from the likes of checkboxes etc to end up as strings breaking your application and causing you to have to cast objects repeatedly or change the way you query 
+It is important, nay, imperative that you understand exactly how, by default MongoYii assigns integers. Since MongoDB has no strict handling of field types it is very easy
+for boolean integers from the likes of checkboxes etc to end up as strings breaking your application and causing you to have to cast objects repeatedly or change the way you query
 (since, of course, MongoDB is type aware when querying).
 
 MongoYii will convert any number, real integer (otherwise known as "positive" or "unsigned" integer), not starting with 0 and not possessing a letter to an `int`.
 
-This is important because the largest integer MongoDB can natively store is only 32bit. In order to make MongoDB store larger integers you must use the 
+This is important because the largest integer MongoDB can natively store is only 32bit. In order to make MongoDB store larger integers you must use the
 [native_long](http://www.php.net/manual/en/mongo.configuration.php#ini.mongo.native-long) configuration variable available within the driver.
 
 ### Example
@@ -755,7 +759,7 @@ Probably some, however, I will endeavour to accept pull requests and fix reporte
 
 Please look to the tests folder for further examples of how to use this extension, it is quite comprehensive.
 
-There is also an example application which is in the process of being built to accomodate for providing example usages of MongoYii and is worth a look at for most Yii users: 
+There is also an example application which is in the process of being built to accomodate for providing example usages of MongoYii and is worth a look at for most Yii users:
 [here](https://github.com/Sammaye/MongoYii-test)
 
 ## Running the Tests
