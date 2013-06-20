@@ -673,8 +673,6 @@ These simply get and set the limit of the query.
 
 ### getProject() / setProject()
 
-**New in v1.1**
-
 These simply set the projection of the criteria to state specific fields to include/omit.
 
 ### compare()
@@ -739,8 +737,6 @@ So I expect all modifications to certain parts of MongoYii to be both compatible
 usage, however, in the same breath I will not accept pull requests which do not accommodate for the class.
 
 ## Covered and Partial Queries
-
-**New in v1.1**
 
 When you do not wish to retrieve the entire document you can instead just return a partial result.
 
