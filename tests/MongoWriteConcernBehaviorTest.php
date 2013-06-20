@@ -7,6 +7,8 @@ class MongoWriteConcernBehaviorTest extends CTestCase{
 	function testAll(){
 		/** @var EMongoClient $db  */
 		$db = Yii::app()->mongodb;
+		$db->setWriteConcernAlias('default');
+
 		$this->assertEquals(1, $db->w);
 		$this->assertFalse($db->j);
 
