@@ -80,7 +80,11 @@ class EMongoDataProvider extends CActiveDataProvider{
 	 * @see yii/framework/web/CActiveDataProvider::fetchData()
 	 */
 	public function fetchData(){
-		$criteria=$this->getCriteria();
+
+		if ($this->criteria instanceof EMongoCriteria)
+			$criteria=$this->criteria->toArray();
+		else
+			$criteria=$this->getCriteria();
 
 		// I have not refactored this line considering that the condition may have changed from total item count to here, maybe.
 		$this->_cursor = $this->model->find(isset($criteria['condition']) && is_array($criteria['condition']) ? $criteria['condition'] : array());
