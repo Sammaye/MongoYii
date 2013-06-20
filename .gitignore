@@ -1,1 +1,7 @@
+# ignore IDE specific files and dirs
+.idea
+.settings
+.project
+
+# ignore temporary files
 *~
