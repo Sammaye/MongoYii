@@ -33,6 +33,8 @@
 
     <div class="wrapper">
       <section id="contents">
+<p><strong>You can find a more user friendly version of this documentation on the extensions Github page: <a href="http://sammaye.github.io/MongoYii">http://sammaye.github.io/MongoYii</a></strong></p>
+
 <h1>MongoYii</h1>
 
 <p>Another active record handler for the Yii framework that supports MongoDB.</p>
@@ -104,6 +106,40 @@ on the <code>EMongoClient</code> like so:</p>
 
 <p><strong>Note:</strong> The models will by default seek a <code>mongodb</code> component within your configuration so please make sure that unless you modify the extension, or use it without active record, to
 make your default (master) connection be a component called <code>mongodb</code>.</p>
+
+<h3>Composer</h3>
+
+<p>MongoYii fully supports Composer and is listed on <a href="https://packagist.org/packages/sammaye/mongoyii">packagist</a>.</p>
+
+<p>A good example configuration was posted by <a href="https://github.com/ujovlado">@ujovlado</a> on a related <a href="https://github.com/Sammaye/MongoYii/issues/81#issuecomment-19722140">issue</a>;
+installing Yii to the standard vendor path you could use the following configuration:</p>
+
+<pre><code>{
+    "require": {
+        "composer/installers": "~1.0",
+        "yiisoft/yii": "1.1.13",
+        "sammaye/mongoyii": "1.2.9"
+    },
+    "extra": {
+        "installer-paths": {
+            "protected/extensions/{$name}": ["sammaye/mongoyii"]
+        }
+    }
+}
+</code></pre>
+
+<p>to install MongoYii.</p>
+
+<p>As an additional side note; if you are only using Composer for Yii extensions then you can set a more blanketed solution of simply changing your <code>vendor-dir</code> to <code>protected/extensions</code>:</p>
+
+<pre><code>{
+    "config": {
+        "vendor-dir": "protected/extensions"
+    }
+}
+</code></pre>
+
+<p>Currently MongoYii does not handle namespaces.</p>
 
 <h3>Write Concern (formally "safe" writes)</h3>
 
@@ -341,13 +377,13 @@ from doing it manually on <code>getCollection()</code> is that the functions und
 
 <h3>setAttributes()</h3>
 
-<p>It is important, nay, imperative that you understand exactly how, by default MongoYii assigns integers. Since MongoDB has no strict handling of field types it is very easy 
-for boolean integers from the likes of checkboxes etc to end up as strings breaking your application and causing you to have to cast objects repeatedly or change the way you query 
+<p>It is important, nay, imperative that you understand exactly how, by default MongoYii assigns integers. Since MongoDB has no strict handling of field types it is very easy
+for boolean integers from the likes of checkboxes etc to end up as strings breaking your application and causing you to have to cast objects repeatedly or change the way you query
 (since, of course, MongoDB is type aware when querying).</p>
 
 <p>MongoYii will convert any number, real integer (otherwise known as "positive" or "unsigned" integer), not starting with 0 and not possessing a letter to an <code>int</code>.</p>
 
-<p>This is important because the largest integer MongoDB can natively store is only 32bit. In order to make MongoDB store larger integers you must use the 
+<p>This is important because the largest integer MongoDB can natively store is only 32bit. In order to make MongoDB store larger integers you must use the
 <a href="http://www.php.net/manual/en/mongo.configuration.php#ini.mongo.native-long">native_long</a> configuration variable available within the driver.</p>
 
 <h3>Example</h3>
@@ -836,7 +872,7 @@ it will not return a model instance but instead the direct result of the MongoDB
 
 <p>Please look to the tests folder for further examples of how to use this extension, it is quite comprehensive.</p>
 
-<p>There is also an example application which is in the process of being built to accomodate for providing example usages of MongoYii and is worth a look at for most Yii users: 
+<p>There is also an example application which is in the process of being built to accomodate for providing example usages of MongoYii and is worth a look at for most Yii users:
 <a href="https://github.com/Sammaye/MongoYii-test">here</a></p>
 
 <h2>Running the Tests</h2>
