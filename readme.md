@@ -66,9 +66,9 @@ make your default (master) connection be a component called `mongodb`.
 
 ### Composer
 
-MongoYii fully supports Composer and is listed on (packagist)[https://packagist.org/packages/sammaye/mongoyii].
+MongoYii fully supports Composer and is listed on [packagist](https://packagist.org/packages/sammaye/mongoyii).
 
-A good example configuration was posted by (@ujovlado)[https://github.com/ujovlado] on a related (issue)[https://github.com/Sammaye/MongoYii/issues/81#issuecomment-19722140];
+A good example configuration was posted by [@ujovlado](https://github.com/ujovlado) on a related [issue](https://github.com/Sammaye/MongoYii/issues/81#issuecomment-19722140);
 installing Yii to the standard vendor path you could use the following configuration:
 
 	{
