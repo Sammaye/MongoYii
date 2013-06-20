@@ -64,6 +64,38 @@ If you wish to call a function on the `MongoClient` or `Mongo` class you will ne
 **Note:** The models will by default seek a `mongodb` component within your configuration so please make sure that unless you modify the extension, or use it without active record, to
 make your default (master) connection be a component called `mongodb`.
 
+### Composer
+
+MongoYii fully supports Composer and is listed on (packagist)[https://packagist.org/packages/sammaye/mongoyii].
+
+A good example configuration was posted by (@ujovlado)[https://github.com/ujovlado] on a related (issue)[https://github.com/Sammaye/MongoYii/issues/81#issuecomment-19722140];
+installing Yii to the standard vendor path you could use the following configuration:
+
+	{
+	    "require": {
+	        "composer/installers": "~1.0",
+	        "yiisoft/yii": "1.1.13",
+	        "sammaye/mongoyii": "1.2.9"
+	    },
+	    "extra": {
+	        "installer-paths": {
+	            "protected/extensions/{$name}": ["sammaye/mongoyii"]
+	        }
+	    }
+	}
+
+to install MongoYii.
+
+As an additional side note; if you are only using Composer for Yii extensions then you can set a more blanketed solution of simply changing your `vendor-dir` to `protected/extensions`:
+
+	{
+	    "config": {
+	        "vendor-dir": "protected/extensions"
+	    }
+	}
+
+Currently MongoYii does not handle namespaces.
+
 ### Write Concern (formally "safe" writes)
 
 This extension uses the new `w` variable globally to handle the level of write concern you wish to impose on MongoDB.
@@ -288,13 +320,13 @@ from doing it manually on `getCollection()` is that the functions understand the
 
 ### setAttributes()
 
-It is important, nay, imperative that you understand exactly how, by default MongoYii assigns integers. Since MongoDB has no strict handling of field types it is very easy 
-for boolean integers from the likes of checkboxes etc to end up as strings breaking your application and causing you to have to cast objects repeatedly or change the way you query 
+It is important, nay, imperative that you understand exactly how, by default MongoYii assigns integers. Since MongoDB has no strict handling of field types it is very easy
+for boolean integers from the likes of checkboxes etc to end up as strings breaking your application and causing you to have to cast objects repeatedly or change the way you query
 (since, of course, MongoDB is type aware when querying).
 
 MongoYii will convert any number, real integer (otherwise known as "positive" or "unsigned" integer), not starting with 0 and not possessing a letter to an `int`.
 
-This is important because the largest integer MongoDB can natively store is only 32bit. In order to make MongoDB store larger integers you must use the 
+This is important because the largest integer MongoDB can natively store is only 32bit. In order to make MongoDB store larger integers you must use the
 [native_long](http://www.php.net/manual/en/mongo.configuration.php#ini.mongo.native-long) configuration variable available within the driver.
 
 ### Example
@@ -755,7 +787,7 @@ Probably some, however, I will endeavour to accept pull requests and fix reporte
 
 Please look to the tests folder for further examples of how to use this extension, it is quite comprehensive.
 
-There is also an example application which is in the process of being built to accomodate for providing example usages of MongoYii and is worth a look at for most Yii users: 
+There is also an example application which is in the process of being built to accomodate for providing example usages of MongoYii and is worth a look at for most Yii users:
 [here](https://github.com/Sammaye/MongoYii-test)
 
 ## Running the Tests
