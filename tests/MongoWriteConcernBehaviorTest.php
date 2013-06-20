@@ -19,15 +19,15 @@ class MongoWriteConcernBehaviorTest extends CTestCase{
 		$this->assertFalse($db->j);
 
 		$db->pushWriteConcernAlias('files');
-		$this->assertEquals('majority', $db->w);
+		$this->assertEquals(1, $db->w);
 		$this->assertFalse($db->j);
 
 		$db->pushWriteConcernAlias('critical');
-		$this->assertEquals(2, $db->w);
+		$this->assertEquals(1, $db->w);
 		$this->assertTrue($db->j);
 
 		$db->popWriteConcernAlias();	// back to 'files'
-		$this->assertEquals('majority', $db->w);
+		$this->assertEquals(1, $db->w);
 		$this->assertFalse($db->j);
 
 		$db->popWriteConcernAlias();	// back to 'default'
@@ -39,7 +39,6 @@ class MongoWriteConcernBehaviorTest extends CTestCase{
 		$this->assertFalse($db->j);
 
 		$b = $db->asa('writeConcern');
-		$b->maxW=1;
 		$db->setWriteConcernAlias('critical');
 		$this->assertEquals(1, $db->w);
 		$this->assertTrue($db->j);
