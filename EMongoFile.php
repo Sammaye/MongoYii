@@ -11,29 +11,41 @@
  */
 class EMongoFile extends EMongoDocument{
 	
+	/**
+	 * Our file object, can be either the MongoGridFSFile or 
+	 * CUploadFile
+	 */
 	private $_file;
 	
-	function getFilename(){
+	// Helper functions to get some common functionality on this class
+	
+	public function getFilename(){
 		if($this->_file instanceof MongoGridFSFile)
 			return $this->_file->getFilename();
 		return $this->_file->getTempName();
 	}
 	
-	function getSize(){
+	public function getSize(){
 		return $this->_file->getSize();
 	}
 
-	function getBytes(){
+	public function getBytes(){
 		if($this->_file instanceof MongoGridFSFile)
 			return $this->_file->getBytes();
 		return file_get_contents($this->getFilename());
 	}
 	
-	function getFile(){
+	/**
+	 * Gets the file object
+	 */
+	public function getFile(){
 		return $this->_file;
 	}
 	
-	function setFile($v){
+	/**
+	 * Sets the file object
+	 */
+	public function setFile($v){
 		$this->_file=$v;
 	}
 	
@@ -51,7 +63,7 @@ class EMongoFile extends EMongoDocument{
 	 * @param string $attribute
 	 * @return boolean|EMongoFile|NULL
 	 */
-	static function populate($model,$attribute){
+	public static function populate($model,$attribute){
 		if($file=CUploadedFile::getInstance($model, $attribute)){
 			
 			if($file->getHasError())
@@ -69,7 +81,7 @@ class EMongoFile extends EMongoDocument{
 	 * MongoGridFsFile object correctly and other file details like size and name.
 	 * @see EMongoDocument::populateRecord()
 	 */
-	function populateRecord($attributes,$callAfterFind=true,$partial=false){
+	public function populateRecord($attributes,$callAfterFind=true,$partial=false){
 		if($attributes!==false)
 		{
 			// the cursor will actually input a MongoGridFSFile object as the "document" 
@@ -111,7 +123,7 @@ class EMongoFile extends EMongoDocument{
 	 * The only difference between the normal insert is that this uses the storeFile function on the GridFS object
 	 * @see EMongoDocument::insert()
 	 */
-	function insert($attributes=null){
+	public function insert($attributes=null){
 		if(!$this->getIsNewRecord())
 			throw new CDbException(Yii::t('yii','The active record cannot be inserted to database because it is not new.'));
 		if($this->beforeSave())
@@ -141,7 +153,7 @@ class EMongoFile extends EMongoDocument{
 	 * @param $deleteChunks As to whether or not to gc the chunks collection as well
 	 * @see EMongoDocument::delete()
 	 */
-	function delete($deleteChunks=true){
+	public function delete($deleteChunks=true){
 		if(!$this->getIsNewRecord()){
 			$this->trace(__FUNCTION__);
 			if($this->beforeDelete()){
@@ -163,7 +175,7 @@ class EMongoFile extends EMongoDocument{
 	 * Get collection will now return the GridFS object from the driver
 	 * @see EMongoDocument::getCollection()
 	 */
-	function getCollection(){
+	public function getCollection(){
 		return $this->getDbConnection()->getGridFS();
 	}
 	
