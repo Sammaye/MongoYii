@@ -65,10 +65,6 @@ class EMongoFile extends EMongoDocument{
 	 */
 	public static function populate($model,$attribute){
 		if($file=CUploadedFile::getInstance($model, $attribute)){
-			
-			if($file->getHasError())
-				return false;
-			
 			$model=new EMongoFile();
 			$model->setFile($file);
 			return $model;
