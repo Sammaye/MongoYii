@@ -244,13 +244,13 @@ class EMongoModel extends CModel{
 			$field_meta = isset($_meta[$name]) ? $_meta[$name] : array();
 			if($safeOnly){
 				if(isset($attributes[$name]))
-					$this->$name=!is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0
+					$this->$name=!is_bool($value) && !is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0
 						&& ( (PHP_INT_MAX > 2147483647 && (string)$value < '9223372036854775807') /* If it is a 64 bit system and the value is under the long max */
 								|| (string)$value < '2147483647' /* value is under 32bit limit */) ? (int)$value : $value;
 				elseif($safeOnly)
 					$this->onUnsafeAttribute($name,$value);
 			}else{
-				$this->$name=!is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$$/' /* Will only match real integers, unsigned */, $value) > 0
+				$this->$name=!is_bool($value) && !is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$$/' /* Will only match real integers, unsigned */, $value) > 0
 					&& ( (PHP_INT_MAX > 2147483647 && (string)$value < '9223372036854775807') || (string)$value < '2147483647') ? (int)$value : $value;
 			}
 		}
