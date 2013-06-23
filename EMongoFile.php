@@ -1,13 +1,14 @@
 <?php
 
 /**
- * This file is extremely experimental.
+ * The MongoYii representation of a helper for uploading files to GridFS.
  * 
- * It's API may change, more specifically the handling of a files properties such as the size and type, 
- * so please only use it for testing purposes and proposing solid changes to the file. 
+ * WARNING: This file is extremely experimental and its API may change before it is pushed to a tag.
  * 
- * Basically this is a MongoYii handler for the GridFS driver standard. it can accept an input file from $_FILES via ::populate and 
- * can also do find() and findOne() on the file collection. When delete is used it will gc the chunks collection by default as well.
+ * It can accept an input file from $_FILES via ::populate and can also do find() and findOne() on the files collection. 
+ * When delete is used it will gc the chunks collection by default as well.
+ * 
+ * This file is specifically designed for uploading files from a form to GridFS and is merely a helper, IT IS IN NO WAY REQUIRED.
  */
 class EMongoFile extends EMongoDocument{
 	
