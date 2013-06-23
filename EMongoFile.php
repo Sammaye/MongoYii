@@ -58,7 +58,7 @@ class EMongoFile extends EMongoDocument{
 	}	
 	
 	/**
-	 * This cna populate from a $_FILES instance
+	 * This can populate from a $_FILES instance
 	 * @param CModel $model
 	 * @param string $attribute
 	 * @return boolean|EMongoFile|NULL
