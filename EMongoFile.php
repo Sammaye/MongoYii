@@ -141,23 +141,16 @@ class EMongoFile extends EMongoDocument{
 	/**
 	 * Deletes the file.
 	 * 
-	 * If the first param is true it will also seek out all the chunks associated with the file and delete them. This 
-	 * means it truly deletes the files in both the files and the chunks collection.
-	 * 
-	 * Note: gcing the chunks collection can become a stressful job, please make sure running this function with the 
-	 * input of true does not break your own system.
-	 * 
-	 * @param $deleteChunks As to whether or not to gc the chunks collection as well
+	 * When calling delete on the MongoGridFS object in later versions of the driver it will also attempt
+	 * to transmit a delete to the chunk collection, as such any involvement from me on that side is useless.
 	 * @see EMongoDocument::delete()
 	 */
-	public function delete($deleteChunks=true){
+	public function delete(){
 		if(!$this->getIsNewRecord()){
 			$this->trace(__FUNCTION__);
 			if($this->beforeDelete()){
 				$_id=$this->getPrimaryKey(); // Store the _id for post-deletion chunk removing
 				$result=$this->deleteByPk($_id);
-				if($deleteChunks) // Do we wanna remove chunks?
-					$this->getCollection()->chunks->remove(array('files_id'=>$_id)); // Ok lets
 				$this->afterDelete();
 				return $result;
 			}
