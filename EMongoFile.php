@@ -135,29 +135,6 @@ class EMongoFile extends EMongoDocument{
 		}
 		return false;		
 	}
-	
-	/**
-	 * Deletes the file.
-	 * 
-	 * When calling delete on the MongoGridFS object in later versions of the driver it will also attempt
-	 * to transmit a delete to the chunk collection, as such any involvement from me on that side is useless.
-	 * @see EMongoDocument::delete()
-	 */
-	public function delete(){
-		if(!$this->getIsNewRecord()){
-			$this->trace(__FUNCTION__);
-			if($this->beforeDelete()){
-				$_id=$this->getPrimaryKey(); // Store the _id for post-deletion chunk removing
-				$result=$this->deleteByPk($_id);
-				$this->afterDelete();
-				return $result;
-			}
-			else
-				return false;
-		}
-		else
-			throw new CDbException(Yii::t('yii','The active record cannot be deleted because it is new.'));		
-	}
 
 	/**
 	 * Get collection will now return the GridFS object from the driver
