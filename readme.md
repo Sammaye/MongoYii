@@ -17,7 +17,7 @@ There is already a great extension called YiiMongoDBSuite out for Yii so why mak
 - Does not support the later versions of the PHP driver (1.3.x series) that well
 - Obscured the MongoDB query language, layering a query language over the top
 
-After some spare time I decided that I would take the liberty to make a MongoDB extension for Yii. It is really basically a "glue" between MongoDB and
+After some spare time I decided that I would take the liberty to make a MongoDB extension for Yii. It is basically a "glue" between MongoDB and
 Yii and it is designed to be quite free form in that respect.
 
 There are a few points of design I wished to enforce:
@@ -28,7 +28,7 @@ There are a few points of design I wished to enforce:
 - attempt to make things a little more performant
 - try to follow Yiis own CActiveRecord API as much as possible without compromising MongoDB "semantics" such as the name for query operators and the use of a `MongoCursor`
 
-Ok so we have got some of the rationale in place it is time to actually talk about the extension.
+Okay, so we have got some of the rationale in place it is time to actually talk about the extension.
 
 ## Setting up the extension
 
@@ -68,11 +68,29 @@ If you wish to call a function on the `MongoClient` or `Mongo` class you will ne
 **Note:** The models will by default seek a `mongodb` component within your configuration so please make sure that unless you modify the extension, or use it without active record, to
 make your default (master) connection be a component called `mongodb`.
 
+### Composer
+
+MongoYii fully supports Composer and is listed on [packagist](https://packagist.org/packages/sammaye/mongoyii).
+
+As an additional side note posted by [@ujovlado](https://github.com/ujovlado) on a related [issue](https://github.com/Sammaye/MongoYii/issues/81#issuecomment-19739105);
+if you are only using Composer for Yii extensions then you can set a more blanketed solution of simply changing your `vendor-dir` to `protected/extensions`:
+
+	{
+	    "config": {
+	        "vendor-dir": "protected/extensions"
+	    }
+	}
+
+However to have automatic handling of loading MongoYii using Composer you would require to downgrade to 1.0.3 where the [Yii installer is not deprecated](https://github.com/Sammaye/MongoYii/issues/81#issuecomment-19722140).
+Failing both of those options you can also make your [own script to handle](http://getcomposer.org/doc/articles/scripts.md) what the removed installer used to.
+
+Currently MongoYii does not handle namespaces and this is unlikely to change in Yii1.
+
 ### Write Concern (formally "safe" writes)
 
 This extension uses the new `w` variable globally to handle the level of write concern you wish to impose on MongoDB.
 
-By default the extension will assume acknowledged writes, this means `safe=true` or `w=1` depending on the version of your driver. To change this simply add `w` to your `mongodb` components configuration
+By default the extension will assume acknowledged writes, this means `safe=true` or `w=1` depending on the version of your driver. To change this simply add `w` to your `mongodb` component configuration
 and give it a value according to the [PHP documentation](http://php.net/manual/en/mongo.writeconcerns.php).
 
 For those using the 1.3.x series of the driver there is also a `j` option which can be set to either `true` or `false` within the configuration which allows you to control
@@ -81,7 +99,7 @@ whether or not the write is journal acknowledged.
 **Note:** Write Concern is abstracted from the driver itself to make this variable compatible across all versions of the driver so please use the configuration or the `EMongoClient` `w` and
 `j` class variables to set the write concern when you need to, otherwise that write concern will not be used within active record.
 
-**Note:** Write Concern works differently when you touch the database directly and the write concern issued within the `EMongoCLient` class will have no
+**Note:** Write Concern works differently when you touch the database directly and the write concern issued within the `EMongoClient` class will have no
 effect. Instead you should always ensure in this case you specify the write concern manually according to your driver version.
 
 This may change in the future but at the moment when you want the active record to go away it just will.
@@ -191,8 +209,8 @@ Will run `getRawDocument()` and then return its output as a BSON string.
 The `EMongoDocument` extends `EMongoModel` and implements all of its features along with the needed features for database accession. It also implements as much as possible of
 `CActiveRecord`.
 
-**Note:** The functions that allow database usage are not defined within this section of the documentation. Instead those functions are actually defined within the "Querying" section of this
-documentation. Please move to the "Querying" section if you wish to read about this part of the `EMongoDocument`.
+**Note:** The functions that allow database usage are not defined within this section of the documentation. Instead those functions are actually defined within the "Querying" section.
+Please move to the "Querying" section if you wish to read about this part of the `EMongoDocument`.
 
 ### collectionName()
 
@@ -200,13 +218,15 @@ Returns a string representing the collection name. All active record models shou
 
 ### primaryKey()
 
-Currently only returns `_id` as the key. This function is `private` and cannot be overridden.
+Currently only returns `_id` as the key.
 
-If you are using a primary key that IS NOT a `ObjectId` (otherwise known as a `MongoId` in the PHP driver) then you should override the `getMongoId` function of the `EMongoDocument`
+If you are using a primary key that IS NOT a `ObjectId` (otherwise known as a `MongoId` in the PHP driver) then you should override the `getPrimaryKey` function of the `EMongoDocument`
 to not return a `MongoId`:
 
-	public function getMongoId($value){
-		return $value;
+	public function getPrimaryKey($value=null){
+		if($value===null)
+			$value=$this->{$this->primaryKey()};
+		return (string)$value;
 	}
 
 You can, of course, add whatever procedure or formatting code you need within this function to make sure that your primary key is ready for MongoDB when it comes to querying.
@@ -287,8 +307,8 @@ Runs `clean()` and then re-populates the model from the database.
 
 Returns the raw `MongoCollection`.
 
-It is normally best not to use this and instead to use the extension wrapped editions - `updateAll` and `deleteAll`. The only difference of said functions
-from doing it manually on `getCollection()` is that the functions understand the write concern of the extension.
+It is normally best not to use this but instead to use the extension wrapped editions - `updateAll` and `deleteAll`. The only difference of said functions
+from doing it manually on `getCollection()` is that these functions understand the write concern of the extension.
 
 ### setAttributes()
 
@@ -300,6 +320,11 @@ MongoYii will convert any number, real integer (otherwise known as "positive" or
 
 This is important because the largest integer MongoDB can natively store is only 32bit. In order to make MongoDB store larger integers you must use the
 [native_long](http://www.php.net/manual/en/mongo.configuration.php#ini.mongo.native-long) configuration variable available within the driver.
+
+If you are on a 32bit system you will need to add another configuration variable to the stack: [long_as_object](http://www.php.net/manual/en/mongo.configuration.php#ini.mongo.long-as-object).
+
+**Note:** Integers greater than the systems limit will be left as strings. This means that on a 32bit system the maximum `int` you can assign from form data is 2147483647 while on a 64bit system it is 9223372036854775807.
+If you wish to use `int` data types from forms past your systems limits you will be required to process the fields yourself, either within the `CHttpRequest` handler or using a validator.
 
 ### Example
 
@@ -339,7 +364,7 @@ As time goes on you will want to add certain fields like virtual attributes and 
 Notice how I have added the `addresses` field despite not needing to? I do this due to the way that PHP uses magic functions.
 
 If you access an array magically you cannot, in the same breath, manipulate it since it is an indirect accession of the variable. So a good tip here: if you plan on having subdocuments
-in your document it might be good to explicitly declare the field as a variable within the class.
+ it might be good to explicitly declare the field as a variable within the class.
 
 ## Querying
 
@@ -354,7 +379,7 @@ instance (`EMongoCursor`) which can be used to lazy load results from the databa
 It will return a cursor irrespective of whether it finds results or not. However if it cannot find results then `count` will return `0` and the iterator will not have any iterations
 to it.
 
-**Note:** The cursor does not eager load documents, instead if you wish to accomplish this please wrap the call to `find` in a `iterator_to_array` function.
+**Note:** The cursor does not eager load documents, instead if you wish to accomplish this please wrap the call to `find` in a call to `iterator_to_array`.
 
 ### findOne() and findBy_id()
 
@@ -395,7 +420,7 @@ If the document is new it will insert otherwise it will update.
 
 ### insert()
 
-This is used internally by the active record model. If the record is new it will attempt to insert it instead of updating it otherwise it will throw
+This is used internally by the active record model. If the record is new it will attempt to insert otherwise it will throw
 an error.
 
 ### update()
@@ -445,10 +470,10 @@ this extension could provide.
 
 So that is a brief understanding of the rationale behind the idea to ditch automatic subdocument handling within the active record.
 
-This does not mean you cannot embed subdocument classes at all; when saving, the active record will iterate the document and attempt to strip any `EMongoModel` or `EMongoDocument`
+This does not mean you cannot embed subdocument classes at all; when saving, the active record class will iterate the document and attempt to strip any `EMongoModel` or `EMongoDocument`
 classes that have sprung up.
 
-This all aside, there is a subdocument validator and technically it can even accept multi-level nesting. Please bare in mind, though, that it will cause repitition
+This all aside, there is a subdocument validator and technically it can even accept multi-level nesting. Please bare in mind, though, that it will cause repetition
 for every level you use it on. This WILL have a performance implication on your application.
 
 An example of using an array based subdocument is:
@@ -496,11 +521,9 @@ As we already know MongoYii does not handle subdocuments automatically for you. 
 your own based on the scenarios you require. One reason for this is because many people have many different document setups and since there is no predefined schema for the subdocuments I
 cannot provide automated usage without short of taking every single possibility of subdocument existence into account.
 
-For this explanation we will assume you do not wish to make your own subdocument handler, but instead, are fine using MongoYiis and PHP owns built in abilities.
+For this explanation we will assume you do not wish to make your own subdocument handler, but instead, are fine using MongoYiis and PHPs own built in abilities. Handling subdocuments depends heavily upon how you intend to manage and use them.
 
-As to how you go about handling subdocuments depends heavily upon how you intend to manage and use them.
-
-Okay, let's start at the top; are you using a class for these subdocuments? If the answer is "Yes sir!" then chance are that your subdocuments are quite complex and has a section in your
+Okay, let's start at the top; are you using a class for these subdocuments? If the answer is "Yes sir!" then chances are that your subdocuments are quite complex and has a section in your
 application all to itself with its own controller and everything like, for example, comments on a bog post.
 
 Now the second question you must ask yourself; are you replacing these subdocuments every time you save them or do you want to use modifiers such as `$push`, `$pull`, `$pullAll`, `$pushAll`,
@@ -521,13 +544,12 @@ When, say, adding a comment to a post you would do:
 And you would use relatively similar behaviour for most other operations you need to perform. In this case MongoYii merely acts as a helper and glue for you to make life a little easier,
 however, at the end of the day it will not auto manage subdocuments for you.
 
-There are plans in the works to give helper functions to make your life easier on this front however, for the minute, this is the best method.
-
 If you are not using a class then chances are your subdocuments are quite primative and most likely are just detail to the root document and you are replacing them each time. This scenario
 also applies if you are using complex classes but you are replacing the subdocument list on each save.
 
 If this is the case you can either use the subdocument validator mentioned above to process your subdocuments or you can actually programmably do this:
 
+	$valid=true;
 	$user=User::model()->findBy_id($uid);
 	if(isset($_POST['numbers'])){
 		foreach($_POST['numbers'] as $row){
@@ -541,7 +563,7 @@ If this is the case you can either use the subdocument validator mentioned above
 
 as an example.
 
-As an added side note you can actually treat the array fields witin your document that contain the subdocuments the same as any other field. For example this will work:
+As an added side note you can actually treat the array fields within your document that contain the subdocuments the same as any other field. For example this will work:
 
 	$m=new Something();
 	$m->name='thing';
@@ -623,35 +645,33 @@ These basically just sets and gets the condition of the query.
 
 ### addCondition()
 
-Adds a normal, non `$or` condition to the query and take an `array` as its only parameter.
+Adds a normal, non `$or` condition to the query and takes an `array` as its only parameter.
 
 ### addOrCondition()
 
 Adds an `$or` condition and takes an array of `arrays` as its only parameter with each nested `array` being a condition within the `$or` (just like in the driver).
 
-It would be wise to note it will overwrite any `$or` previously placed in.
+It would be wise to note that calling this function will overwrite any `$or` previously placed in the condition.
 
 ### getSort() / setSort()
 
-These simply get and set the sort of the query.
+Get and set the sort of the query.
 
 ### getSkip() / setSkip()
 
-These simply get and set the skip of the query.
+Get and set the skip of the query.
 
 ### getLimit() / setLimit()
 
-These simply get and set the limit of the query.
+Get and set the limit of the query.
 
 ### getProject() / setProject()
 
-**New in v1.1**
-
-These simply set the projection of the criteria to state specific fields to include/omit.
+Sets the projection of the criteria to state specific fields to include/omit.
 
 ### compare()
 
-This works a lot like `CDbCriteria`s and it heavily based on it.
+This works a lot like `CDbCriteria`s and is heavily based on it.
 
 You simply enter `column`, `value` and `strong` parameter values (in that order) and the `EMongoCriteria` class will create a condition and merge it into your current condition
 based upon the entered data. As examples:
@@ -660,7 +680,7 @@ based upon the entered data. As examples:
 
 	$c->compare('i', '<4');
 
-The compare funtion, as seen in the second example, will accept a certai number of operators. The operators supported are: `<>`, `<=`, `>=`, `<`, `>`, `=`.
+The compare funtion, as seen in the second example, will accept a certain number of operators. The operators supported are: `<>`, `<=`, `>=`, `<`, `>`, `=`.
 
 It is good to note that the function currently only accepts `AND` conditioning.
 
@@ -682,7 +702,8 @@ This basically will convert your EMongoCriteria into array form of the syntax:
 		'condition' => array(),
 		'skip' => 1,
 		'limit' => 1,
-		'sort' => array()
+		'sort' => array(),
+		'project' => array()
 	)
 
 and, by default, is called like:
@@ -697,9 +718,9 @@ There are a number of reasons why. In SQL an abstraction is justified by, some b
 
 - Different implementations (i.e. MySQL and MSSQL and PostgreSQL) creates slightly different syntax
 - SQL is a string based querying language as such it makes sense to have an object oriented abstraction layer
-- SQL has some rather complex and difficult to form queries in it that would make an abstraction layer useful
+- SQL has some rather complex and difficult to form queries that would make an abstraction layer useful
 
-MongoDB suffers from none of these problems; first it has OO querying interface already, secondly it is easily to merge different queries together simply using `CMap::MergeArray()`
+MongoDB suffers from none of these problems; first it has an OO querying interface already, secondly it is easy to merge different queries together simply using `CMap::MergeArray()`
 and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying
 and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do `$or`s in this class).
 
@@ -707,20 +728,17 @@ As such I believe that the `EMongoCriteria` class is just dead weight consuming 
 
 This extension does not rely on `EMongoCriteria` internally.
 
-So I expect all modifications to certain parts of MongoYii to be both compatible with `EMongoCriteria` but also without. I will not accept pull requests which are biased to `EMongoCriteria`
-usage, however, in the same breath I will not accept pull requests which do not accommodate for the class.
+So I expect all modifications to certain parts of MongoYii to be compatible with and without `EMongoCriteria`.
 
 ## Covered and Partial Queries
 
-**New in v1.1**
-
 When you do not wish to retrieve the entire document you can instead just return a partial result.
 
-Both the `EMongoCriteria` and normal array based querying supports projection through two methods. First as a `project` variable in either EMongoCriteria:
+Both the `EMongoCriteria` and normal array based querying supports projection through two methods. First as a `project` variable in either `EMongoCriteria`:
 
 	$c->project=array('_id'=>0,'d'=>1);
 
-Or as an element within the defined array:
+Or as an element within the defined array (a scope as an example):
 
 	functions scope(){
 		return array(
@@ -746,7 +764,7 @@ root document MongoYii will consider that single projected subdocument the compl
 ## Known Flaws
 
 - Subdocuments are not automated, however, I have stated why above
-- the aggregation framework does not fit well with active record as such it is not directly supported within the models, however, there is a `aggregate` helper on each model but
+- the aggregation framework does not fit well with active record as such it is not directly supported within the models, however, there is an `aggregate` helper on each model but
 it will not return a model instance but instead the direct result of the MongoDB server response.
 
 I am sure there are more but that is the immediate flaws you need to consider in this extension.
@@ -772,3 +790,7 @@ The tests require the PHPUnit plugin with all dependencies compiled. Using PEAR 
 	pear install phpunit/PHPUnit_Selenium
 
 After that you can just tell PHPUnit to run all tests within the `tests/` folder with no real order.
+
+## Licence
+
+This extension is licensed under the [BSD 3 clause](http://opensource.org/licenses/BSD-3-Clause). To make it short and to the point: do whatever you want with it.
