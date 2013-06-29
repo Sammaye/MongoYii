@@ -757,6 +757,33 @@ root document MongoYii will consider that single projected subdocument the compl
 **Note:** If `_id` is omitted via `'_id' => 0` from the root document then you will not be permitted to save the document at all. The extension will instead throw an exception about the
 `_id` field not being set.
 
+## GridFS
+
+MongoYii has a GridFS handler called `EMongoFile`. This class is specifically designed as a helper and is in no way required in order to use GridFS with MongoYii. What it does is 
+make it easy to upload, save and then retrieve files from GridFS. It is specifically oriented around uploading files from a form.
+
+Let's go through an example of its usage as taken from the example in the [test repository](https://github.com/Sammaye/MongoYii-test/blob/master/protected/controllers/UserController.php#L67). 
+To upload a new file from a form you simply call the `populate` static function on the class like so:
+
+	EMongoFile::populate($model,'avatar')
+	
+This essentially says: *"Get the uploaded file from the model `user` and the field `avatar`"* The rest works much the same as a normal upload form. If `populate` returns anything except 
+`null` then it has found something.
+
+To save the file to GridFS simply call `save()`. The class directly extends `EMongoDocument` as such this means that you have access to all the normal active record stuff as in 
+other classes.
+
+If you wish to add a validator for the file object itself you must point it to the `file` variable of the class; be sure to only allow validators for the file object on `create` 
+otherwise Yii will not know how to handle the `MongoGridFSFile` object.
+
+**Note:** Currently if you choose to call save on update it will overwrite the previous file. No versioning has been implemented.
+
+Retreiving the file later is just as easy as saving it and is no different to finding any other record:
+
+	EMongoFile::model()->findOne(array('userId'=>Yii::app()->user->id))
+	
+This code snippet assumes we wish to find a file whose metadata field `userId` is of the current user in session. 
+
 ## Known Flaws
 
 - Subdocuments are not automated, however, I have stated why above
