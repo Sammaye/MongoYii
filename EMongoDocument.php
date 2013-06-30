@@ -721,7 +721,7 @@ class EMongoDocument extends EMongoModel{
 	 *
 	 * @param $query allows you to specify a query which should always take hold along with the searched fields
 	 */
-	public function search($query=array()){
+	public function search($query=array(),$project=array()){
 		$this->trace(__FUNCTION__);
 
 		foreach($this->getSafeAttributeNames() as $attribute){
@@ -758,7 +758,7 @@ class EMongoDocument extends EMongoModel{
 				}
 			}
 		}
-		return new EMongoDataProvider(get_class($this), array('criteria' => array('condition' => $query)));
+		return new EMongoDataProvider(get_class($this), array('criteria' => array('condition' => $query, 'project' => $project)));
 	}
 
 	/**
