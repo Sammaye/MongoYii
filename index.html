@@ -33,8 +33,6 @@
 
     <div class="wrapper">
       <section id="contents">
-<p><strong>You can find a more user friendly version of this documentation on the extensions Github page: <a href="http://sammaye.github.io/MongoYii">http://sammaye.github.io/MongoYii</a></strong></p>
-
 <h1>MongoYii</h1>
 
 <p>Another active record handler for the Yii framework that supports MongoDB.</p>
@@ -841,22 +839,22 @@ root document MongoYii will consider that single projected subdocument the compl
 
 <h2>GridFS</h2>
 
-<p>MongoYii has a GridFS handler called <code>EMongoFile</code>. This class is specifically designed as a helper and is in no way required in order to use GridFS with MongoYii. What it does is 
+<p>MongoYii has a GridFS handler called <code>EMongoFile</code>. This class is specifically designed as a helper and is in no way required in order to use GridFS with MongoYii. What it does is
 make it easy to upload, save and then retrieve files from GridFS. It is specifically oriented around uploading files from a form.</p>
 
-<p>Let's go through an example of its usage as taken from the example in the <a href="https://github.com/Sammaye/MongoYii-test/blob/master/protected/controllers/UserController.php#L67">test repository</a>. 
+<p>Let's go through an example of its usage as taken from the example in the <a href="https://github.com/Sammaye/MongoYii-test/blob/master/protected/controllers/UserController.php#L67">test repository</a>.
 To upload a new file from a form you simply call the <code>populate</code> static function on the class like so:</p>
 
 <pre><code>EMongoFile::populate($model,'avatar')
 </code></pre>
 
-<p>This essentially says: <em>"Get the uploaded file from the model <code>user</code> and the field <code>avatar</code>"</em> The rest works much the same as a normal upload form. If <code>populate</code> returns anything except 
+<p>This essentially says: <em>"Get the uploaded file from the model <code>user</code> and the field <code>avatar</code>"</em> The rest works much the same as a normal upload form. If <code>populate</code> returns anything except
 <code>null</code> then it has found something.</p>
 
-<p>To save the file to GridFS simply call <code>save()</code>. The class directly extends <code>EMongoDocument</code> as such this means that you have access to all the normal active record stuff as in 
+<p>To save the file to GridFS simply call <code>save()</code>. The class directly extends <code>EMongoDocument</code> as such this means that you have access to all the normal active record stuff as in
 other classes.</p>
 
-<p>If you wish to add a validator for the file object itself you must point it to the <code>file</code> variable of the class; be sure to only allow validators for the file object on <code>create</code> 
+<p>If you wish to add a validator for the file object itself you must point it to the <code>file</code> variable of the class; be sure to only allow validators for the file object on <code>create</code>
 otherwise Yii will not know how to handle the <code>MongoGridFSFile</code> object.</p>
 
 <p><strong>Note:</strong> Currently if you choose to call save on update it will overwrite the previous file. No versioning has been implemented.</p>
@@ -866,7 +864,7 @@ otherwise Yii will not know how to handle the <code>MongoGridFSFile</code> objec
 <pre><code>EMongoFile::model()-&gt;findOne(array('userId'=&gt;Yii::app()-&gt;user-&gt;id))
 </code></pre>
 
-<p>This code snippet assumes we wish to find a file whose metadata field <code>userId</code> is of the current user in session. </p>
+<p>This code snippet assumes we wish to find a file whose metadata field <code>userId</code> is of the current user in session.</p>
 
 <h2>Known Flaws</h2>
 
