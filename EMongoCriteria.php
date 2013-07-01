@@ -149,7 +149,9 @@ class EMongoCriteria extends CComponent {
         if ($value===null)
             return $this;
         $query = array();
-        if (preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)) {
+        if(is_array($value)||is_object($value)){
+			$query[$column]=array('$in'=>$value);
+        }elseif(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)) {
             $value = $matches[2];
             $op = $matches[1];
             if ($partialMatch===true)
