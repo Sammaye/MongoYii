@@ -145,14 +145,14 @@ class EMongoCriteria extends CComponent {
      * @param boolean $strong
      * @return EMongoCriteria
      */
-    public function compare($column, $value = null, $strong = false) {
+    public function compare($column, $value = null, $partialMatch = false) {
         if ($value===null)
             return $this;
         $query = array();
         if (preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)) {
             $value = $matches[2];
             $op = $matches[1];
-            if (!$strong)
+            if ($partialMatch===true)
                 $value = new MongoRegex("/$value/i");
             else {
 				if(
