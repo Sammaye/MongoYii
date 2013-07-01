@@ -152,11 +152,15 @@ class EMongoCriteria extends CComponent {
         if (preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)) {
             $value = $matches[2];
             $op = $matches[1];
-            if (!$strong && !preg_match('/^([0-9]|[1-9]{1}\d+)$/', $value))
+            if (!$strong)
                 $value = new MongoRegex("/$value/i");
             else {
-                if (preg_match('/^([0-9]|[1-9]{1}\d+)$/', $value))
-                    $value = (int) $value;
+				if(
+					!is_bool($value) && !is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0
+					&& ( (PHP_INT_MAX > 2147483647 && (string)$value < '9223372036854775807') /* If it is a 64 bit system and the value is under the long max */
+					|| (string)$value < '2147483647' /* value is under 32bit limit */)
+				)
+					$value=(int)$value;
             }
 
             switch($op){
