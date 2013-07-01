@@ -669,7 +669,7 @@ Sets the projection of the criteria to state specific fields to include/omit.
 
 This works a lot like `CDbCriteria`s and is heavily based on it.
 
-You simply enter `column`, `value` and `strong` parameter values (in that order) and the `EMongoCriteria` class will create a condition and merge it into your current condition
+You simply enter `column`, `value` and `matchPartial` parameter values (in that order) and the `EMongoCriteria` class will create a condition and merge it into your current condition
 based upon the entered data. As examples:
 
 	$c->compare('name', 'sammaye');
@@ -759,21 +759,21 @@ root document MongoYii will consider that single projected subdocument the compl
 
 ## GridFS
 
-MongoYii has a GridFS handler called `EMongoFile`. This class is specifically designed as a helper and is in no way required in order to use GridFS with MongoYii. What it does is 
+MongoYii has a GridFS handler called `EMongoFile`. This class is specifically designed as a helper and is in no way required in order to use GridFS with MongoYii. What it does is
 make it easy to upload, save and then retrieve files from GridFS. It is specifically oriented around uploading files from a form.
 
-Let's go through an example of its usage as taken from the example in the [test repository](https://github.com/Sammaye/MongoYii-test/blob/master/protected/controllers/UserController.php#L67). 
+Let's go through an example of its usage as taken from the example in the [test repository](https://github.com/Sammaye/MongoYii-test/blob/master/protected/controllers/UserController.php#L67).
 To upload a new file from a form you simply call the `populate` static function on the class like so:
 
 	EMongoFile::populate($model,'avatar')
-	
-This essentially says: *"Get the uploaded file from the model `user` and the field `avatar`"* The rest works much the same as a normal upload form. If `populate` returns anything except 
+
+This essentially says: *"Get the uploaded file from the model `user` and the field `avatar`"* The rest works much the same as a normal upload form. If `populate` returns anything except
 `null` then it has found something.
 
-To save the file to GridFS simply call `save()`. The class directly extends `EMongoDocument` as such this means that you have access to all the normal active record stuff as in 
+To save the file to GridFS simply call `save()`. The class directly extends `EMongoDocument` as such this means that you have access to all the normal active record stuff as in
 other classes.
 
-If you wish to add a validator for the file object itself you must point it to the `file` variable of the class; be sure to only allow validators for the file object on `create` 
+If you wish to add a validator for the file object itself you must point it to the `file` variable of the class; be sure to only allow validators for the file object on `create`
 otherwise Yii will not know how to handle the `MongoGridFSFile` object.
 
 **Note:** Currently if you choose to call save on update it will overwrite the previous file. No versioning has been implemented.
@@ -781,8 +781,8 @@ otherwise Yii will not know how to handle the `MongoGridFSFile` object.
 Retreiving the file later is just as easy as saving it and is no different to finding any other record:
 
 	EMongoFile::model()->findOne(array('userId'=>Yii::app()->user->id))
-	
-This code snippet assumes we wish to find a file whose metadata field `userId` is of the current user in session. 
+
+This code snippet assumes we wish to find a file whose metadata field `userId` is of the current user in session.
 
 ## Known Flaws
 
@@ -813,6 +813,21 @@ The tests require the PHPUnit plugin with all dependencies compiled. Using PEAR 
 	pear install phpunit/PHPUnit_Selenium
 
 After that you can just tell PHPUnit to run all tests within the `tests/` folder with no real order.
+
+## Upgrade Notes
+
+There has been a small but dramatic change between version 1.x and 2.x of MongoYii. The `compare()` function within the `EMongoCriteria` now no longer uses partial matching by
+default. This means that by default it will try and match the entire field value.
+
+This change was implemented to match Yiis own behaviour. Yii, by default, will not match by `LIKE` when using this function.
+
+This behaviour WILL NOT change here after. After complying to Yiis own behaviour it will be left alone.
+
+**Note:** Only direct accession of `compare()` through `EMongoCriteria` is effected, no section of the extension relies on `EMongoCriteria`.
+
+## Versioning
+
+This project uses [semantic versioning 2.0.0](http://semver.org/).
 
 ## Licence
 
