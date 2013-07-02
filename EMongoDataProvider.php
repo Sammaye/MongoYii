@@ -87,7 +87,10 @@ class EMongoDataProvider extends CActiveDataProvider{
 			$criteria=$this->getCriteria();
 
 		// I have not refactored this line considering that the condition may have changed from total item count to here, maybe.
-		$this->_cursor = $this->model->find(isset($criteria['condition']) && is_array($criteria['condition']) ? $criteria['condition'] : array());
+		$this->_cursor = $this->model->find(
+			isset($criteria['condition']) && is_array($criteria['condition']) ? $criteria['condition'] : array(),
+			isset($criteria['project']) && !empty($criteria['project']) ? $criteria['project'] : array() 
+		);
 
 		// If we have sort and limit and skip setup within the incoming criteria let's set it
 		if(isset($criteria['sort']) && is_array($criteria['sort']))

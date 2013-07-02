@@ -712,7 +712,7 @@ class EMongoDocument extends EMongoModel{
 	    // If we provide a manual criteria via EMongoCriteria or an array we do not use the models own DbCriteria
 	    $criteria = !empty($criteria) || $criteria instanceof EMongoCriteria ? $criteria : $this->getDbCriteria();
 	    if($criteria instanceof EMongoCriteria)
-	        $crtieria = $criteria->getCondition();
+	        $criteria = $criteria->getCondition();
 	    return $this->getCollection()->find(isset($criteria) ? $criteria : array())->count();
 	}
 
@@ -721,7 +721,7 @@ class EMongoDocument extends EMongoModel{
 	 *
 	 * @param $query allows you to specify a query which should always take hold along with the searched fields
 	 */
-	public function search($query=array()){
+	public function search($query=array(),$project=array()){
 		$this->trace(__FUNCTION__);
 
 		foreach($this->getSafeAttributeNames() as $attribute){
@@ -758,7 +758,7 @@ class EMongoDocument extends EMongoModel{
 				}
 			}
 		}
-		return new EMongoDataProvider(get_class($this), array('criteria' => array('condition' => $query)));
+		return new EMongoDataProvider(get_class($this), array('criteria' => array('condition' => $query, 'project' => $project)));
 	}
 
 	/**

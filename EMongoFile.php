@@ -3,11 +3,7 @@
 /**
  * The MongoYii representation of a helper for uploading files to GridFS.
  * 
- * WARNING: This file is extremely experimental and its API may change before it is pushed to a tag.
- * 
  * It can accept an input file from $_FILES via ::populate and can also do find() and findOne() on the files collection. 
- * When delete is used it will gc the chunks collection by default as well.
- * 
  * This file is specifically designed for uploading files from a form to GridFS and is merely a helper, IT IS IN NO WAY REQUIRED.
  */
 class EMongoFile extends EMongoDocument{
@@ -48,6 +44,14 @@ class EMongoFile extends EMongoDocument{
 	 */
 	public function setFile($v){
 		$this->_file=$v;
+	}
+	
+	/**
+	 * This denotes the prefix to all gridfs collections set by this class
+	 * @return string
+	 */
+	public function collectionPrefix(){
+		return 'fs';
 	}
 	
 	/**
@@ -137,43 +141,13 @@ class EMongoFile extends EMongoDocument{
 		}
 		return false;		
 	}
-	
-	/**
-	 * Deletes the file.
-	 * 
-	 * If the first param is true it will also seek out all the chunks associated with the file and delete them. This 
-	 * means it truly deletes the files in both the files and the chunks collection.
-	 * 
-	 * Note: gcing the chunks collection can become a stressful job, please make sure running this function with the 
-	 * input of true does not break your own system.
-	 * 
-	 * @param $deleteChunks As to whether or not to gc the chunks collection as well
-	 * @see EMongoDocument::delete()
-	 */
-	public function delete($deleteChunks=true){
-		if(!$this->getIsNewRecord()){
-			$this->trace(__FUNCTION__);
-			if($this->beforeDelete()){
-				$_id=$this->getPrimaryKey(); // Store the _id for post-deletion chunk removing
-				$result=$this->deleteByPk($_id);
-				if($deleteChunks) // Do we wanna remove chunks?
-					$this->getCollection()->chunks->remove(array('files_id'=>$_id)); // Ok lets
-				$this->afterDelete();
-				return $result;
-			}
-			else
-				return false;
-		}
-		else
-			throw new CDbException(Yii::t('yii','The active record cannot be deleted because it is new.'));		
-	}
 
 	/**
 	 * Get collection will now return the GridFS object from the driver
 	 * @see EMongoDocument::getCollection()
 	 */
 	public function getCollection(){
-		return $this->getDbConnection()->getGridFS();
+		return $this->getDbConnection()->getGridFS($this->collectionPrefix());
 	}
 	
 	/**
