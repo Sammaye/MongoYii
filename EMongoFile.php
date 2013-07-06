@@ -147,7 +147,7 @@ class EMongoFile extends EMongoDocument{
 	 * @see EMongoDocument::getCollection()
 	 */
 	public function getCollection(){
-		return $this->getDbConnection()->getGridFS($this->collectionPrefix());
+		return $this->getDbConnection()->getDB()->getGridFS($this->collectionPrefix());
 	}
 	
 	/**
