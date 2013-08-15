@@ -581,7 +581,7 @@ class EMongoDocument extends EMongoModel{
      * Finds all records based on $pk
      * @param mixed $pk String, MongoID or array of strings or MongoID values (one can mix strings and MongoID in the array)
      */
-    public function findAllByPk($pk=array(),$fields=array()){
+    public function findAllByPk($pk,$fields=array()){
     	if(is_string($pk)||$pk instanceof MongoId){
     		return $this->find (array($this->primaryKey() => $this->getPrimaryKey($pk)),$fields);
     	}else if(is_array($pk)){
@@ -702,18 +702,28 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * (non-PHPdoc)
 	 * @see http://www.yiiframework.com/doc/api/1.1/CActiveRecord#saveCounters-detail
+	 * @param $lower define a lower that the counter should not pass. IS NOT ATOMIC
 	 */
-	public function saveCounters(array $counters) {
+	public function saveCounters(array $counters,$lower=null,$upper=null) {
 		$this->trace(__FUNCTION__);
 
 		if ($this->getIsNewRecord())
 			throw new EMongoException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
-
 		if(sizeof($counters)>0){
-			foreach($counters as $k => $v) $this->$k=$this->$k+$v;
-			return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
+			foreach($counters as $k => $v){
+				if(
+					($lower!==null&&(($this->$k+$v)>$lower))||
+					($upper!==null&&(($this->$k+$v)<$upper))||
+					($lower===null&&$upper===null)
+				){
+					$this->$k=$this->$k+$v;
+				}else
+					unset($counters[$k]);
+			}
+			if(count($counters)>0)
+				return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
 		}
-		return true; // Assume true since the action did run it just had nothing to update...
+		return true; // Assume true since the action did run it just had nothing to update...		
 	}
 
 	/**
