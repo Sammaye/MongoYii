@@ -576,6 +576,18 @@ class EMongoDocument extends EMongoModel{
     public function findAll($criteria=array(),$fields=array()){
     	return $this->find ($criteria,$fields);
     }
+    
+	/**
+	 * Finds all records based on $pk
+	 * @param mixed $pk String or array of pk values
+	 */
+    public function findAllByPk($pk=array(),$fields=array()){
+            if(is_string($pk)){
+                    return $this->find (array($this->primaryKey() => $pk),$fields);
+            }else if(is_array($pk)){
+                    return $this->find (array($this->primaryKey() => array('$in' => array($pk))),$fields);
+            }
+    }
 
 	/**
 	 * Find some records
