@@ -161,6 +161,21 @@ class MongoDocumentTest extends CTestCase{
 		$r=User::model()->findBy_id((string)$c->_id);
 		$this->assertTrue(!is_null($r));
 	}
+	
+	function testFindAllByPk(){
+		$c=new User;
+		$c->username='sammaye';
+		$this->assertTrue($c->save());
+
+		$r=User::model()->findAllByPk($c->_id);
+		$this->assertTrue(!is_null($r));
+
+		$r=User::model()->findAllByPk((string)$c->_id);
+		$this->assertTrue(!is_null($r));
+		
+		$r=User::model()->findAllByPk(array((string)$c->_id));
+		$this->assertTrue(!is_null($r));		
+	}
 
 	function testUpdateByPk(){
 		$c=new User;

@@ -577,19 +577,19 @@ class EMongoDocument extends EMongoModel{
     	return $this->find ($criteria,$fields);
     }
     
-	/**
-	 * Finds all records based on $pk
-	 * @param mixed $pk String, MongoID or array of strings or MongoID values (one can mix strings and MongoID in the array)
-	 */
+    /**
+     * Finds all records based on $pk
+     * @param mixed $pk String, MongoID or array of strings or MongoID values (one can mix strings and MongoID in the array)
+     */
     public function findAllByPk($pk=array(),$fields=array()){
-            if(is_string($pk)){
-                    return $this->find (array($this->primaryKey() => $this->getPrimaryKey($pk)),$fields);
-            }else if(is_array($pk)){
-                    foreach($pk as $k=>$v){
-                        $pk[$k] = $this->getPrimaryKey($v);
-                    }
-                    return $this->find (array($this->primaryKey() => array('$in' => $pk)),$fields);
-            }
+    	if(is_string($pk)||$pk instanceof MongoId){
+    		return $this->find (array($this->primaryKey() => $this->getPrimaryKey($pk)),$fields);
+    	}else if(is_array($pk)){
+    		foreach($pk as $k=>$v){
+    			$pk[$k] = $this->getPrimaryKey($v);
+    		}
+    		return $this->find (array($this->primaryKey() => array('$in' => $pk)),$fields);
+    	}
     }
 
 	/**
