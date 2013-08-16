@@ -712,8 +712,8 @@ class EMongoDocument extends EMongoModel{
 		if(sizeof($counters)>0){
 			foreach($counters as $k => $v){
 				if(
-					($lower!==null&&(($this->$k+$v)>$lower))||
-					($upper!==null&&(($this->$k+$v)<$upper))||
+					($lower!==null&&(($this->$k+$v)>=$lower))||
+					($upper!==null&&(($this->$k+$v)<=$upper))||
 					($lower===null&&$upper===null)
 				){
 					$this->$k=$this->$k+$v;
