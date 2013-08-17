@@ -128,6 +128,20 @@ class EMongoCriteria extends CComponent {
         $this->_condition[$column] = $operator === null ? $value : array($operator => $value);
         return $this;
     }
+	
+	/**
+	 * Append date comparison condition to previous ones
+	 * @param string $column
+	 * @param string $value
+	 * @return EMongoCriteria
+	 */
+	public function addDateCondition($column, $value)
+	{
+        $start_date = new MongoDate(strtotime($value));
+        $end_date = new MongoDate(strtotime($value . ' + 1 day'));
+        $this->_condition[$column] = array('$gte' => $start_date, '$lt' => $end_date);
+        return $this;
+	}
 
     /**
      * Adds an $or condition to the criteria
