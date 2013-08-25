@@ -879,9 +879,6 @@ class EMongoDocument extends EMongoModel{
 	 * @return array
 	 */
 	public function mergeDbCriteria($newCriteria){
-		if ($newCriteria instanceof EMongoCriteria){
-			$newCriteria = $newCriteria->toArray();
-		}
 		 return $this->_criteria=$this->mergeCriteria($this->getDbCriteria(), $newCriteria);
 	}
 
@@ -898,7 +895,7 @@ class EMongoDocument extends EMongoModel{
      * @param array $newCriteria
 	 * @return array
      */
-    public function mergeCriteria(array $oldCriteria, array $newCriteria){
+    public function mergeCriteria($oldCriteria, $newCriteria){
 		return CMap::mergeArray($oldCriteria, $newCriteria);
     }
 
