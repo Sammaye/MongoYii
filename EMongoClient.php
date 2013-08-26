@@ -155,7 +155,7 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * Sets the raw database adhoc
-	 * @param $name
+	 * @param string $name
 	 */
 	public function setDB($name){
 		$this->_db = $this->getConnection()->selectDb($name);
@@ -187,8 +187,9 @@ class EMongoClient extends CApplicationComponent{
 	/**
 	 * Since there is no easy definition of the public collection class without drilling down
 	 * this function is designed to be a helper to make aggregation calling more standard.
-	 * @param $collection
+	 * @param string $collection
 	 * @param $pipelines
+	 * @return array
 	 */
 	public function aggregate($collection, $pipelines){
 		if(version_compare(phpversion('mongo'), '1.3.0', '<')){
@@ -202,7 +203,8 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * Command helper
-	 * @param array|sting $command
+	 * @param array|string $command
+	 * @return array
 	 */
 	public function command($command = array()){
 		return $this->getDB()->command($command);
@@ -210,7 +212,8 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * ATM does nothing but the original processing; ATM
-	 * @param $name
+	 * @param string $name
+	 * @return MongoCollection
 	 */
 	public function selectCollection($name){
 		return $this->getDB()->selectCollection($name);
@@ -258,6 +261,7 @@ class EMongoClient extends CApplicationComponent{
 	 * Get a list of the fields (attributes) for a document from cache
 	 * @param string $name
 	 * @param boolean $include_virtual
+	 * @return array
 	 */
 	public function getFieldCache($name, $include_virtual = false){
 		$doc = isset($this->_meta[$name]) ? $this->_meta[$name] : array();
@@ -271,7 +275,7 @@ class EMongoClient extends CApplicationComponent{
 	/**
 	 * Just gets the document cache for a model
 	 * @param string $name
-	 * @return NULL|array
+	 * @return array
 	 */
 	public function getDocumentCache($name){
 		return isset($this->_meta[$name]) ? $this->_meta[$name] : array();
@@ -297,9 +301,10 @@ class EMongoClient extends CApplicationComponent{
 	/**
 	 * Create ObjectId from timestamp. This function is not actively used it is
 	 * here as a helper for anyone who needs it
-	 * @param $yourTimestamp
+	 * @param int $yourTimestamp
+	 * @return MongoID
 	 */
-	public function createMongoIdFromTimestamp( $yourTimestamp )
+	public function createMongoIdFromTimestamp($yourTimestamp)
 	{
 	    static $inc = 0;
 
@@ -320,8 +325,9 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * Set read preference on MongoClient
-	 * @param $pref
-	 * @param $options
+	 * @param string $pref
+	 * @param array $options
+	 * @return bool
 	 */
 	public function setReadPreference($pref, $options=array()){
 		return $this->getConnection()->setReadPreference($pref, $options);
@@ -329,7 +335,8 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * setSlaveOkay on Mongo
-	 * @param $bool
+	 * @param bool $bool
+	 * @return bool
 	 */
 	public function setSlaveOkay($bool){
 		return $this->getConnection()->setSlaveOkay($bool);
