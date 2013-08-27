@@ -290,9 +290,9 @@ class EMongoDocument extends EMongoModel{
 			$model=$this;
 			foreach($segs as $seg)
 			{
-				$relations=$model->getMetaData()->relations;
+				$relations=$model->relations();
 				if(isset($relations[$seg]))
-					$model=EMongoDocument::model($relations[$seg]->className);
+					$model=EMongoDocument::model($relations[$seg][1]);
 				else
 					break;
 			}
