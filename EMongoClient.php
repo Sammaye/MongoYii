@@ -92,8 +92,8 @@ class EMongoClient extends CApplicationComponent{
 	 * Will either call a function on the database or call for a collection
 	 */
 	public function __call($name,$parameters = array()){
-		if(method_exists($this->_db, $name)){
-			return call_user_func_array(array($this->_db, $name), $parameters);
+		if(method_exists($this->getDB(), $name)){
+			return call_user_func_array(array($this->getDB(), $name), $parameters);
 		}
 		parent::__call($name, $parameters);
 	}

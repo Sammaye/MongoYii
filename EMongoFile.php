@@ -3,8 +3,6 @@
 /**
  * The MongoYii representation of a helper for uploading files to GridFS.
  * 
- * WARNING: This file is extremely experimental and its API may change before it is pushed to a tag.
- * 
  * It can accept an input file from $_FILES via ::populate and can also do find() and findOne() on the files collection. 
  * This file is specifically designed for uploading files from a form to GridFS and is merely a helper, IT IS IN NO WAY REQUIRED.
  */
@@ -46,6 +44,14 @@ class EMongoFile extends EMongoDocument{
 	 */
 	public function setFile($v){
 		$this->_file=$v;
+	}
+	
+	/**
+	 * This denotes the prefix to all gridfs collections set by this class
+	 * @return string
+	 */
+	public function collectionPrefix(){
+		return 'fs';
 	}
 	
 	/**
@@ -141,7 +147,7 @@ class EMongoFile extends EMongoDocument{
 	 * @see EMongoDocument::getCollection()
 	 */
 	public function getCollection(){
-		return $this->getDbConnection()->getGridFS();
+		return $this->getDbConnection()->getGridFS($this->collectionPrefix());
 	}
 	
 	/**

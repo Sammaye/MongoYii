@@ -25,6 +25,7 @@ class EMongoDocument extends EMongoModel{
 
 	/**
 	 * Holds criteria information for scopes
+	 * @var array|null
 	 */
 	private $_criteria;
 
@@ -81,7 +82,7 @@ class EMongoDocument extends EMongoModel{
 
 		$scopes=$this->scopes();
 		if(isset($scopes[$name])){
-			$this->setDbCriteria($this->mergeCriteria($this->_criteria, $scopes[$name]));
+			$this->setDbCriteria($this->mergeCriteria($this->getDbCriteria(), $scopes[$name]));
 			return $this;
 		}
 		return parent::__call($name,$parameters);
@@ -133,9 +134,10 @@ class EMongoDocument extends EMongoModel{
 
 	/**
 	 * Resets the scopes applied to the model clearing the _criteria variable
-	 * @return $this
+	 * @param bool $resetDefault
+	 * @return EMongoDocument
 	 */
-	public function resetScope($resetDefault=true)
+	public function resetScope($resetDefault = true)
 	{
 		if($resetDefault)
 			$this->_criteria = array();
@@ -577,6 +579,21 @@ class EMongoDocument extends EMongoModel{
     	return $this->find ($criteria,$fields);
     }
 
+    /**
+     * Finds all records based on $pk
+     * @param mixed $pk String, MongoID or array of strings or MongoID values (one can mix strings and MongoID in the array)
+     */
+    public function findAllByPk($pk,$fields=array()){
+    	if(is_string($pk)||$pk instanceof MongoId){
+    		return $this->find (array($this->primaryKey() => $this->getPrimaryKey($pk)),$fields);
+    	}else if(is_array($pk)){
+    		foreach($pk as $k=>$v){
+    			$pk[$k] = $this->getPrimaryKey($v);
+    		}
+    		return $this->find (array($this->primaryKey() => array('$in' => $pk)),$fields);
+    	}
+    }
+
 	/**
 	 * Find some records
 	 * @param array $criteria
@@ -687,33 +704,47 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * (non-PHPdoc)
 	 * @see http://www.yiiframework.com/doc/api/1.1/CActiveRecord#saveCounters-detail
+	 * @param $lower define a lower that the counter should not pass. IS NOT ATOMIC
 	 */
-	public function saveCounters(array $counters) {
+	public function saveCounters(array $counters,$lower=null,$upper=null) {
 		$this->trace(__FUNCTION__);
 
 		if ($this->getIsNewRecord())
 			throw new EMongoException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
-
 		if(sizeof($counters)>0){
-			foreach($counters as $k => $v) $this->$k=$this->$k+$v;
-			return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
+			foreach($counters as $k => $v){
+				if(
+					($lower!==null&&(($this->$k+$v)>=$lower))||
+					($upper!==null&&(($this->$k+$v)<=$upper))||
+					($lower===null&&$upper===null)
+				){
+					$this->$k=$this->$k+$v;
+				}else
+					unset($counters[$k]);
+			}
+			if(count($counters)>0)
+				return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
 		}
-		return true; // Assume true since the action did run it just had nothing to update...
+		return true; // Assume true since the action did run it just had nothing to update...		
 	}
 
 	/**
 	 * Count() allows you to count all the documents returned by a certain condition, it is analogous
 	 * to $db->collection->find()->count() and basically does exactly that...
 	 * @param EMongoCriteria|array $criteria
+	 * @return int
 	 */
 	public function count($criteria = array()){
 	    $this->trace(__FUNCTION__);
 
 	    // If we provide a manual criteria via EMongoCriteria or an array we do not use the models own DbCriteria
-	    $criteria = !empty($criteria) || $criteria instanceof EMongoCriteria ? $criteria : $this->getDbCriteria();
+		if (is_array($criteria) && empty($criteria)){
+			$criteria = $this->getDbCriteria();
+			$criteria = (isset($criteria['condition']) ? $criteria['condition'] : array());
+		}
 	    if($criteria instanceof EMongoCriteria)
-	        $crtieria = $criteria->getCondition();
-	    return $this->getCollection()->find(isset($criteria) ? $criteria : array())->count();
+	        $criteria = $criteria->getCondition();
+	    return $this->getCollection()->find($criteria)->count();
 	}
 
 	/**
@@ -721,7 +752,7 @@ class EMongoDocument extends EMongoModel{
 	 *
 	 * @param $query allows you to specify a query which should always take hold along with the searched fields
 	 */
-	public function search($query=array()){
+	public function search($query=array(),$project=array()){
 		$this->trace(__FUNCTION__);
 
 		foreach($this->getSafeAttributeNames() as $attribute){
@@ -759,7 +790,7 @@ class EMongoDocument extends EMongoModel{
 				}
 			}
 		}
-		return new EMongoDataProvider(get_class($this), array('criteria' => array('condition' => $query)));
+		return new EMongoDataProvider(get_class($this), array('criteria' => array('condition' => $query, 'project' => $project)));
 	}
 
 	/**
@@ -819,7 +850,8 @@ class EMongoDocument extends EMongoModel{
 
     /**
      * gets and if null sets the db criteria for this model
-     * @param $createIfNull
+     * @param bool $createIfNull
+	 * @return array
      */
 	public function getDbCriteria($createIfNull=true)
 	{
@@ -836,14 +868,16 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * Sets the db criteria for this model
 	 * @param array $criteria
+	 * @return array
 	 */
-	public function setDbCriteria($criteria){
+	public function setDbCriteria(array $criteria){
 		return $this->_criteria=$criteria;
 	}
 
 	/**
 	 * Merges the currrent DB Criteria with the inputted one
-	 * @param array $newCriteria
+	 * @param array|EMongoCriteria $newCriteria
+	 * @return array
 	 */
 	public function mergeDbCriteria($newCriteria){
 		 return $this->_criteria=$this->mergeCriteria($this->getDbCriteria(), $newCriteria);
@@ -858,8 +892,9 @@ class EMongoDocument extends EMongoModel{
 
     /**
      * Merges two criteria objects. Best used for scopes
-     * @param $oldCriteria
-     * @param $newCriteria
+     * @param array $oldCriteria
+     * @param array $newCriteria
+	 * @return array
      */
     public function mergeCriteria($oldCriteria, $newCriteria){
 		return CMap::mergeArray($oldCriteria, $newCriteria);
