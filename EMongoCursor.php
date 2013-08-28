@@ -24,7 +24,6 @@ class EMongoCursor implements Iterator, Countable{
 	 * @var EMongoDocument
 	 */
 	public $model;
-
 	/**
 	 * @var array|MongoCursor|EMongoDocument[]
 	 */
@@ -46,7 +45,7 @@ class EMongoCursor implements Iterator, Countable{
 	 * The cursor constructor
 	 * @param string|EMongoDocument $modelClass - The class name for the active record
 	 * @param array|MongoCursor|EMongoCriteria $criteria -  Either a condition array (without sort,limit and skip) or a MongoCursor Object
-	 * @param string[] $fields
+	 * @param array $fields
 	 */
 	public function __construct($modelClass, $criteria = array(), $fields = array()) {
     	// If $fields has something in it
@@ -76,8 +75,6 @@ class EMongoCursor implements Iterator, Countable{
 			$this->criteria = $criteria;
 			$this->cursor = $this->model->getCollection()->find($criteria, $fields);
         }
-		// TODO I think this is should to investigate and remove
-		return $this; // Maintain chainability
     }
 
     /**
@@ -126,6 +123,10 @@ class EMongoCursor implements Iterator, Countable{
     }
 
 	/**
+	 * Counts the records returned by the criteria. By default this will not take skip and limit into account 
+	 * you can add inject true as the first and only parameter to enable MongoDB to take those offsets into 
+	 * consideration.
+	 *  
 	 * @param bool $takeSkip
 	 * @return int
 	 */
@@ -154,6 +155,7 @@ class EMongoCursor implements Iterator, Countable{
     }
 
 	/**
+	 * Set skip
 	 * @param int $num
 	 * @return EMongoCursor
 	 */
@@ -173,6 +175,7 @@ class EMongoCursor implements Iterator, Countable{
     }
 
 	/**
+	 * Reset the MongoCursor to the beginning
 	 * @return EMongoCursor
 	 */
 	public function rewind() {
@@ -181,6 +184,7 @@ class EMongoCursor implements Iterator, Countable{
     }
 
 	/**
+	 * Get the current key (_id)
 	 * @return mixed|string
 	 */
 	public function key() {
@@ -195,6 +199,7 @@ class EMongoCursor implements Iterator, Countable{
     }
 
 	/**
+	 * Check if this position is a valid one in the cursor
 	 * @return bool
 	 */
 	public function valid() {
