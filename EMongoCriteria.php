@@ -4,6 +4,12 @@
  * This is the extensions version of CDbCriteria.
  *
  * This class is by no means required however it can help in your programming.
+ *
+ * @property array $condition
+ * @property array $sort
+ * @property int $skip
+ * @property int $limit
+ * @property array $project
  */
 class EMongoCriteria extends CComponent {
 	/**
@@ -32,11 +38,11 @@ class EMongoCriteria extends CComponent {
 
     /**
      * Constructor.
-     * @param array $data criteria initial property values (indexed by property name)
+     * @param array $data - criteria initial property values (indexed by property name)
      */
-    public function __construct($data=array()){
-        foreach($data as $name=>$value)
-            $this->$name=$value;
+    public function __construct($data = array()){
+        foreach($data as $name => $value)
+            $this->$name = $value;
     }
 
 
@@ -161,15 +167,15 @@ class EMongoCriteria extends CComponent {
      * @return EMongoCriteria
      */
     public function compare($column, $value = null, $partialMatch = false) {
-        if ($value===null)
+        if ($value === null)
             return $this;
         $query = array();
-        if(is_array($value)||is_object($value)){
-			$query[$column]=array('$in'=>$value);
+        if(is_array($value) || is_object($value)){
+			$query[$column] = array('$in' => $value);
         }elseif(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)) {
             $value = $matches[2];
             $op = $matches[1];
-            if ($partialMatch===true)
+            if ($partialMatch === true)
                 $value = new MongoRegex("/$value/i");
             else {
 				if(
@@ -177,7 +183,7 @@ class EMongoCriteria extends CComponent {
 					&& ( (PHP_INT_MAX > 2147483647 && (string)$value < '9223372036854775807') /* If it is a 64 bit system and the value is under the long max */
 					|| (string)$value < '2147483647' /* value is under 32bit limit */)
 				)
-					$value=(int)$value;
+					$value = (int)$value;
             }
 
             switch($op){
@@ -215,35 +221,23 @@ class EMongoCriteria extends CComponent {
      */
     public function mergeWith($criteria) {
         if ($criteria instanceof EMongoCriteria) {
-			$mergeCondition = $criteria->getCondition();
-            if (!empty($mergeCondition))
-                $this->_condition = CMap::mergeArray($this->_condition, $mergeCondition);
+			return $this->mergeWith($criteria->toArray());
+		}
+		if (is_array($criteria)) {
+			if (isset($criteria['condition']) && is_array($criteria['condition']))
+				$this->setCondition(CMap::mergeArray($this->condition, $criteria['condition']));
 
-			$mergeSort = $criteria->getSort();
-            if (!empty($mergeSort))
-                $this->_sort = CMap::mergeArray($this->_sort, $mergeSort);
+			if (isset($criteria['sort']) && is_array($criteria['sort']))
+				$this->setSort(CMap::mergeArray($this->sort, $criteria['sort']));
 
-			$this->_skip = $criteria->getSkip();
-			$this->_limit = $criteria->getLimit();
+			if (isset($criteria['skip']) && is_numeric($criteria['skip']))
+				$this->setSkip($criteria['skip']);
 
-			$mergeProject = $criteria->getProject();
-            if (!empty($mergeProject))
-                $this->_project = CMap::mergeArray($this->_project, $mergeProject);
-        } elseif (is_array($criteria)) {
-            if (!empty($criteria['condition']) && is_array($criteria['condition']))
-                $this->_condition = CMap::mergeArray($this->_condition, $criteria['condition']);
+			if (isset($criteria['limit']) && is_numeric($criteria['limit']))
+				$this->setLimit($criteria['limit']);
 
-            if (!empty($criteria['sort']) && is_array($criteria['sort']))
-                $this->_sort = CMap::mergeArray($this->_sort, $criteria['sort']);
-
-            if (isset($criteria['skip']) && is_numeric($criteria['skip']))
-                $this->_skip = (int)$criteria['skip'];
-
-            if (isset($criteria['limit']) && is_numeric($criteria['limit']))
-                $this->_limit = (int)$criteria['limit'];
-
-            if (!empty($criteria['project']) && is_array($criteria['project']))
-                $this->_project = CMap::mergeArray($this->_project, $criteria['project']);
+			if (isset($criteria['project']) && is_numeric($criteria['project']))
+				$this->setProject(CMap::mergeArray($this->project, $criteria['project']));
         }
 		return $this;
     }
