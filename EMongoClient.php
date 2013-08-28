@@ -39,7 +39,9 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * Are we using journaled writes here? Beware this makes all writes wait for the journal, it does not
-	 * state whether MongoDB is using journaling. Only works 1.3+ driver
+	 * state whether MongoDB is using journaling. Note: this is NOT straight to disk, 
+	 * it infact makes the journal to disk time a third of its normal time (anywhere between 2-30ms). 
+	 * Only works 1.3+ driver
 	 * @var boolean
 	 */
 	public $j = false;
