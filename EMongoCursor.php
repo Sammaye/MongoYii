@@ -12,13 +12,26 @@
  * a lot for the cursor and the two took quite different constructors.
  */
 class EMongoCursor implements Iterator, Countable{
-
+	/**
+	 * @var array|EMongoCriteria
+	 */
 	public $criteria = array();
-
+	/**
+	 * @var string
+	 */
 	public $modelClass;
+	/**
+	 * @var EMongoDocument
+	 */
 	public $model;
 
+	/**
+	 * @var array|MongoCursor|EMongoDocument[]
+	 */
 	private $cursor = array();
+	/**
+	 * @var EMongoDocument
+	 */
 	private $current;
 
 	/**
@@ -31,118 +44,160 @@ class EMongoCursor implements Iterator, Countable{
 
 	/**
 	 * The cursor constructor
-	 * @param array|MongoCursor $condition Either a condition array (without sort,limit and skip) or a MongoCursor Object
-	 * @param string $class the class name for the active record
+	 * @param string|EMongoDocument $modelClass - The class name for the active record
+	 * @param array|MongoCursor|EMongoCriteria $criteria -  Either a condition array (without sort,limit and skip) or a MongoCursor Object
+	 * @param string[] $fields
 	 */
-    public function __construct($modelClass,$criteria=array(),$fields=array()) {
-
+	public function __construct($modelClass, $criteria = array(), $fields = array()) {
     	// If $fields has something in it
-    	if($fields!==array())
-    		$this->partial=true;
+    	if(!empty($fields))
+    		$this->partial = true;
 
     	if(is_string($modelClass)){
-			$this->modelClass=$modelClass;
-			$this->model=EMongoDocument::model($this->modelClass);
-		}elseif($modelClass instanceof EMongoDocument){
-			$this->modelClass=get_class($modelClass);
-			$this->model=$modelClass;
+			$this->modelClass = $modelClass;
+			$this->model = EMongoDocument::model($this->modelClass);
+		} elseif ($modelClass instanceof EMongoDocument){
+			$this->modelClass = get_class($modelClass);
+			$this->model = $modelClass;
 		}
 
     	if($criteria instanceof MongoCursor){
     		$this->cursor = $criteria;
         	$this->cursor->reset();
-    	}elseif($criteria instanceof EMongoCriteria){
+    	} elseif ($criteria instanceof EMongoCriteria){
     		$this->criteria = $criteria;
-			$this->cursor = $this->model->getCollection()->find($criteria->condition,$criteria->project)->sort($criteria->sort);
-			if($criteria->skip != 0)
+			$this->cursor = $this->model->getCollection()->find($criteria->condition, $criteria->project)->sort($criteria->sort);
+			if($criteria->skip > 0)
 				$this->cursor->skip($criteria->skip);
-			if($criteria->limit!=0)
+			if($criteria->limit > 0)
 				$this->cursor->limit($criteria->limit);
-    	}else{
+    	} else {
 			// Then we are doing an active query
 			$this->criteria = $criteria;
-			$this->cursor = $this->model->getCollection()->find($criteria,$fields);
+			$this->cursor = $this->model->getCollection()->find($criteria, $fields);
         }
-
-        return $this; // Maintain chainability
+		// TODO I think this is should to investigate and remove
+		return $this; // Maintain chainability
     }
 
     /**
      * If we call a function that is not implemented here we try and pass the method onto
      * the MongoCursor class, otherwise we produce the error that normally appears
      *
-     * @param $method
-     * @param $params
-     */
-    public function __call($method, $params = array()){
+     * @param string $method
+     * @param array $params
+	 * @return mixed
+	 * @throws EMongoException
+	 */
+	public function __call($method, $params = array()){
 		if($this->cursor() instanceof MongoCursor && method_exists($this->cursor(), $method)){
 			return call_user_func_array(array($this->cursor(), $method), $params);
 		}
-		throw new EMongoException(Yii::t('yii', "Call to undefined function {method} on the cursor", array('{method}' => $method)));
+		throw new EMongoException(Yii::t('yii', 'Call to undefined function {method} on the cursor', array('{method}' => $method)));
     }
 
-    /**
-     * Holds the MongoCursor
-     */
-    public function cursor(){
+	/**
+	 * Holds the MongoCursor
+	 * @return array|MongoCursor
+	 */
+	public function cursor(){
     	return $this->cursor;
     }
 
-    /**
-     * Get next doc in cursor
-     */
-    public function getNext(){
-		if($c=$this->cursor()->getNext())
-			return $this->current=$this->model->populateRecord($c,true,$this->partial);
+	/**
+	 * Get next doc in cursor
+	 * @return EMongoDocument|null
+	 */
+	public function getNext(){
+		if($c = $this->cursor()->getNext())
+			return $this->current = $this->model->populateRecord($c, true, $this->partial);
+		return null;
     }
 
     /**
      * Gets the active record for the current row
-     */
-    public function current() {
+	 * @return EMongoDocument|mixed
+	 * @throws EMongoException
+	 */
+	public function current() {
     	if($this->model === null)
-			throw new EMongoException(Yii::t('yii', "The MongoCursor must have a model"));
-    	return $this->current=$this->model->populateRecord($this->cursor()->current(),true,$this->partial);
+			throw new EMongoException(Yii::t('yii', 'The MongoCursor must have a model'));
+    	return $this->current = $this->model->populateRecord($this->cursor()->current(), true, $this->partial);
     }
 
-    public function count($takeSkip = false /* Was true originally but it was to change the way the driver worked which seemed wrong */){
+	/**
+	 * @param bool $takeSkip
+	 * @return int
+	 */
+	public function count($takeSkip = false /* Was true originally but it was to change the way the driver worked which seemed wrong */){
     	return $this->cursor()->count($takeSkip);
     }
 
-    public function slaveOkay($val = true){
+	/**
+	 * Set SlaveOkay
+	 * @param bool $val
+	 * @return EMongoCursor
+	 */
+	public function slaveOkay($val = true){
         $this->cursor()->slaveOkay($val);
         return $this;
     }
 
-    public function sort(array $fields){
+	/**
+	 * Set sort fields
+	 * @param array $fields
+	 * @return EMongoCursor
+	 */
+	public function sort(array $fields){
 		$this->cursor()->sort($fields);
 		return $this;
     }
 
-    public function skip($num = 0){
+	/**
+	 * @param int $num
+	 * @return EMongoCursor
+	 */
+	public function skip($num = 0){
 		$this->cursor()->skip($num);
 		return $this;
     }
 
-    public function limit($num = 0){
+	/**
+	 * Set limit
+	 * @param int $num
+	 * @return EMongoCursor
+	 */
+	public function limit($num = 0){
 		$this->cursor()->limit($num);
 		return $this;
     }
 
-    public function rewind() {
+	/**
+	 * @return EMongoCursor
+	 */
+	public function rewind() {
        	$this->cursor()->rewind();
         return $this;
     }
 
-    public function key() {
+	/**
+	 * @return mixed|string
+	 */
+	public function key() {
        	return $this->cursor()->key();
     }
 
-    public function next() {
-       	return $this->cursor()->next();
+	/**
+	 * Move the pointer forward
+	 */
+	public function next() {
+       	$this->cursor()->next();
     }
 
-    public function valid() {
+	/**
+	 * @return bool
+	 */
+	public function valid() {
         return $this->cursor()->valid();
     }
 }
