@@ -236,7 +236,7 @@ class EMongoCriteria extends CComponent {
 			if (isset($criteria['limit']) && is_numeric($criteria['limit']))
 				$this->setLimit($criteria['limit']);
 
-			if (isset($criteria['project']) && is_numeric($criteria['project']))
+			if (isset($criteria['project']) && is_array($criteria['project']))
 				$this->setProject(CMap::mergeArray($this->project, $criteria['project']));
         }
 		return $this;
