@@ -67,9 +67,9 @@ class EMongoCursor implements Iterator, Countable{
     	} elseif ($criteria instanceof EMongoCriteria){
     		$this->criteria = $criteria;
 			$this->cursor = $this->model->getCollection()->find($criteria->condition, $criteria->project)->sort($criteria->sort);
-			if($criteria->skip != 0)
+			if($criteria->skip > 0)
 				$this->cursor->skip($criteria->skip);
-			if($criteria->limit != 0)
+			if($criteria->limit > 0)
 				$this->cursor->limit($criteria->limit);
     	} else {
 			// Then we are doing an active query
