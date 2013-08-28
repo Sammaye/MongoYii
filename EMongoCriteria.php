@@ -31,7 +31,8 @@ class EMongoCriteria extends CComponent {
 
 	/**
 	 * Holds information for what should be projected from the cursor
-	 * into active models
+	 * into active models. The reason for this obscure name is because this 
+	 * is what it is called in MongoDB, basically it is SELECT though.
 	 * @var array
 	 */
 	private $_project = array();
@@ -62,6 +63,16 @@ class EMongoCriteria extends CComponent {
 	public function getCondition() {
 		return $this->_condition;
 	}
+	
+	/**
+	 * Sets the sort
+	 * @param array $sort
+	 * @return EMongoCriteria
+	 */
+	public function setSort(array $sort) {
+		$this->_sort = CMap::mergeArray($sort, $this->_sort);
+		return $this;
+	}	
 
 	/**
 	 * Gets the sort
@@ -72,41 +83,6 @@ class EMongoCriteria extends CComponent {
 	}
 
 	/**
-	 * Gets the skip
-	 * @return int
-	 */
-	public function getSkip() {
-		return $this->_skip;
-	}
-
-	/**
-	 * Gets the limit
-	 * @return int
-	 */
-	public function getLimit() {
-		return $this->_limit;
-	}
-
-	/**
-	 * This means that the getters and setters for projection will be access like:
-	 * $c->project(array('c','d'));
-	 * @return array
-	 */
-	public function getProject(){
-		return $this->_project;
-	}
-
-	/**
-	 * Sets the sort
-	 * @param array $sort
-	 * @return EMongoCriteria
-	 */
-	public function setSort(array $sort) {
-		$this->_sort = CMap::mergeArray($sort, $this->_sort);
-		return $this;
-	}
-
-	/**
 	 * Sets the skip
 	 * @param int $skip
 	 * @return EMongoCriteria
@@ -114,8 +90,16 @@ class EMongoCriteria extends CComponent {
 	public function setSkip($skip) {
 		$this->_skip = (int)$skip;
 		return $this;
+	}	
+	
+	/**
+	 * Gets the skip
+	 * @return int
+	 */
+	public function getSkip() {
+		return $this->_skip;
 	}
-
+	
 	/**
 	 * Sets the limit
 	 * @param int $limit
@@ -125,19 +109,38 @@ class EMongoCriteria extends CComponent {
 		$this->_limit = (int)$limit;
 		return $this;
 	}
+	
 
 	/**
-	 * Sets the projection of the criteria
+	 * Gets the limit
+	 * @return int
+	 */
+	public function getLimit() {
+		return $this->_limit;
+	}
+	
+	/**
+	 * Sets the projection (SELECT in MongoDB Lingo) of the criteria
 	 * @param $document - The document specification for projection
 	 * @return EMongoCriteria
 	 */
 	public function setProject($document){
 		$this->_project = $document;
 		return $this;
+	}	
+
+	/**
+	 * This means that the getters and setters for projection will be access like:
+	 * $c->project(array('c'=>1,'d'=>0));
+	 * @return array
+	 */
+	public function getProject(){
+		return $this->_project;
 	}
 
 	/**
-	 * Append condition to previous ones
+	 * Append condition to previous ones using the column name as the index
+	 * This will overwrite columns of the same name
 	 * @param string $column
 	 * @param mixed $value
 	 * @param string $operator
@@ -149,7 +152,7 @@ class EMongoCriteria extends CComponent {
 	}
 
 	/**
-	 * Adds an $or condition to the criteria
+	 * Adds an $or condition to the criteria, will overwrite other $or conditions
 	 * @param array $condition
 	 * @return EMongoCriteria
 	 */
@@ -178,9 +181,9 @@ class EMongoCriteria extends CComponent {
 				$value = new MongoRegex("/$value/i");
 			else {
 				if(
-						!is_bool($value) && !is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0
-						&& ( (PHP_INT_MAX > 2147483647 && (string)$value < '9223372036854775807') /* If it is a 64 bit system and the value is under the long max */
-								|| (string)$value < '2147483647' /* value is under 32bit limit */)
+					!is_bool($value) && !is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0
+					&& ( (PHP_INT_MAX > 2147483647 && (string)$value < '9223372036854775807') /* If it is a 64 bit system and the value is under the long max */
+					|| (string)$value < '2147483647' /* value is under 32bit limit */)
 				)
 					$value = (int)$value;
 			}
@@ -219,9 +222,9 @@ class EMongoCriteria extends CComponent {
 	 * @return EMongoCriteria
 	 */
 	public function mergeWith($criteria) {
-		if ($criteria instanceof EMongoCriteria) {
+		if ($criteria instanceof EMongoCriteria)
 			return $this->mergeWith($criteria->toArray());
-		} elseif (is_array($criteria)) {
+		if (is_array($criteria)) {
 			if (isset($criteria['condition']) && is_array($criteria['condition']))
 				$this->setCondition(CMap::mergeArray($this->condition, $criteria['condition']));
 
