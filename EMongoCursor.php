@@ -49,7 +49,6 @@ class EMongoCursor implements Iterator, Countable{
 	 * @param string[] $fields
 	 */
 	public function __construct($modelClass, $criteria = array(), $fields = array()) {
-
     	// If $fields has something in it
     	if(!empty($fields))
     		$this->partial = true;
@@ -67,16 +66,18 @@ class EMongoCursor implements Iterator, Countable{
         	$this->cursor->reset();
     	} elseif ($criteria instanceof EMongoCriteria){
     		$this->criteria = $criteria;
-			$this->cursor = $this->model->getCollection()->find($criteria->getCondition(), $criteria->getProject())->sort($criteria->getSort());
-			if($criteria->getSkip() != 0)
-				$this->cursor->skip($criteria->getSkip());
-			if($criteria->getLimit() != 0)
-				$this->cursor->limit($criteria->getLimit());
+			$this->cursor = $this->model->getCollection()->find($criteria->condition, $criteria->project)->sort($criteria->sort);
+			if($criteria->skip != 0)
+				$this->cursor->skip($criteria->skip);
+			if($criteria->limit != 0)
+				$this->cursor->limit($criteria->limit);
     	} else {
 			// Then we are doing an active query
 			$this->criteria = $criteria;
-			$this->cursor = $this->model->getCollection()->find($criteria, (is_array($fields) ? $fields : array()));
+			$this->cursor = $this->model->getCollection()->find($criteria, $fields);
         }
+		// TODO I think this is should to investigate and remove
+		return $this; // Maintain chainability
     }
 
     /**
@@ -186,6 +187,9 @@ class EMongoCursor implements Iterator, Countable{
        	return $this->cursor()->key();
     }
 
+	/**
+	 * Move the pointer forward
+	 */
 	public function next() {
        	$this->cursor()->next();
     }
