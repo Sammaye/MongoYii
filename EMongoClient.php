@@ -230,7 +230,7 @@ class EMongoClient extends CApplicationComponent{
 			$_meta = array();
 
 			$reflect = new ReflectionClass(get_class($o));
-			$class_vars = $reflect->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED); // Pre-defined doc attributes
+			$class_vars = $reflect->getProperties(ReflectionProperty::IS_PUBLIC); // Pre-defined doc attributes
 
 			foreach ($class_vars as $prop) {
 
