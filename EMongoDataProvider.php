@@ -116,7 +116,7 @@ class EMongoDataProvider extends CActiveDataProvider {
 		if(($sort = $this->getSort()) !== false)
 		{
 			$sort = $sort->getOrderBy();
-			if(sizeof($sort) > 0){
+			if(count($sort) > 0){
 				$this->_cursor->sort($sort);
 			}
 		}
