@@ -274,8 +274,8 @@ class EMongoDocument extends EMongoModel{
 	 * returning the label defined in relational object.
 	 * In particular, if the attribute name is in the form of "post.author.name",
 	 * then this method will derive the label from the "author" relation's "name" attribute.
-	 * @param string $attribute the attribute name
-	 * @return string the attribute label
+	 * @param string $attribute - the attribute name
+	 * @return string - the attribute label
 	 * @see generateAttributeLabel
 	 */
 	public function getAttributeLabel($attribute)
