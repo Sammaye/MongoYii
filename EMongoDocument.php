@@ -99,7 +99,7 @@ class EMongoDocument extends EMongoModel{
 	 * @example
 	 *
 	 * array(
-	 * 	'published_10_recently' => array(
+	 * 	'ten_recently_published' => array(
 	 * 		'condition' => array('published' => 1),
 	 * 		'sort' => array('date_published' => -1),
 	 * 		'skip' => 5,
