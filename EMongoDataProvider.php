@@ -32,7 +32,7 @@ class EMongoDataProvider extends CActiveDataProvider {
 	private $_criteria;
 	/**
      * The internal MongoDB cursor as a MongoCursor instance
-	 * @var EMongoCursor
+	 * @var EMongoCursor|MongoCursor
 	 */
 	private $_cursor;
     /**
@@ -103,9 +103,8 @@ class EMongoDataProvider extends CActiveDataProvider {
 		if(isset($criteria['limit']) && is_int($criteria['limit']))
 			$this->_cursor->limit($criteria['limit']);
 
-        // TODO Needs refactoring
-		// if(isset($criteria['hint']) && (is_array($criteria['hint']) || is_string($criteria['hint'])))
-		//	$this->_cursor->hint($criteria['hint']);
+		 if(isset($criteria['hint']) && (is_array($criteria['hint']) || is_string($criteria['hint'])))
+			$this->_cursor->hint($criteria['hint']);
 
 		if(($pagination = $this->getPagination()) !== false)
 		{
