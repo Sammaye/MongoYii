@@ -17,7 +17,7 @@ class EMongoDataProvider extends CActiveDataProvider {
 	 * The AR finder instance (eg <code>Post::model()</code>).
 	 * This property can be set by passing the finder instance as the first parameter
 	 * to the constructor. For example, <code>Post::model()->published()</code>.
-     * @var EMongoDocument
+     * @var EMongoModel
 	 */
 	public $model;
 	/**
@@ -26,18 +26,15 @@ class EMongoDataProvider extends CActiveDataProvider {
      * @var string
 	 */
 	public $keyAttribute = '_id';
-
 	/**
 	 * @var array The criteria array
 	 */
 	private $_criteria;
-
 	/**
      * The internal MongoDB cursor as a MongoCursor instance
 	 * @var EMongoCursor
 	 */
 	private $_cursor;
-
     /**
      * @var EMongoSort
      */
@@ -67,7 +64,7 @@ class EMongoDataProvider extends CActiveDataProvider {
 	}
 
 	/**
-	 * @see yii/framework/web/CActiveDataProvider::getCriteria()
+	 * @see CActiveDataProvider::getCriteria()
      * @return array
      */
     public function getCriteria(){
@@ -75,7 +72,7 @@ class EMongoDataProvider extends CActiveDataProvider {
 	}
 
 	/**
-	 * @see yii/framework/web/CActiveDataProvider::setCriteria()
+	 * @see CActiveDataProvider::setCriteria()
      * @param array|EMongoCriteria $value
      */
     public function setCriteria($value){
@@ -86,7 +83,7 @@ class EMongoDataProvider extends CActiveDataProvider {
 	}
 
 	/**
-	 * @see yii/framework/web/CActiveDataProvider::fetchData()
+	 * @see CActiveDataProvider::fetchData()
      * @return array
      */
     public function fetchData(){
@@ -128,7 +125,7 @@ class EMongoDataProvider extends CActiveDataProvider {
 	}
 
 	/**
-	 * @see yii/framework/web/CActiveDataProvider::fetchKeys()
+	 * @see CActiveDataProvider::fetchKeys()
      * @return array
      */
     public function fetchKeys(){
@@ -142,7 +139,7 @@ class EMongoDataProvider extends CActiveDataProvider {
 	}
 
 	/**
-	 * @see yii/framework/web/CActiveDataProvider::calculateTotalItemCount()
+	 * @see CActiveDataProvider::calculateTotalItemCount()
      * @return int
      */
     public function calculateTotalItemCount(){
@@ -154,10 +151,10 @@ class EMongoDataProvider extends CActiveDataProvider {
 	}
 
 	/**
-	 * Returns the sort object. We don't use the neweer getSort function because it does not have the same functionality
+	 * Returns the sort object. We don't use the newer getSort function because it does not have the same functionality
 	 * between 1.1.10 and 1.1.13, the functionality we need is actually in 1.1.13 only
      * @param string $className
-	 * @return CSort|EMongoSort|mixed - the sorting object. If this is false, it means the sorting is disabled.
+	 * @return CSort|EMongoSort|false - the sorting object. If this is false, it means the sorting is disabled.
 	 */
     public function getSort($className = 'EMongoSort')
 	{
