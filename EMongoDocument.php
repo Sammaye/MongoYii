@@ -206,7 +206,7 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * Sets if the record is new.
      * Whether the record is new and should be inserted when calling {@link save}.
-     * @see getIsNewRecord
+     * @see EMongoDocument::getIsNewRecord()
 	 * @param boolean $value
 	 */
 	public function setIsNewRecord($value){
