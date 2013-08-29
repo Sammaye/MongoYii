@@ -128,9 +128,7 @@ class EMongoDocument extends EMongoModel{
 	 * 	'limit' => 10
 	 * )
 	 *
-     * An array which represents a single scope within the scope() function
-     *
-	 * @return array
+     * @return array - An array which represents a single scope within the scope() function
 	 */
 	public function defaultScope()
 	{
