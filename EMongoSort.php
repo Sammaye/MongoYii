@@ -12,7 +12,7 @@
 class EMongoSort extends CSort
 {
 	/**
-	 * @see yii/framework/web/CSort::resolveAttribute()
+	 * @see CSort::resolveAttribute()
      * @param string $attribute
      * @return bool|string|array
      */
@@ -47,7 +47,7 @@ class EMongoSort extends CSort
 		return false;
 	}
 	/**
-	 * @see yii/framework/web/CSort::resolveLabel()
+	 * @see CSort::resolveLabel()
      * @param string $attribute
      * @return string
      */
@@ -67,7 +67,7 @@ class EMongoSort extends CSort
 			return $attribute;
 	}
 	/**
-	 * @see yii/framework/web/CSort::getOrderBy()
+	 * @see CSort::getOrderBy()
      * @param EMongoCriteria $criteria
      * @return array|string
      * @throws EMongoException
