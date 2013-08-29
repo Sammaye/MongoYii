@@ -400,8 +400,7 @@ class EMongoDocument extends EMongoModel{
 			$this->onBeforeSave($event);
 			return $event->isValid;
 		}
-		else
-			return true;
+		return true;
 	}
 
 	protected function afterSave()
@@ -422,8 +421,7 @@ class EMongoDocument extends EMongoModel{
 			$this->onBeforeDelete($event);
 			return $event->isValid;
 		}
-		else
-			return true;
+		return true;
 	}
 
 	protected function afterDelete()
@@ -636,8 +634,8 @@ class EMongoDocument extends EMongoModel{
     	if(is_string($pk) || $pk instanceof MongoId){
     		return $this->find(array($this->primaryKey() => $this->getPrimaryKey($pk)), $fields);
     	}else if(is_array($pk)){
-    		foreach($pk as $kay => $value){
-    			$pk[$kay] = $this->getPrimaryKey($value);
+    		foreach($pk as $key => $value){
+    			$pk[$key] = $this->getPrimaryKey($value);
     		}
     		return $this->find(array($this->primaryKey() => array('$in' => $pk)), $fields);
     	}
