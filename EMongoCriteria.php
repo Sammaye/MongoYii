@@ -143,8 +143,7 @@ class EMongoCriteria extends CComponent {
 	 * @see EMongoCriteria::setProject()
 	 */
 	public function setSelect($document){
-		$this->_project = $document;
-		return $this;		
+		$this->setProject($document);	
 	}
 	
 	/**
@@ -152,7 +151,7 @@ class EMongoCriteria extends CComponent {
 	 * @see EMongoCriteria::getProject()
 	 */
 	public function getSelect(){
-		return $this->_project;
+		return $this->getProject();
 	}
 
 	/**
