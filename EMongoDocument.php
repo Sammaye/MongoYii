@@ -599,6 +599,8 @@ class EMongoDocument extends EMongoModel{
      */
     public function findOne($criteria = array(), $fields = array()){
 		$this->trace(__FUNCTION__);
+		
+		$this->beforeFind(); // Apparently this is applied before even scopes...
 
 		if($criteria instanceof EMongoCriteria)
 			$criteria = $criteria->getCondition();
@@ -650,7 +652,9 @@ class EMongoDocument extends EMongoModel{
      */
     public function find($criteria = array(), $fields = array()){
     	$this->trace(__FUNCTION__);
-
+    	
+    	$this->beforeFind(); // Apparently this is applied before even scopes...
+    	
 		if($criteria instanceof EMongoCriteria){
 			$c = $criteria->mergeWith($this->getDbCriteria())->toArray();
 			$criteria = array();
