@@ -665,6 +665,10 @@ Get and set the limit of the query.
 
 Sets the projection of the criteria to state specific fields to include/omit.
 
+### getSelect() / setSelect()
+
+These provide aliases for `getProject()` and `setProject()`.
+
 ### compare()
 
 This works a lot like `CDbCriteria`s and is heavily based on it.
