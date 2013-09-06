@@ -264,6 +264,8 @@ Please move to the "Querying" section if you wish to read about this part of the
 
 <p>Currently only returns <code>_id</code> as the key.</p>
 
+<h3>Using a Custom Primary Key</h3>
+
 <p>If you are using a primary key that IS NOT a <code>ObjectId</code> (otherwise known as a <code>MongoId</code> in the PHP driver) then you should override the <code>getPrimaryKey</code> function of the <code>EMongoDocument</code>
 to not return a <code>MongoId</code>:</p>
 
