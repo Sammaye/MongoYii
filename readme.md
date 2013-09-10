@@ -481,7 +481,10 @@ This is the subdocument validator, please see the "Subdocuments" section for ful
 
 ### EMongoTimestampBehaviour
 
-This is the MongoYii edition of `CTimestampBehavior` behaviour.
+This is the MongoYii edition of `CTimestampBehavior` behaviour and will use `MongoDate` fields, however, an expression can be added to `timestampExpression` to make the 
+behaviour return integer timestamps.
+
+The usage of the behaviour is very much alike to normal, infact only the name is different:
 
 	function behaviors(){
 		return array(
