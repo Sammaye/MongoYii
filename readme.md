@@ -846,7 +846,7 @@ Please look to the tests folder for further examples of how to use this extensio
 There is also a demonstration application built using MongoYii. It is effectively mimicking a Wikipedia type website and allows for user (including sessions) and article management. 
 It is not a good place to start if you are still learning Yii, however, it is a good place to start if you are learning MongoYii. 
 
-[You can find the demonstration application repository here] (https://github.com/Sammaye/MongoYii-test).
+[You can find the demonstration application repository here](https://github.com/Sammaye/MongoYii-test).
 
 ## Running the Tests
 
