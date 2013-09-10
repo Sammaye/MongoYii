@@ -513,10 +513,49 @@ User::model()-&gt;updateByPk($_id, array('$set' =&gt; array('d' =&gt; 1)[, array
 
 <h2>Validation</h2>
 
-<p>The validation has pretty much not changed except for one validator which required some rewriting, the unique validator.</p>
+<p>The validation has pretty much not changed except for the names of certain validators due to Yiis own requiring SQL.</p>
 
-<p>Basically the <code>CUniqueValidator</code> has been retro-fitted to work for MongoDB so the call to the validator is the same but you must take into account that the name of the
-validator is now <code>EMongoUniqueValidator</code>.</p>
+<h3>unique</h3>
+
+<p>The <code>unique</code> validator is now the <code>EMongoUnqiueValidator</code>.</p>
+
+<pre><code>array('username', 'EMongoUniqueValidator', 'className' =&gt; 'User', 'attributeName' =&gt; 'username')
+</code></pre>
+
+<h3>exist</h3>
+
+<p>The <code>exist</code> validator is now the <code>EMongoExistValidator</code>.</p>
+
+<pre><code>array('user_id', 'EMongoExistValidator', 'className' =&gt; 'User', 'attributeName' =&gt; '_id')
+</code></pre>
+
+<h3>EMongoIdValidator</h3>
+
+<p>This validator was added as a easy, yet flexible, method to automate the conversion of hexidecimal representation of <code>MongoId</code>s (for example: <code>addffrg33334455add0001</code>) to the 
+<code>MongoId</code> object for database manipulation. This validator can also handle arrays of strings that need converting to <code>MongoId</code>s.</p>
+
+<pre><code>array('ids,id', 'EMongoIdValidator'), // ids is an array while id is a single string value
+</code></pre>
+
+<h3>EMongoSubdocumentValidator</h3>
+
+<p>This is the subdocument validator, please see the "Subdocuments" section for full documentation.</p>
+
+<h2>Behaviours</h2>
+
+<h3>EMongoTimestampBehaviour</h3>
+
+<p>This is the MongoYii edition of <code>CTimestampBehavior</code> behaviour and will use <code>MongoDate</code> fields, however, an expression can be added to <code>timestampExpression</code> to make the 
+behaviour return integer timestamps.</p>
+
+<p>The usage of the behaviour is very much alike to normal, infact only the name is different:</p>
+
+<pre><code>function behaviors(){
+    return array(
+        'EMongoTimestampBehaviour'
+    );
+}
+</code></pre>
 
 <h2>Subdocuments</h2>
 
@@ -886,12 +925,16 @@ it will not return a model instance but instead the direct result of the MongoDB
 
 <p>Probably some, however, I will endeavour to accept pull requests and fix reported bugs.</p>
 
+<p>Please report all issues, including bugs and/or questions, on the <a href="https://github.com/Sammaye/MongoYii/issues">GitHub issue tracker</a>. </p>
+
 <h2>Examples</h2>
 
 <p>Please look to the tests folder for further examples of how to use this extension, it is quite comprehensive.</p>
 
-<p>There is also an example application which is in the process of being built to accomodate for providing example usages of MongoYii and is worth a look at for most Yii users:
-<a href="https://github.com/Sammaye/MongoYii-test">here</a></p>
+<p>There is also a demonstration application built using MongoYii. It is effectively mimicking a Wikipedia type website and allows for user (including sessions) and article management. 
+It is not a good place to start if you are still learning Yii, however, it is a good place to start if you are learning MongoYii. </p>
+
+<p>[You can find the demonstration application repository here] (https://github.com/Sammaye/MongoYii-test).</p>
 
 <h2>Running the Tests</h2>
 
