@@ -477,6 +477,18 @@ This validator was added as a easy, yet flexible, method to automate the convers
 
 This is the subdocument validator, please see the "Subdocuments" section for full documentation.
 
+## Behaviours
+
+### EMongoTimestampBehaviour
+
+This is the MongoYii edition of CTimestamp behaviour.
+
+	function behaviors(){
+		return array(
+			'EMongoTimestampBehaviour'
+		);
+	}
+
 ## Subdocuments
 
 Subdocuments are, mostly, not automatically supported by this extension. There a couple of reasons, firstly due to performance - automating subdocument usage requires a lot of
@@ -782,18 +794,6 @@ root document MongoYii will consider that single projected subdocument the compl
 
 **Note:** If `_id` is omitted via `'_id' => 0` from the root document then you will not be permitted to save the document at all. The extension will instead throw an exception about the
 `_id` field not being set.
-
-## Behaviours
-
-### EMongoTimestampBehaviour
-
-This is the MongoYii edition of CTimestamp behaviour.
-
-	function behaviors(){
-		return array(
-			'EMongoTimestampBehaviour'
-		);
-	}
 
 ## GridFS
 
