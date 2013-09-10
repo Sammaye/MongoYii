@@ -452,10 +452,30 @@ Same as above really except these translate directly to the MongoDB drivers own 
 
 ## Validation
 
-The validation has pretty much not changed except for one validator which required some rewriting, the unique validator.
+The validation has pretty much not changed except for the names of certain validators due to Yiis own requiring SQL.
 
-Basically the `CUniqueValidator` has been retro-fitted to work for MongoDB so the call to the validator is the same but you must take into account that the name of the
-validator is now `EMongoUniqueValidator`.
+### unique
+
+The `unique` validator is now the `EMongoUnqiueValidator`.
+
+	array('username', 'EMongoUniqueValidator', 'className' => 'User', 'attributeName' => 'username')
+	
+### exist
+
+The `exist` validator is now the `EMongoExistValidator`.
+
+	array('user_id', 'EMongoExistValidator', 'className' => 'User', 'attributeName' => '_id')
+	
+### EMongoIdValidator
+
+This validator was added as a easy, yet flexible, method to automate the conversion of hexidecimal representation of `MongoId`s (for example: `addffrg33334455add0001`) to the 
+`MongoId` object for database manipulation. This validator can also handle arrays of strings that need converting to `MongoId`s.
+
+	array('ids,id', 'EMongoIdValidator'), // ids is an array while id is a single string value
+
+### EMongoSubdocumentValidator
+
+This is the subdocument validator, please see the "Subdocuments" section for full documentation.
 
 ## Subdocuments
 
@@ -763,6 +783,18 @@ root document MongoYii will consider that single projected subdocument the compl
 **Note:** If `_id` is omitted via `'_id' => 0` from the root document then you will not be permitted to save the document at all. The extension will instead throw an exception about the
 `_id` field not being set.
 
+## Behaviours
+
+### EMongoTimestampBehaviour
+
+This is the MongoYii edition of CTimestamp behaviour.
+
+	function behaviors(){
+		return array(
+			'EMongoTimestampBehaviour'
+		);
+	}
+
 ## GridFS
 
 MongoYii has a GridFS handler called `EMongoFile`. This class is specifically designed as a helper and is in no way required in order to use GridFS with MongoYii. What it does is
@@ -802,12 +834,16 @@ I am sure there are more but that is the immediate flaws you need to consider in
 
 Probably some, however, I will endeavour to accept pull requests and fix reported bugs.
 
+Please report all issues, including bugs and/or questions, on the [GitHub issue tracker](https://github.com/Sammaye/MongoYii/issues). 
+
 ## Examples
 
 Please look to the tests folder for further examples of how to use this extension, it is quite comprehensive.
 
-There is also an example application which is in the process of being built to accomodate for providing example usages of MongoYii and is worth a look at for most Yii users:
-[here](https://github.com/Sammaye/MongoYii-test)
+There is also a demonstration application built using MongoYii. It is effectively mimicking a Wikipedia type website and allows for user (including sessions) and article management. 
+It is not a good place to start if you are still learning Yii, however, it is a good place to start if you are learning MongoYii. 
+
+[You can find the demonstration application repository here] (https://github.com/Sammaye/MongoYii-test).
 
 ## Running the Tests
 
@@ -821,7 +857,7 @@ The tests require the PHPUnit plugin with all dependencies compiled. Using PEAR 
 After that you can just tell PHPUnit to run all tests within the `tests/` folder with no real order.
 
 ## Upgrade Notes
-
+ 
 There has been a small but dramatic change between version 1.x and 2.x of MongoYii. The `compare()` function within the `EMongoCriteria` now no longer uses partial matching by
 default. This means that by default it will try and match the entire field value.
 
