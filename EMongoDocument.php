@@ -488,7 +488,7 @@ class EMongoDocument extends EMongoModel{
 			if(!isset($this->{$this->primaryKey()}) || $this->{$this->primaryKey()}===null)
 				throw new CDbException(Yii::t('yii', 'The active record cannot be updated because its _id is not set!'));
 
-			return $this->updateByPk($this->{$this->primaryKey()}, $values);
+			return $this->lastError=$this->updateByPk($this->{$this->primaryKey()}, array('$set'=>$values));
 		}
 		throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
 	}
