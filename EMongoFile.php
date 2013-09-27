@@ -36,6 +36,11 @@ class EMongoFile extends EMongoDocument{
 	 * Gets the file object
 	 */
 	public function getFile(){
+		// This if statement allows for you to continue using this class AFTER insert 
+		// basically it will only get the file if you plan on using it further which means that
+		// otherwise it omits at least one database call each time
+		if($this->_id instanceof MongoId && !$this->_file instanceof MongoGridFSFile)
+			return $this->_file=$this->getCollection()->get($this->_id);
 		return $this->_file;
 	}
 	
@@ -140,10 +145,8 @@ class EMongoFile extends EMongoDocument{
 		{
 			$this->trace(__FUNCTION__);
 		
-			if(!isset($this->{$this->primaryKey()})) $this->{$this->primaryKey()} = new MongoId;
 			if($_id=$this->getCollection()->storeFile($this->getFilename(), $this->getRawDocument())){ // The key change
-				$this->setFile($this->getCollection()->get($_id));
-				
+				$this->_id=$_id;
 				$this->afterSave();
 				$this->setIsNewRecord(false);
 				$this->setScenario('update');
