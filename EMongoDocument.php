@@ -530,17 +530,23 @@ class EMongoDocument extends EMongoModel{
 			if($this->{$this->primaryKey()} === null) // An _id is required
 				throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it has no _id.'));
 
-			if($attributes !== null)
+			$partial=false;
+			if($attributes !== null){
 				$attributes = $this->filterRawDocument($attributes);
-			elseif($this->getIsPartial()){
+				$partial=true;
+			}elseif($this->getIsPartial()){
 				foreach($this->_projected_fields as $field => $v)
 					$attributes[$field] = $this->$field;
 				$attributes = $this->filterRawDocument($attributes);
+				$partial=true;
 			}else
 				$attributes = $this->getRawDocument();
 			unset($attributes['_id']); // Unset the _id before update
 
-			$this->lastError = $this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
+			if($partial===true)
+				$this->lastError = $this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
+			else // If this is not partial then we replace entire doc
+				$this->lastError = $this->updateByPk($this->{$this->primaryKey()}, $attributes);
 			$this->afterSave();
 			return true;
 		}
