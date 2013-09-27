@@ -435,8 +435,6 @@ class EMongoDocument extends EMongoModel{
 		if($this->hasEventHandler('onBeforeFind'))
 		{
 			$event = new CModelEvent($this);
-			// for backward compatibility
-			$event->criteria = func_num_args() > 0 ? func_get_arg(0) : null;
 			$this->onBeforeFind($event);
 		}
 	}
