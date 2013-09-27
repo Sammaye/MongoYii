@@ -17,18 +17,18 @@ class EMongoFile extends EMongoDocument{
 	// Helper functions to get some common functionality on this class
 	
 	public function getFilename(){
-		if($this->_file instanceof MongoGridFSFile)
-			return $this->_file->getFilename();
-		return $this->_file->getTempName();
+		if($this->getFile() instanceof MongoGridFSFile)
+			return $this->getFile()->getFilename();
+		return $this->getFile()->getTempName();
 	}
 	
 	public function getSize(){
-		return $this->_file->getSize();
+		return $this->getFile()->getSize();
 	}
 
 	public function getBytes(){
-		if($this->_file instanceof MongoGridFSFile)
-			return $this->_file->getBytes();
+		if($this->getFile() instanceof MongoGridFSFile)
+			return $this->getFile()->getBytes();
 		return file_get_contents($this->getFilename());
 	}
 	
@@ -61,6 +61,16 @@ class EMongoFile extends EMongoDocument{
 	public static function model($className=__CLASS__){
 		return parent::model($className);
 	}	
+	
+	/**
+	 * Magic will either call a function on the file if it exists or bubble to parent
+	 * @see EMongoDocument::__call()
+	 */
+	public function __call($name,$parameters){
+		if($this->getFile() instanceof MongoGridFSFile && method_exists($this->getFile(), $name))
+			return call_user_func_array(array($this->getFile(), $name), $parameters);
+		return parent::__call($name,$parameters);
+	}
 	
 	/**
 	 * This can populate from a $_FILES instance
