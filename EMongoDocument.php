@@ -817,43 +817,52 @@ class EMongoDocument extends EMongoModel{
      * @param array $project
      * @return EMongoDataProvider
      */
-    public function search($query = array(), $project = array()){
+    public function search($query = array(), $project = array(), $partialMatch=false){
 		$this->trace(__FUNCTION__);
 
 		foreach($this->getSafeAttributeNames() as $attribute){
-
+			
 			$value = $this->{$attribute};
-			if($value !== null && $value !== ''){
+			if ($value !== null && $value !== ''){
 				if((is_array($value) && count($value)) || is_object($value)){
 					$query[$attribute] = $value;
-				} elseif (is_string($value) && preg_match('/^(?:\s*(<>|\!=|<=|>=|<|>|=))?(.*)$/', $value, $matches)){
+				}elseif(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)) {
 					$value = $matches[2];
 					$op = $matches[1];
-
+					if ($partialMatch === true)
+						$value = new MongoRegex("/$value/i");
+					else {
+						if(
+						!is_bool($value) && !is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0
+						&& ( (PHP_INT_MAX > 2147483647 && (string)$value < '9223372036854775807') /* If it is a 64 bit system and the value is under the long max */
+								|| (string)$value < '2147483647' /* value is under 32bit limit */)
+						)
+							$value = (int)$value;
+					}
+				
 					switch($op){
-						case '<>':
-						case '!=':
+						case "<>":
 							$query[$attribute] = array('$ne' => $value);
 							break;
-						case '<=':
+						case "<=":
 							$query[$attribute] = array('$lte' => $value);
 							break;
-						case '>=':
+						case ">=":
 							$query[$attribute] = array('$gte' => $value);
 							break;
-						case '<':
+						case "<":
 							$query[$attribute] = array('$lt' => $value);
 							break;
-						case '>':
+						case ">":
 							$query[$attribute] = array('$gt' => $value);
 							break;
-						case '=':
+						case "=":
 						default:
 							$query[$attribute] = $value;
 							break;
 					}
 				}
-			}
+			}		
 		}
 		return new EMongoDataProvider(get_class($this), array('criteria' => array('condition' => $query, 'project' => $project)));
 	}
