@@ -90,7 +90,6 @@ class EMongoFile extends EMongoDocument{
 			// set it as our attributes and then set this classes file as the first param we got
 			$file=$attributes;
 			$attributes=$file->file;
-					
 			$record=$this->instantiate($attributes);			
 			$record->setFile($file);			
 			$record->setScenario('update');
@@ -132,7 +131,9 @@ class EMongoFile extends EMongoDocument{
 			$this->trace(__FUNCTION__);
 		
 			if(!isset($this->{$this->primaryKey()})) $this->{$this->primaryKey()} = new MongoId;
-			if($this->getCollection()->storeFile($this->getFilename(), $this->getRawDocument())){ // The key change
+			if($_id=$this->getCollection()->storeFile($this->getFilename(), $this->getRawDocument())){ // The key change
+				$this->setFile($this->getCollection()->get($_id));
+				
 				$this->afterSave();
 				$this->setIsNewRecord(false);
 				$this->setScenario('update');

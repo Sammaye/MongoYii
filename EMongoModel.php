@@ -433,8 +433,9 @@ class EMongoModel extends CModel{
 	{
 		if($attribute===null)
 			return $this->_errors;
-		else
-			return isset($this->_errors[$attribute]) ? $this->_errors[$attribute] : array();
+		else{
+			return $this->getError($attribute);
+		}
 	}
 
 	/**
@@ -444,6 +445,17 @@ class EMongoModel extends CModel{
 	 */
 	public function getError($attribute)
 	{
+		$attribute=trim(strtr($attribute,'][','['),']');
+		if(strpos($attribute,'[')!==false){
+			$prev=null;
+			foreach(explode('[',$attribute) as $piece){
+				if($prev===null&&isset($this->errors[$piece]))
+					$prev=&$this->_errors[$piece];
+				elseif(isset($prev[$piece]))
+				$prev=is_array($prev)?$prev[$piece]:$prev->$piece;
+			}
+			return $prev===null?array():$prev;
+		}		
 		return isset($this->_errors[$attribute]) ? reset($this->_errors[$attribute]) : null;
 	}
 
