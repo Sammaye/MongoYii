@@ -598,7 +598,7 @@ class EMongoDocument extends EMongoModel{
      * @return EMongoDocument|null
      */
     public function findOne($criteria = array(), $fields = array()){
-		$this->trace(__FUNCTION__, func_get_args());
+		$this->trace(__FUNCTION__);
 		
 		$this->beforeFind(); // Apparently this is applied before even scopes...
 
@@ -651,7 +651,7 @@ class EMongoDocument extends EMongoModel{
      * @return EMongoCursor|EMongoDocument[]
      */
     public function find($criteria = array(), $fields = array()){
-    	$this->trace(__FUNCTION__, func_get_args());
+    	$this->trace(__FUNCTION__);
     	
     	$this->beforeFind(); // Apparently this is applied before even scopes...
     	
@@ -682,7 +682,7 @@ class EMongoDocument extends EMongoModel{
      * @return EMongoDocument|null
      */
     public function findBy_id($_id, $fields = array()){
-    	$this->trace(__FUNCTION__, func_get_args());
+    	$this->trace(__FUNCTION__);
 		$_id = $this->getPrimaryKey($_id);
 		return $this->findOne(array($this->primaryKey() => $_id), $fields);
     }
@@ -694,7 +694,7 @@ class EMongoDocument extends EMongoModel{
      * @return EMongoDocument|null
      */
     public function findByPk($pk, $fields = array()){
-    	$this->trace(__FUNCTION__, func_get_args());
+    	$this->trace(__FUNCTION__);
 		return $this->findBy_id($pk, $fields);
     }
 
@@ -706,7 +706,7 @@ class EMongoDocument extends EMongoModel{
      * @return mixed
      */
     public function deleteByPk($pk, $criteria = array(), $options = array()){
-		$this->trace(__FUNCTION__, func_get_args());
+		$this->trace(__FUNCTION__);
 
 		if($criteria instanceof EMongoCriteria)
 			$criteria = $criteria->getCondition();
@@ -724,7 +724,7 @@ class EMongoDocument extends EMongoModel{
      * @return bool
      */
     public function updateByPk($pk, $updateDoc = array(), $criteria = array(), $options = array()){
-		$this->trace(__FUNCTION__, func_get_args());
+		$this->trace(__FUNCTION__);
 
 		if($criteria instanceof EMongoCriteria)
 			$criteria = $criteria->getCondition();
@@ -741,7 +741,7 @@ class EMongoDocument extends EMongoModel{
      * @return bool
      */
     public function updateAll($criteria = array(), $updateDoc = array(), $options = array('multiple' => true)){
-		$this->trace(__FUNCTION__, func_get_args());
+		$this->trace(__FUNCTION__);
 
 		if($criteria instanceof EMongoCriteria)
 			$criteria = $criteria->getCondition();
@@ -755,7 +755,7 @@ class EMongoDocument extends EMongoModel{
      * @return mixed
      */
     public function deleteAll($criteria = array(), $options = array()){
-		$this->trace(__FUNCTION__, func_get_args());
+		$this->trace(__FUNCTION__);
 
 		if($criteria instanceof EMongoCriteria)
 			$criteria = $criteria->getCondition();
@@ -799,7 +799,7 @@ class EMongoDocument extends EMongoModel{
 	 * @return int
 	 */
 	public function count($criteria = array()){
-	    $this->trace(__FUNCTION__, func_get_args());
+	    $this->trace(__FUNCTION__);
 
 	    // If we provide a manual criteria via EMongoCriteria or an array we do not use the models own DbCriteria
 		if (is_array($criteria) && empty($criteria)){
@@ -984,10 +984,8 @@ class EMongoDocument extends EMongoModel{
     /**
      * Produces a trace message for functions in this class
      * @param string $func
-     * @param array $args
      */
-    public function trace($func, $args = array()){
-    	$args = json_encode($args[0]);
-    	Yii::trace(get_class($this) . '.' . $func . '('.$args.')', 'extensions.MongoYii.EMongoDocument');
+    public function trace($func){
+    	Yii::trace(get_class($this) . '.' . $func . '()', 'extensions.MongoYii.EMongoDocument');
     }
 }
