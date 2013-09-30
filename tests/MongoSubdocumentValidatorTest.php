@@ -33,6 +33,7 @@ class MongoSubdocumentValidatorTest extends CTestCase{
 	}
 
 	/**
+	 * @covers ESubdocumentValidator
 	 * @dataProvider userDataProvider
 	 */
 	function testProperErrorsIndexation($post) {

@@ -12,7 +12,7 @@ class MongofileTest extends CTestCase{
 		// Hmm this is blank until I can figure out how best to unit test an upload
 	}
 	
-	function testFndingFile(){
+	function testFindingFile(){
 		
 	}
 	
