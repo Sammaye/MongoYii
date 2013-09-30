@@ -911,6 +911,14 @@ otherwise Yii will not know how to handle the <code>MongoGridFSFile</code> objec
 
 <p>This code snippet assumes we wish to find a file whose metadata field <code>userId</code> is of the current user in session.</p>
 
+<h2>Using urlManager</h2>
+
+<p>If you wish to regex out the `_id` within a URL for use with the urlManager you can use:</p>
+
+<pre><code>'&lt;controller:\w+>/&lt;action:\w+>/&lt;id:[a-z0-9]{24}>'=>'&lt;controller>/&lt;action>',</code></pre>
+	
+<p>Whereby it will try and pick out a alphanumeric `_id` of 24 characters in length.</p> 
+
 <h2>Known Flaws</h2>
 
 <ul>
