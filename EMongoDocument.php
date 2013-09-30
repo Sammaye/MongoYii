@@ -868,7 +868,7 @@ class EMongoDocument extends EMongoModel{
 				}
 			}		
 		}
-		return new EMongoDataProvider(get_class($this), array('criteria' => array('condition' => $query, 'project' => $project)));
+		return new EMongoDataProvider($this, array('criteria' => array('condition' => $query, 'project' => $project)));
 	}
 
 	/**
