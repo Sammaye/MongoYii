@@ -825,6 +825,14 @@ Retreiving the file later is just as easy as saving it and is no different to fi
 
 This code snippet assumes we wish to find a file whose metadata field `userId` is of the current user in session.
 
+## Using urlManager
+
+If you wish to regex out the `_id` within a URL for use with the urlManager you can use:
+
+	'<controller:\w+>/<action:\w+>/<id:[a-z0-9]{24}>'=>'<controller>/<action>',
+	
+Whereby it will try and pick out a alphanumeric `_id` of 24 characters in length. 
+
 ## Known Flaws
 
 - Subdocuments are not automated, however, I have stated why above
