@@ -132,5 +132,6 @@ class EMongoTimestampBehaviour extends CActiveRecordBehavior {
                                 return true;
                         }
                 }
+                return true;
         }
 }
