@@ -24,7 +24,7 @@
  * 			'class' => 'EMongoTimestampBheaviour',
  * 			'createAttribute' => 'create_time_attribute',
  * 			'updateAttribute' => 'update_time_attribute',
- *                      'onScenario' => array('scenarioName'),
+ *          'on' => array('scenarioName'),
  * 		)
  * 	);
  * }
@@ -52,15 +52,15 @@ class EMongoTimestampBehaviour extends CActiveRecordBehavior {
 	*/
 	public $updateAttribute = 'update_time';
 
-        /**
-         * @var array set attributes only on this scenarios
-         */
-        public $onScenario = array();
+	/**
+	 * @var array set attributes only on this scenarios
+	 */
+	public $on = array();
 
-        /**
-         * @var array not set attributes only on this scenarios
-         */
-        public $notOnScenario = array();
+	/**
+	 * @var array not set attributes only on this scenarios
+	 */
+	public $notOn = array();
 
 	/**
 	* @var bool Whether to set the update attribute to the creation timestamp upon creation.
@@ -85,14 +85,14 @@ class EMongoTimestampBehaviour extends CActiveRecordBehavior {
 	* @param CModelEvent $event event parameter
 	*/
 	public function beforeSave($event) {
-                if ($this->checkScenarios()) {
-                        if ($this->getOwner()->getIsNewRecord() && ($this->createAttribute !== null)) {
-                                $this->getOwner()->{$this->createAttribute} = $this->getTimestampByAttribute($this->createAttribute);
-                        }
-                        if ((!$this->getOwner()->getIsNewRecord() || $this->setUpdateOnCreate) && ($this->updateAttribute !== null)) {
-                                $this->getOwner()->{$this->updateAttribute} = $this->getTimestampByAttribute($this->updateAttribute);
-                        }
-                }
+		if ($this->checkScenarios()) {
+			if ($this->getOwner()->getIsNewRecord() && ($this->createAttribute !== null)) {
+				$this->getOwner()->{$this->createAttribute} = $this->getTimestampByAttribute($this->createAttribute);
+			}
+			if ((!$this->getOwner()->getIsNewRecord() || $this->setUpdateOnCreate) && ($this->updateAttribute !== null)) {
+				$this->getOwner()->{$this->updateAttribute} = $this->getTimestampByAttribute($this->updateAttribute);
+			}
+		}
 	}
 
 	/**
@@ -109,29 +109,31 @@ class EMongoTimestampBehaviour extends CActiveRecordBehavior {
 		return new MongoDate();
 	}
 
-        protected function checkScenarios() {
-                if (!is_array($this->onScenario) or !is_array($this->notOnScenario))
-                        throw new CException('onScenario and notOnScenario must be an array');
-                if (count($this->onScenario)) {
-                        if (count($this->notOnScenario))
-                                throw new CException('You can not specify both the parameter and onScenario notOnScenario');
-                        //TODO CHECK ENGLISH TEXT VERSION!!!
-                        if (in_array($this->getOwner()->getScenario(), $this->onScenario)) {
-                                return true;
-                        } else {
-                                return false;
-                        }
-                }
-                if (count($this->notOnScenario)) {
-                        if (count($this->onScenario))
-                                throw new CException('You can not specify both the parameter and onScenario notOnScenario');
-                        //TODO CHECK ENGLISH TEXT VERSION!!!
-                        if (in_array($this->getOwner()->getScenario(), $this->notOnScenario)) {
-                                return false;
-                        } else {
-                                return true;
-                        }
-                }
-                return true;
-        }
+	protected function checkScenarios() {
+		if (!is_array($this->on) or !is_array($this->notOn))
+			throw new CException('on and notOn must be an array');
+		if (count($this->on)) {
+			if (count($this->notOn))
+				throw new CException('You can not specify both the parameter and on notOn');
+			
+			// Check to see if the models scenario is in the array of scenarios we brought in
+			if (in_array($this->getOwner()->getScenario(), $this->on)) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		if (count($this->notOn)) {
+			if (count($this->on))
+				throw new CException('You can not specify both the parameter and on notOn');
+			
+			// Check to see if the models scenario is in the array of scenarios we brought in
+			if (in_array($this->getOwner()->getScenario(), $this->notOn)) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+		return true;
+	}
 }
