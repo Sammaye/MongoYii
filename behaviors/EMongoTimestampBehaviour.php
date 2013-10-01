@@ -24,6 +24,7 @@
  * 			'class' => 'EMongoTimestampBheaviour',
  * 			'createAttribute' => 'create_time_attribute',
  * 			'updateAttribute' => 'update_time_attribute',
+ *                      'onScenario' => array('scenarioName'),
  * 		)
  * 	);
  * }
@@ -51,6 +52,16 @@ class EMongoTimestampBehaviour extends CActiveRecordBehavior {
 	*/
 	public $updateAttribute = 'update_time';
 
+        /**
+         * @var array set attributes only on this scenarios
+         */
+        public $onScenario = array();
+
+        /**
+         * @var array not set attributes only on this scenarios
+         */
+        public $notOnScenario = array();
+
 	/**
 	* @var bool Whether to set the update attribute to the creation timestamp upon creation.
 	* Otherwise it will be left alone.  Defaults to false.
@@ -74,12 +85,14 @@ class EMongoTimestampBehaviour extends CActiveRecordBehavior {
 	* @param CModelEvent $event event parameter
 	*/
 	public function beforeSave($event) {
-		if ($this->getOwner()->getIsNewRecord() && ($this->createAttribute !== null)) {
-			$this->getOwner()->{$this->createAttribute} = $this->getTimestampByAttribute($this->createAttribute);
-		}
-		if ((!$this->getOwner()->getIsNewRecord() || $this->setUpdateOnCreate) && ($this->updateAttribute !== null)) {
-			$this->getOwner()->{$this->updateAttribute} = $this->getTimestampByAttribute($this->updateAttribute);
-		}
+                if ($this->checkScenarios()) {
+                        if ($this->getOwner()->getIsNewRecord() && ($this->createAttribute !== null)) {
+                                $this->getOwner()->{$this->createAttribute} = $this->getTimestampByAttribute($this->createAttribute);
+                        }
+                        if ((!$this->getOwner()->getIsNewRecord() || $this->setUpdateOnCreate) && ($this->updateAttribute !== null)) {
+                                $this->getOwner()->{$this->updateAttribute} = $this->getTimestampByAttribute($this->updateAttribute);
+                        }
+                }
 	}
 
 	/**
@@ -95,4 +108,29 @@ class EMongoTimestampBehaviour extends CActiveRecordBehavior {
 			return @eval('return '.$this->timestampExpression.';');
 		return new MongoDate();
 	}
+
+        protected function checkScenarios() {
+                if (!is_array($this->onScenario) or !is_array($this->notOnScenario))
+                        throw new CException('onScenario and notOnScenario must be an array');
+                if (count($this->onScenario)) {
+                        if (count($this->notOnScenario))
+                                throw new CException('You can not specify both the parameter and onScenario notOnScenario');
+                        //TODO CHECK ENGLISH TEXT VERSION!!!
+                        if (in_array($this->getOwner()->getScenario(), $this->onScenario)) {
+                                return true;
+                        } else {
+                                return false;
+                        }
+                }
+                if (count($this->notOnScenario)) {
+                        if (count($this->onScenario))
+                                throw new CException('You can not specify both the parameter and onScenario notOnScenario');
+                        //TODO CHECK ENGLISH TEXT VERSION!!!
+                        if (in_array($this->getOwner()->getScenario(), $this->notOnScenario)) {
+                                return false;
+                        } else {
+                                return true;
+                        }
+                }
+        }
 }
