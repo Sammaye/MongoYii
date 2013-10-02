@@ -7,7 +7,7 @@ else
 if (!isset($env['config']))
 	$env['config']=dirname(__FILE__).'/config/test.php';
 if (!isset($env['yiit']))
-	$env['yiit'] = '../../../../../framework/yiit.php';
+	$env['yiit'] = '../../../../yii/framework/yiit.php'; // You may change this line according to your setup
 
 require_once($env['yiit']);
 //require_once(dirname(__FILE__).'/WebTestCase.php');
