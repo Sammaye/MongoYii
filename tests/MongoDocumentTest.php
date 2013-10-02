@@ -394,6 +394,30 @@ class MongoDocumentTest extends CTestCase{
 		$c->job_title='programmer';
 		$this->assertTrue($c->save());
 		$this->assertTrue(isset($c->update_time));
+
+		$d=new UserTsTest;
+		$d->setScenario('testMe');
+		$d->username='testman1';
+		$this->assertTrue($d->save());
+		$this->assertTrue(isset($d->create_time));
+
+		$f=new UserTsTest;
+		$f->setScenario('testMeFalse');
+		$f->username='testman2';
+		$this->assertTrue($f->save());
+		$this->assertFalse(isset($f->create_time));
+
+		$g=new UserTsTestBroken;
+		$g->setScenario('testMeFalse');
+		$g->username='testman3';
+		$this->setExpectedException('CException');		
+
+		$h=new UserTsTestBroken2;
+		$h->setScenario('testMeFalseOn');
+		$h->username='testman4';
+		$this->setExpectedException('CException');
+		$h->save();
+
 	}
 
 	/**

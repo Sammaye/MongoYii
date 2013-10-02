@@ -749,6 +749,8 @@ and, by default, is called like:
 
 ### Important for Contributors
 
+In case you'd like to add some functionality please feel STRONGLY encouraged to provide the corresponding unit tests!
+
 If you are intending to contribute changes to MongoYii I should explain my own position on the existance of the `EMongoCriteria` class. I, personally, believe it is not needed.
 
 There are a number of reasons why. In SQL an abstraction is justified by, some but not all, of these reasons:
