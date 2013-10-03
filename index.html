@@ -826,28 +826,6 @@ $c-&gt;compare('i', '&lt;4');
 <pre><code>$c-&gt;toArray();
 </code></pre>
 
-<h3>Important for Contributors</h3>
-
-<p>If you are intending to contribute changes to MongoYii I should explain my own position on the existance of the <code>EMongoCriteria</code> class. I, personally, believe it is not needed.</p>
-
-<p>There are a number of reasons why. In SQL an abstraction is justified by, some but not all, of these reasons:</p>
-
-<ul>
-<li>Different implementations (i.e. MySQL and MSSQL and PostgreSQL) creates slightly different syntax</li>
-<li>SQL is a string based querying language as such it makes sense to have an object oriented abstraction layer</li>
-<li>SQL has some rather complex and difficult to form queries that would make an abstraction layer useful</li>
-</ul>
-
-<p>MongoDB suffers from none of these problems; first it has an OO querying interface already, secondly it is easy to merge different queries together simply using <code>CMap::MergeArray()</code>
-and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying
-and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do <code>$or</code>s in this class).</p>
-
-<p>As such I believe that the <code>EMongoCriteria</code> class is just dead weight consuming memory which I could use for other tasks.</p>
-
-<p>This extension does not rely on <code>EMongoCriteria</code> internally.</p>
-
-<p>So I expect all modifications to certain parts of MongoYii to be compatible with and without <code>EMongoCriteria</code>.</p>
-
 <h2>Covered and Partial Queries</h2>
 
 <p>When you do not wish to retrieve the entire document you can instead just return a partial result.</p>
@@ -913,11 +891,12 @@ otherwise Yii will not know how to handle the <code>MongoGridFSFile</code> objec
 
 <h2>Using urlManager</h2>
 
-<p>If you wish to regex out the `_id` within a URL for use with the urlManager you can use:</p>
+<p>If you wish to regex out the <code>_id</code> within a URL for use with the urlManager you can use:</p>
 
-<pre><code>'&lt;controller:\w+>/&lt;action:\w+>/&lt;id:[a-z0-9]{24}>'=>'&lt;controller>/&lt;action>',</code></pre>
-	
-<p>Whereby it will try and pick out a alphanumeric <code>_id</code> of 24 characters in length.</p> 
+<pre><code>'&lt;controller:\w+&gt;/&lt;action:\w+&gt;/&lt;id:[a-z0-9]{24}&gt;'=&gt;'&lt;controller&gt;/&lt;action&gt;',
+</code></pre>
+
+<p>Whereby it will try and pick out a alphanumeric <code>_id</code> of 24 characters in length. </p>
 
 <h2>Known Flaws</h2>
 
@@ -955,6 +934,31 @@ pear install phpunit/PHPUnit_Selenium
 </code></pre>
 
 <p>After that you can just tell PHPUnit to run all tests within the <code>tests/</code> folder with no real order.</p>
+
+<h2>Contributing</h2>
+
+<p>When adding extensive functionality to MongoYii please try and provide the corresponding unit tests. Without the unit tests your functionality, the very same your project most 
+likely relies on, may break in future versions.</p>
+
+<p>If you are intending to contribute changes to MongoYii I should explain my own position on the existance of the <code>EMongoCriteria</code> class. I, personally, believe it is not needed.</p>
+
+<p>There are a number of reasons why. In SQL an abstraction is justified by, some but not all, of these reasons:</p>
+
+<ul>
+<li>Different implementations (i.e. MySQL and MSSQL and PostgreSQL) creates slightly different syntax</li>
+<li>SQL is a string based querying language as such it makes sense to have an object oriented abstraction layer</li>
+<li>SQL has some rather complex and difficult to form queries that would make an abstraction layer useful</li>
+</ul>
+
+<p>MongoDB suffers from none of these problems; first it has an OO querying interface already, secondly it is easy to merge different queries together simply using <code>CMap::MergeArray()</code>
+and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying
+and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do <code>$or</code>s in this class).</p>
+
+<p>As such I believe that the <code>EMongoCriteria</code> class is just dead weight consuming memory which I could use for other tasks.</p>
+
+<p>This extension does not rely on <code>EMongoCriteria</code> internally.</p>
+
+<p>So I expect all modifications to certain parts of MongoYii to be compatible with and without <code>EMongoCriteria</code>.</p>
 
 <h2>Upgrade Notes</h2>
 
