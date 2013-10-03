@@ -64,6 +64,27 @@ If you wish to call a function on the `MongoClient` or `Mongo` class you will ne
 **Note:** The models will by default seek a `mongodb` component within your configuration so please make sure that unless you modify the extension, or use it without active record, to
 make your default (master) connection be a component called `mongodb`.
 
+If you wish to setup logging into MongoDb as an equivalent to CDbLogRoute you can add the following to your 'log' component configuration:
+
+		'log'=>array(
+			'class'=>'CLogRouter',
+			'routes'=>array(
+				array(
+					'class'=>'CFileLogRoute',
+					'levels'=>'error, warning',
+				),
+
+				[ ... ]
+
+				array(
+					'class'=>'EMongoLogRoute',
+					'connectionId'=>'my_connection_id' // optional, defaults to 'mongodb'
+					'logCollectionName'=>'my_log_collection', // optional, defaults to 'YiiLog'
+				),
+				
+			),
+		),
+
 ### Composer
 
 MongoYii fully supports Composer and is listed on [packagist](https://packagist.org/packages/sammaye/mongoyii).
