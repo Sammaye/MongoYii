@@ -747,28 +747,6 @@ and, by default, is called like:
 
 	$c->toArray();
 
-### Important for Contributors
-
-In case you'd like to add some functionality please feel STRONGLY encouraged to provide the corresponding unit tests!
-
-If you are intending to contribute changes to MongoYii I should explain my own position on the existance of the `EMongoCriteria` class. I, personally, believe it is not needed.
-
-There are a number of reasons why. In SQL an abstraction is justified by, some but not all, of these reasons:
-
-- Different implementations (i.e. MySQL and MSSQL and PostgreSQL) creates slightly different syntax
-- SQL is a string based querying language as such it makes sense to have an object oriented abstraction layer
-- SQL has some rather complex and difficult to form queries that would make an abstraction layer useful
-
-MongoDB suffers from none of these problems; first it has an OO querying interface already, secondly it is easy to merge different queries together simply using `CMap::MergeArray()`
-and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying
-and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do `$or`s in this class).
-
-As such I believe that the `EMongoCriteria` class is just dead weight consuming memory which I could use for other tasks.
-
-This extension does not rely on `EMongoCriteria` internally.
-
-So I expect all modifications to certain parts of MongoYii to be compatible with and without `EMongoCriteria`.
-
 ## Covered and Partial Queries
 
 When you do not wish to retrieve the entire document you can instead just return a partial result.
@@ -868,6 +846,28 @@ The tests require the PHPUnit plugin with all dependencies compiled. Using PEAR 
 	pear install phpunit/PHPUnit_Selenium
 
 After that you can just tell PHPUnit to run all tests within the `tests/` folder with no real order.
+
+## Contributing
+
+In case you'd like to add some functionality please feel STRONGLY encouraged to provide the corresponding unit tests!
+
+If you are intending to contribute changes to MongoYii I should explain my own position on the existance of the `EMongoCriteria` class. I, personally, believe it is not needed.
+
+There are a number of reasons why. In SQL an abstraction is justified by, some but not all, of these reasons:
+
+- Different implementations (i.e. MySQL and MSSQL and PostgreSQL) creates slightly different syntax
+- SQL is a string based querying language as such it makes sense to have an object oriented abstraction layer
+- SQL has some rather complex and difficult to form queries that would make an abstraction layer useful
+
+MongoDB suffers from none of these problems; first it has an OO querying interface already, secondly it is easy to merge different queries together simply using `CMap::MergeArray()`
+and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying
+and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do `$or`s in this class).
+
+As such I believe that the `EMongoCriteria` class is just dead weight consuming memory which I could use for other tasks.
+
+This extension does not rely on `EMongoCriteria` internally.
+
+So I expect all modifications to certain parts of MongoYii to be compatible with and without `EMongoCriteria`.
 
 ## Upgrade Notes
  
