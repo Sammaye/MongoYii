@@ -849,7 +849,8 @@ After that you can just tell PHPUnit to run all tests within the `tests/` folder
 
 ## Contributing
 
-In case you'd like to add some functionality please feel STRONGLY encouraged to provide the corresponding unit tests!
+When adding extensive functionality to MongoYii please try and provide the corresponding unit tests. Without the unit tests your functionality, the very same your project most 
+likely relies on, may break in future versions.
 
 If you are intending to contribute changes to MongoYii I should explain my own position on the existance of the `EMongoCriteria` class. I, personally, believe it is not needed.
 
