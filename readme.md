@@ -843,7 +843,8 @@ The tests require the PHPUnit plugin with all dependencies compiled. Using PEAR 
 	sudo pear install --force --alldeps phpunit/PHPUnit &&
 	pear install phpunit/dbUnit &&
 	pear install phpunit/PHPUnit_Story &&
-	pear install phpunit/PHPUnit_Selenium
+	pear install phpunit/PHPUnit_Selenium &&
+	pear install phpunit/PHP_Invoker
 
 After that you can just tell PHPUnit to run all tests within the `tests/` folder with no real order.
 
