@@ -353,6 +353,28 @@ class EMongoDocument extends EMongoModel{
 		}
 		return null;
 	}
+	
+	/**
+	 * Returns an array of record populated by incoming data
+	 * @param array $data
+	 * @param string $callAfterFind
+	 * @param string $index
+	 * @return Array of the records
+	 */
+	public function populateRecords(array $data, $callAfterFind = true, $index = null)
+	{
+		$records = array();
+		foreach ($data as $attributes) {
+			if (($record = $this->populateRecord($attributes, $callAfterFind)) !== null) {
+				if ($index === null) {
+					$records[] = $record;
+				} else {
+					$records[$record->$index] = $record;
+				}
+			}
+		}
+		return $records;
+	}	
 
 	/**********/
 	/* Events */
