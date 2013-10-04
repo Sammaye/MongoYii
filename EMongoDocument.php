@@ -159,6 +159,22 @@ class EMongoDocument extends EMongoModel{
      * @return string
 	 */
 	function collectionName(){  }
+	
+	/**
+	 * Denotes whether or not this document is versioned
+	 * @return boolean
+	 */
+	function versioned(){
+		return false;
+	}
+	
+	/**
+	 * Denotes the field tob e used to house the version number
+	 * @return string
+	 */
+	function versionField(){
+		return '_v';
+	}	
 
 	/**
 	 * Returns MongoId based on $value
@@ -228,6 +244,35 @@ class EMongoDocument extends EMongoModel{
 	public function setProjectedFields(array $fields){
 		$this->_projected_fields = $fields;
 	}
+	
+	/**
+	 * Gets the version of this document
+	 */
+	function version(){
+		return $this->{$this->versionField()};
+	}
+	
+	/**
+	 * Forceably increments the version of this document
+	 */
+	function incrementVersion(){
+		$resp=$this->updateByPk($this->getPrimaryKey(),array('$inc'=>array($this->versionField() => 1)));
+		if($resp['n']>0){
+			$this->{$this->versionField()}+=1;
+			return true;
+		}
+	}
+	
+	/**
+	 * Forceably sets the version of this document
+	 */
+	function setVersion($n){
+		$resp=$this->updateByPk($this->getPrimaryKey(),array('$set'=>array($this->versionField() => $n)));
+		if($resp['n']>0){
+			$this->{$this->versionField()}=$n;
+			return true;
+		}
+	}	
 
 	/**
 	 * Sets the attribute of the model
@@ -355,7 +400,7 @@ class EMongoDocument extends EMongoModel{
 	}
 	
 	/**
-	 * Returns an array of record populated by incoming data
+	 * Returns an array of records populated by incoming data
 	 * @param array $data
 	 * @param string $callAfterFind
 	 * @param string $index
@@ -505,10 +550,10 @@ class EMongoDocument extends EMongoModel{
 				}else
 					$values[$name] = $this->$name = $value;
 			}
-			if(!isset($this->{$this->primaryKey()}) || $this->{$this->primaryKey()}===null)
+			if(!isset($this->{$this->primaryKey()}) || $this->getPrimaryKey()===null)
 				throw new CDbException(Yii::t('yii', 'The active record cannot be updated because its _id is not set!'));
 
-			return $this->lastError=$this->updateByPk($this->{$this->primaryKey()}, array('$set'=>$values));
+			return $this->lastError=$this->updateByPk($this->getPrimaryKey(), array('$set'=>$values));
 		}
 		throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
 	}
@@ -530,8 +575,10 @@ class EMongoDocument extends EMongoModel{
 				$document=$this->filterRawDocument($this->getAttributes($attributes));
 			else
 				$document=$this->getRawDocument();
+			if($this->versioned())
+				$document[$this->versionField()]=$this->{$this->versionField()}=1;
 
-			if(!isset($this->{$this->primaryKey()})) $this->{$this->primaryKey()} = new MongoId;
+			if(!isset($this->{$this->primaryKey()})) $document['_id']=$this->{$this->primaryKey()} = new MongoId;
 			if($this->lastError = $this->getCollection()->insert($document, $this->getDbConnection()->getDefaultWriteConcern())){
 				$this->afterSave();
 				$this->setIsNewRecord(false);
@@ -554,8 +601,8 @@ class EMongoDocument extends EMongoModel{
 		if($this->beforeSave())
 		{
 			$this->trace(__FUNCTION__);
-			if($this->{$this->primaryKey()} === null) // An _id is required
-				throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it has no _id.'));
+			if($this->getPrimaryKey() === null) // An _id is required
+				throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it has primary key set.'));
 
 			$partial=false;
 			if($attributes !== null){
@@ -570,13 +617,30 @@ class EMongoDocument extends EMongoModel{
 				$attributes = $this->getRawDocument();
 			if(isset($attributes['_id']))
 				unset($attributes['_id']); // Unset the _id before update
-
-			if($partial===true)
-				$this->lastError = $this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
-			else // If this is not partial then we replace entire doc
-				$this->lastError = $this->updateByPk($this->{$this->primaryKey()}, $attributes);
+			
+			if($this->versioned()){
+			
+				$version=$this->{$this->versionField()};
+				$attributes[$this->versionField()]=$this->{$this->versionField()}=$this->{$this->versionField()}>0?$this->{$this->versionField()}+1:1;				
+				
+				if($partial===true){ // If this is a partial docuemnt we use $set to replace that partial view
+					$attributes=array('$set' => $attributes);
+					if(!isset($this->_projected_fields[$this->versionField()]))
+						// We cannot rely on a partial document containing the version
+						// as such it has been disabled for partial documents
+						throw new EMongoException("You cannot update a versioned partial document unless you project out the version field as well");
+				}
+				$this->lastError = $this->updateAll(array($this->primaryKey() => $this->getPrimaryKey(), $this->versionField() => $version),$attributes,array('multiple'=>false));
+			}else{
+				if($partial===true) // If this is a partial docuemnt we use $set to replace that partial view
+					$attributes=array('$set' => $attributes);				
+				$this->lastError = $this->updateByPk($this->getPrimaryKey(), $attributes);
+			}
+				
+			if($this->versioned()&&$this->lastError['n']<=0)
+				return false;
 			$this->afterSave();
-			return true;
+			return true;			
 		}
 		return false;
 	}
@@ -590,7 +654,7 @@ class EMongoDocument extends EMongoModel{
 		if(!$this->getIsNewRecord()){
 			$this->trace(__FUNCTION__);
 			if($this->beforeDelete()){
-				$result = $this->deleteByPk($this->{$this->primaryKey()});
+				$result = $this->deleteByPk($this->getPrimaryKey());
 				$this->afterDelete();
 				return $result;
 			}
@@ -819,7 +883,7 @@ class EMongoDocument extends EMongoModel{
 					unset($counters[$key]);
 			}
 			if(count($counters) > 0)
-				return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
+				return $this->updateByPk($this->getPrimaryKey(), array('$inc' => $counters));
 		}
 		return true; // Assume true since the action did run it just had nothing to update...		
 	}

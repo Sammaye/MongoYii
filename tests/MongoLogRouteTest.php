@@ -1,5 +1,4 @@
 <?php
-
 require_once 'bootstrap.php';
 
 class MongoLogRouteTest extends CTestCase
@@ -49,7 +48,4 @@ class MongoLogRouteTest extends CTestCase
 		Yii::app()->mongodb->drop();
 		parent::tearDown();
 	}
-
 }
-
-?>

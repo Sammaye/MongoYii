@@ -104,6 +104,26 @@ class MongoDocumentTest extends CTestCase{
 		// we will assume the set up was successful and we will leave it to further testing to see
 		// whether it really was.
 	}
+	
+	function setUpProperSubdocumentErrorsIndexationTest() {
+		return array(
+		array(
+			array(
+			'username'=>'kate',
+			'addresses'=>array(
+				0 => array(
+				'country' => 'Ukraine',
+				'telephone' => 11111
+				),
+				1 => array(
+				'country' => 'Russia',
+				'telephone' => 'wrongString'
+				)
+			)
+			)
+		)
+		);
+	}	
 
 	function tearDown(){
 		Yii::app()->mongodb->drop();
@@ -483,6 +503,18 @@ class MongoDocumentTest extends CTestCase{
 		$this->assertTrue(!$c->url instanceof SocialUrl);
 
 	}
+	
+	/**
+	 * @covers ESubdocumentValidator
+	 * @dataProvider setUpProperSubdocumentErrorsIndexationTest
+	 */
+	function testProperSubdocumentErrorsIndexation($post) {
+		$c=new User;
+		$c->attributes = $post;
+		$this->assertFalse($c->validate());
+		$errors = $c->errors;
+		$this->assertNotNull($errors['addresses'][1]['telephone']);
+	}	
 
 	/**
 	 * @covers EMongoDocument::exists
@@ -577,6 +609,42 @@ class MongoDocumentTest extends CTestCase{
 		$f->username='merry';
 		$this->setExpectedException('EMongoException');
 		$f->saveCounters(array('i' => 1));
+	}
+	
+	function testVersioning(){
+		$m=new versionedDocument();
+		$m->name="sammaye";
+		$this->assertTrue($m->save());
 
+		$o=versionedDocument::model()->findOne(array('_id'=>$m->_id));
+		$o->name="meh";
+		$this->assertTrue($o->save());
+		
+		$m->name="sammaye";
+		$this->assertFalse($m->save());
+	}
+	
+	function testIncrementVersion(){
+		$m=new versionedDocument();
+		$m->name="sammaye";
+		$this->assertTrue($m->save()); // 1
+
+		$o=versionedDocument::model()->findOne(array('_id'=>$m->_id));
+		$this->assertTrue($o->incrementVersion()); // 2
+		
+		$oo=versionedDocument::model()->findOne(array('_id'=>$m->_id));
+		$this->assertEquals(2,$oo->version());
+	}
+	
+	function testSetVersion(){
+		$m=new versionedDocument();
+		$m->name="sammaye";
+		$this->assertTrue($m->save()); // 1
+
+		$o=versionedDocument::model()->findOne(array('_id'=>$m->_id));
+		$this->assertTrue($o->setVersion(4)); // 4
+		
+		$oo=versionedDocument::model()->findOne(array('_id'=>$m->_id));
+		$this->assertEquals(4,$oo->version());
 	}
 }

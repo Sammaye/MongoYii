@@ -50,5 +50,3 @@ class EMongoLogRoute extends CLogRoute
 		}
 	}
 }
-
-?>

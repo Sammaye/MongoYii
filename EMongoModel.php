@@ -1,8 +1,5 @@
 <?php
 
-/**
- *
- */
 class EMongoModel extends CModel{
 
 	/**
@@ -330,7 +327,7 @@ class EMongoModel extends CModel{
 		// Let's get the parts of the relation to understand it entirety of its context
 		$cname = $relation[1];
 		$fkey = $relation[2];
-		$pk = isset($relation['on']) ? $this->{$relation['on']} : $this->{$this->primaryKey()};
+		$pk = isset($relation['on']) ? $this->{$relation['on']} : $this->getPrimaryKey();
 
 		// Form the where clause
 		$where = array();
@@ -374,20 +371,17 @@ class EMongoModel extends CModel{
 		return $cursor;
 	}
 
-
-
 	/**
-     	* @param mixed $reference Reference to populate
-     	* @param null|string $cname Class of model to populate. If not specified, populates data on current model
-     	* @return EMongoModel
-     	*/
-    	public function populateReference($reference, $cname = null)
-    	{
-        	$row = MongoDBRef::get(self::$db->getDB(), $reference);
-        	$o=(is_null($cname))?$this:$cname::model();
-        	return $o->populateRecord($row);
-    	}
-
+	 * @param mixed $reference Reference to populate
+	 * @param null|string $cname Class of model to populate. If not specified, populates data on current model
+	 * @return EMongoModel
+	 */
+	public function populateReference($reference, $cname = null)
+	{
+		$row = MongoDBRef::get(self::$db->getDB(), $reference);
+		$o=(is_null($cname))?$this:$cname::model();
+		return $o->populateRecord($row);
+	}
 
 	/**
 	 * Returns a value indicating whether the named related object(s) has been loaded.
