@@ -105,6 +105,28 @@ on the <code>EMongoClient</code> like so:</p>
 <p><strong>Note:</strong> The models will by default seek a <code>mongodb</code> component within your configuration so please make sure that unless you modify the extension, or use it without active record, to
 make your default (master) connection be a component called <code>mongodb</code>.</p>
 
+<p>If you wish to setup the log to insert entries into MongoDB (like in <code>CDbLogRoute</code>) you can add the following to your 'log' component configuration:</p>
+
+<pre><code>    'log'=&gt;array(
+        'class'=&gt;'CLogRouter',
+        'routes'=&gt;array(
+            array(
+                'class'=&gt;'CFileLogRoute',
+                'levels'=&gt;'error, warning',
+            ),
+
+            [ ... ]
+
+            array(
+                'class'=&gt;'EMongoLogRoute',
+                'connectionId'=&gt;'my_connection_id' // optional, defaults to 'mongodb'
+                'logCollectionName'=&gt;'my_log_collection', // optional, defaults to 'YiiLog'
+            ),
+
+        ),
+    ),
+</code></pre>
+
 <h3>Composer</h3>
 
 <p>MongoYii fully supports Composer and is listed on <a href="https://packagist.org/packages/sammaye/mongoyii">packagist</a>.</p>
@@ -898,6 +920,36 @@ otherwise Yii will not know how to handle the <code>MongoGridFSFile</code> objec
 
 <p>Whereby it will try and pick out a alphanumeric <code>_id</code> of 24 characters in length. </p>
 
+<h2>Versioned Document Models</h2>
+
+<p>2.5.x of MongoYii adds the ability to version your documents. </p>
+
+<p>If you are confused about versioning or how it can be beneficial for some scenarios then a well explained, yet simple and easy to read <a href="http://aaronheckmann.tumblr.com/post/48943525537/mongoose-v3-part-1-versioning">blog post can actually be found by the 
+creators of MongoDB describing its addition to Mongoose</a>.</p>
+
+<p>To setup a versioned document you can simply create a model implementing <code>version()</code> which returns <code>true</code> and, optionally, <code>versionField()</code>:</p>
+
+<pre><code>class versioned extends EMongoDocument{
+    public versioned(){
+        return true;
+    }
+
+    public versionField(){
+        return '_v'; // This is actually the default value in EMongoDocument
+    }
+
+    public static function model($className=__CLASS__){
+        return parent::model($className);
+    }   
+}
+</code></pre>
+
+<p>The verisoning ability of a document cannot be changed during runtime once it has been set, in other words you cannot do <code>$doc-&gt;removeVersion()</code> to stop versioning from having 
+an effect for a certain insert. </p>
+
+<p>After the documents model has been setup versioning works behind the scenes, there is no need for you to do anything else, everytime <code>save</code> is called it will make sure the 
+version you have is upto date.</p>
+
 <h2>Known Flaws</h2>
 
 <ul>
@@ -930,7 +982,8 @@ It is not a good place to start if you are still learning Yii, however, it is a 
 <pre><code>sudo pear install --force --alldeps phpunit/PHPUnit &amp;&amp;
 pear install phpunit/dbUnit &amp;&amp;
 pear install phpunit/PHPUnit_Story &amp;&amp;
-pear install phpunit/PHPUnit_Selenium
+pear install phpunit/PHPUnit_Selenium &amp;&amp;
+pear install phpunit/PHP_Invoker
 </code></pre>
 
 <p>After that you can just tell PHPUnit to run all tests within the <code>tests/</code> folder with no real order.</p>
