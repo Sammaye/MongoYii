@@ -525,9 +525,14 @@ class EMongoDocument extends EMongoModel{
 		if($this->beforeSave())
 		{
 			$this->trace(__FUNCTION__);
+			
+			if($attributes!==null)
+				$document=$this->filterRawDocument($this->getAttributes($attributes));
+			else
+				$document=$this->getRawDocument();
 
 			if(!isset($this->{$this->primaryKey()})) $this->{$this->primaryKey()} = new MongoId;
-			if($this->lastError = $this->getCollection()->insert($this->getRawDocument(), $this->getDbConnection()->getDefaultWriteConcern())){
+			if($this->lastError = $this->getCollection()->insert($document, $this->getDbConnection()->getDefaultWriteConcern())){
 				$this->afterSave();
 				$this->setIsNewRecord(false);
 				$this->setScenario('update');
@@ -554,7 +559,7 @@ class EMongoDocument extends EMongoModel{
 
 			$partial=false;
 			if($attributes !== null){
-				$attributes = $this->filterRawDocument($attributes);
+				$attributes = $this->filterRawDocument($this->getAttributes($attributes));
 				$partial=true;
 			}elseif($this->getIsPartial()){
 				foreach($this->_projected_fields as $field => $v)
