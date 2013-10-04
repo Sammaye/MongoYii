@@ -834,7 +834,7 @@ If you wish to regex out the `_id` within a URL for use with the urlManager you 
 	
 Whereby it will try and pick out a alphanumeric `_id` of 24 characters in length. 
 
-## Versioning
+## Versioned Document Models
 
 2.5.x of MongoYii adds the ability to version your documents. 
 
