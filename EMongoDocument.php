@@ -158,13 +158,13 @@ class EMongoDocument extends EMongoModel{
      *
      * @return string
 	 */
-	function collectionName(){  }
+	public function collectionName(){  }
 	
 	/**
 	 * Denotes whether or not this document is versioned
 	 * @return boolean
 	 */
-	function versioned(){
+	public function versioned(){
 		return false;
 	}
 	
@@ -172,7 +172,7 @@ class EMongoDocument extends EMongoModel{
 	 * Denotes the field tob e used to house the version number
 	 * @return string
 	 */
-	function versionField(){
+	public function versionField(){
 		return '_v';
 	}	
 
@@ -248,14 +248,14 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * Gets the version of this document
 	 */
-	function version(){
+	public function version(){
 		return $this->{$this->versionField()};
 	}
 	
 	/**
 	 * Forceably increments the version of this document
 	 */
-	function incrementVersion(){
+	public function incrementVersion(){
 		$resp=$this->updateByPk($this->getPrimaryKey(),array('$inc'=>array($this->versionField() => 1)));
 		if($resp['n']>0){
 			$this->{$this->versionField()}+=1;
@@ -266,7 +266,7 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * Forceably sets the version of this document
 	 */
-	function setVersion($n){
+	public function setVersion($n){
 		$resp=$this->updateByPk($this->getPrimaryKey(),array('$set'=>array($this->versionField() => $n)));
 		if($resp['n']>0){
 			$this->{$this->versionField()}=$n;

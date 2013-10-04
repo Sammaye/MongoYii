@@ -64,7 +64,7 @@ If you wish to call a function on the `MongoClient` or `Mongo` class you will ne
 **Note:** The models will by default seek a `mongodb` component within your configuration so please make sure that unless you modify the extension, or use it without active record, to
 make your default (master) connection be a component called `mongodb`.
 
-If you wish to setup logging into MongoDb as an equivalent to CDbLogRoute you can add the following to your 'log' component configuration:
+If you wish to setup the log to insert entries into MongoDB (like in `CDbLogRoute`) you can add the following to your 'log' component configuration:
 
 		'log'=>array(
 			'class'=>'CLogRouter',
@@ -833,6 +833,35 @@ If you wish to regex out the `_id` within a URL for use with the urlManager you 
 	'<controller:\w+>/<action:\w+>/<id:[a-z0-9]{24}>'=>'<controller>/<action>',
 	
 Whereby it will try and pick out a alphanumeric `_id` of 24 characters in length. 
+
+## Versioning
+
+2.5.x of MongoYii adds the ability to version your documents. 
+
+If you are confused about versioning or how it can be benefical for some scenarios then a well explained, yet simple and easy to read [blog post can actually be found by the 
+creators of MongoDB describing its addition to Mongoose](http://aaronheckmann.tumblr.com/post/48943525537/mongoose-v3-part-1-versioning).
+
+To setup a versioned document you can simply create a model implementing `version()` which returns `true` and, optionally, `versionField()`:
+
+	class versioned extends EMongoDocument{
+		public versioned(){
+			return true;
+		}
+		
+		public versionField(){
+			return '_v'; // This is actually the default value in EMongoDocument
+		}
+		
+		public static function model($className=__CLASS__){
+			return parent::model($className);
+		}	
+	}
+
+The verisoning ability of a document cannot be changed during runtime once it has been set, in other words you cannot do `$doc->removeVersion()` to stop versioning from having 
+an effect for a certain insert. 
+
+After the documents model has been setup versioning works behind the scenes, there is no need for you to do anything else, everytime `save` is called it will make sure the 
+version you have is upto date.
 
 ## Known Flaws
 
