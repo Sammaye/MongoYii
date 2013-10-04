@@ -563,7 +563,8 @@ class EMongoDocument extends EMongoModel{
 				$partial=true;
 			}else
 				$attributes = $this->getRawDocument();
-			unset($attributes['_id']); // Unset the _id before update
+			if(isset($attributes['_id']))
+				unset($attributes['_id']); // Unset the _id before update
 
 			if($partial===true)
 				$this->lastError = $this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
