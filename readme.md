@@ -838,7 +838,7 @@ Whereby it will try and pick out a alphanumeric `_id` of 24 characters in length
 
 2.5.x of MongoYii adds the ability to version your documents. 
 
-If you are confused about versioning or how it can be benefical for some scenarios then a well explained, yet simple and easy to read [blog post can actually be found by the 
+If you are confused about versioning or how it can be beneficial for some scenarios then a well explained, yet simple and easy to read [blog post can actually be found by the 
 creators of MongoDB describing its addition to Mongoose](http://aaronheckmann.tumblr.com/post/48943525537/mongoose-v3-part-1-versioning).
 
 To setup a versioned document you can simply create a model implementing `version()` which returns `true` and, optionally, `versionField()`:
