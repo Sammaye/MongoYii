@@ -647,4 +647,24 @@ class MongoDocumentTest extends CTestCase{
 		$oo=versionedDocument::model()->findOne(array('_id'=>$m->_id));
 		$this->assertEquals(4,$oo->version());
 	}
+	
+	function testGetLastVersion(){
+		$m=new versionedDocument();
+		$m->name="sammaye";
+		$this->assertTrue($m->save()); // 1
+		
+		$m->age=2500;
+		$this->assertTrue($m->save()); // 2
+		
+		$doc=versionedDocument::model()->getLastVersion();
+		
+		$this->assertEquals(2,$doc->version());		
+	}
+	
+	function testGetVersion(){
+		$m=new versionedDocument();
+		$m->name="sammaye";
+		$this->assertTrue($m->save()); // 1
+		$this->assertInstanceOf('EMongoDocument',versionedDocument::model()->getVersion(1));
+	}
 }

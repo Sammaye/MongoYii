@@ -272,7 +272,7 @@ class EMongoDocument extends EMongoModel{
 			$this->{$this->versionField()}=$n;
 			return true;
 		}
-	}	
+	}
 
 	/**
 	 * Sets the attribute of the model
@@ -686,6 +686,35 @@ class EMongoDocument extends EMongoModel{
 	{
 		return $this->collectionName() === $record->collectionName() && (string)$this->getPrimaryKey() === (string)$record->getPrimaryKey();
 	}
+	
+	/**
+	 * Is basically a find one of the last version to be saved
+	 * @return NULL|EMongoDocument
+	 */
+	public function getLastVersion(){
+		$c=$this->find()->sort(array($this->versionField() => -1))->limit(1);
+		if($c->count()<=0){
+			return null;
+		}else{
+			foreach($c as $row)
+				return $this->populateRecord($row);
+		}
+	}
+	
+	/**
+	 * Is basically a find one of a version
+	 * @param int $num
+	 * @return NULL|EMongoDocument
+	 */
+	public function getVersion($num){
+		$c=$this->find(array($this->versionField() => $num))->sort(array($this->versionField() => -1))->limit(1);
+		if($c->count()<=0){
+			return null;
+		}else{
+			foreach($c as $row)
+				return $this->populateRecord($row);
+		}	
+	}	
 
 	/**
 	 * Find one record
