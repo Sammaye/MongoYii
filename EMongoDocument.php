@@ -692,7 +692,7 @@ class EMongoDocument extends EMongoModel{
 	 * @return NULL|EMongoDocument
 	 */
 	public function getLastVersion(){
-		$c=$this->find()->sort(array($this->versionField() => -1))->limit(1);
+		$c=$this->find(array($this->primaryKey()=>$this->getPrimaryKey()))->sort(array($this->versionField() => -1))->limit(1);
 		if($c->count()<=0){
 			return null;
 		}else{
@@ -707,7 +707,7 @@ class EMongoDocument extends EMongoModel{
 	 * @return NULL|EMongoDocument
 	 */
 	public function getVersion($num){
-		$c=$this->find(array($this->versionField() => $num))->sort(array($this->versionField() => -1))->limit(1);
+		$c=$this->find(array($this->primaryKey()=>$this->getPrimaryKey(), $this->versionField() => $num))->sort(array($this->versionField() => -1))->limit(1);
 		if($c->count()<=0){
 			return null;
 		}else{
