@@ -158,7 +158,23 @@ class EMongoDocument extends EMongoModel{
      *
      * @return string
 	 */
-	function collectionName(){  }
+	public function collectionName(){  }
+	
+	/**
+	 * Denotes whether or not this document is versioned
+	 * @return boolean
+	 */
+	public function versioned(){
+		return false;
+	}
+	
+	/**
+	 * Denotes the field tob e used to house the version number
+	 * @return string
+	 */
+	public function versionField(){
+		return '_v';
+	}	
 
 	/**
 	 * Returns MongoId based on $value
@@ -227,6 +243,35 @@ class EMongoDocument extends EMongoModel{
 	 */
 	public function setProjectedFields(array $fields){
 		$this->_projected_fields = $fields;
+	}
+	
+	/**
+	 * Gets the version of this document
+	 */
+	public function version(){
+		return $this->{$this->versionField()};
+	}
+	
+	/**
+	 * Forceably increments the version of this document
+	 */
+	public function incrementVersion(){
+		$resp=$this->updateByPk($this->getPrimaryKey(),array('$inc'=>array($this->versionField() => 1)));
+		if($resp['n']>0){
+			$this->{$this->versionField()}+=1;
+			return true;
+		}
+	}
+	
+	/**
+	 * Forceably sets the version of this document
+	 */
+	public function setVersion($n){
+		$resp=$this->updateByPk($this->getPrimaryKey(),array('$set'=>array($this->versionField() => $n)));
+		if($resp['n']>0){
+			$this->{$this->versionField()}=$n;
+			return true;
+		}
 	}
 
 	/**
@@ -353,6 +398,28 @@ class EMongoDocument extends EMongoModel{
 		}
 		return null;
 	}
+	
+	/**
+	 * Returns an array of records populated by incoming data
+	 * @param array $data
+	 * @param string $callAfterFind
+	 * @param string $index
+	 * @return Array of the records
+	 */
+	public function populateRecords(array $data, $callAfterFind = true, $index = null)
+	{
+		$records = array();
+		foreach ($data as $attributes) {
+			if (($record = $this->populateRecord($attributes, $callAfterFind)) !== null) {
+				if ($index === null) {
+					$records[] = $record;
+				} else {
+					$records[$record->$index] = $record;
+				}
+			}
+		}
+		return $records;
+	}	
 
 	/**********/
 	/* Events */
@@ -435,8 +502,6 @@ class EMongoDocument extends EMongoModel{
 		if($this->hasEventHandler('onBeforeFind'))
 		{
 			$event = new CModelEvent($this);
-			// for backward compatibility
-			$event->criteria = func_num_args() > 0 ? func_get_arg(0) : null;
 			$this->onBeforeFind($event);
 		}
 	}
@@ -485,10 +550,10 @@ class EMongoDocument extends EMongoModel{
 				}else
 					$values[$name] = $this->$name = $value;
 			}
-			if(!isset($this->{$this->primaryKey()}) || $this->{$this->primaryKey()}===null)
+			if(!isset($this->{$this->primaryKey()}) || $this->getPrimaryKey()===null)
 				throw new CDbException(Yii::t('yii', 'The active record cannot be updated because its _id is not set!'));
 
-			return $this->updateByPk($this->{$this->primaryKey()}, $values);
+			return $this->lastError=$this->updateByPk($this->getPrimaryKey(), array('$set'=>$values));
 		}
 		throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
 	}
@@ -505,9 +570,16 @@ class EMongoDocument extends EMongoModel{
 		if($this->beforeSave())
 		{
 			$this->trace(__FUNCTION__);
+			
+			if($attributes!==null)
+				$document=$this->filterRawDocument($this->getAttributes($attributes));
+			else
+				$document=$this->getRawDocument();
+			if($this->versioned())
+				$document[$this->versionField()]=$this->{$this->versionField()}=1;
 
-			if(!isset($this->{$this->primaryKey()})) $this->{$this->primaryKey()} = new MongoId;
-			if($this->lastError = $this->getCollection()->insert($this->getRawDocument(), $this->getDbConnection()->getDefaultWriteConcern())){
+			if(!isset($this->{$this->primaryKey()})) $document['_id']=$this->{$this->primaryKey()} = new MongoId;
+			if($this->lastError = $this->getCollection()->insert($document, $this->getDbConnection()->getDefaultWriteConcern())){
 				$this->afterSave();
 				$this->setIsNewRecord(false);
 				$this->setScenario('update');
@@ -529,22 +601,46 @@ class EMongoDocument extends EMongoModel{
 		if($this->beforeSave())
 		{
 			$this->trace(__FUNCTION__);
-			if($this->{$this->primaryKey()} === null) // An _id is required
-				throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it has no _id.'));
+			if($this->getPrimaryKey() === null) // An _id is required
+				throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it has primary key set.'));
 
-			if($attributes !== null)
-				$attributes = $this->filterRawDocument($attributes);
-			elseif($this->getIsPartial()){
+			$partial=false;
+			if($attributes !== null){
+				$attributes = $this->filterRawDocument($this->getAttributes($attributes));
+				$partial=true;
+			}elseif($this->getIsPartial()){
 				foreach($this->_projected_fields as $field => $v)
 					$attributes[$field] = $this->$field;
 				$attributes = $this->filterRawDocument($attributes);
+				$partial=true;
 			}else
 				$attributes = $this->getRawDocument();
-			unset($attributes['_id']); // Unset the _id before update
-
-			$this->lastError = $this->updateByPk($this->{$this->primaryKey()}, array('$set' => $attributes));
+			if(isset($attributes['_id']))
+				unset($attributes['_id']); // Unset the _id before update
+			
+			if($this->versioned()){
+			
+				$version=$this->{$this->versionField()};
+				$attributes[$this->versionField()]=$this->{$this->versionField()}=$this->{$this->versionField()}>0?$this->{$this->versionField()}+1:1;				
+				
+				if($partial===true){ // If this is a partial docuemnt we use $set to replace that partial view
+					$attributes=array('$set' => $attributes);
+					if(!isset($this->_projected_fields[$this->versionField()]))
+						// We cannot rely on a partial document containing the version
+						// as such it has been disabled for partial documents
+						throw new EMongoException("You cannot update a versioned partial document unless you project out the version field as well");
+				}
+				$this->lastError = $this->updateAll(array($this->primaryKey() => $this->getPrimaryKey(), $this->versionField() => $version),$attributes,array('multiple'=>false));
+			}else{
+				if($partial===true) // If this is a partial docuemnt we use $set to replace that partial view
+					$attributes=array('$set' => $attributes);				
+				$this->lastError = $this->updateByPk($this->getPrimaryKey(), $attributes);
+			}
+				
+			if($this->versioned()&&$this->lastError['n']<=0)
+				return false;
 			$this->afterSave();
-			return true;
+			return true;			
 		}
 		return false;
 	}
@@ -558,7 +654,7 @@ class EMongoDocument extends EMongoModel{
 		if(!$this->getIsNewRecord()){
 			$this->trace(__FUNCTION__);
 			if($this->beforeDelete()){
-				$result = $this->deleteByPk($this->{$this->primaryKey()});
+				$result = $this->deleteByPk($this->getPrimaryKey());
 				$this->afterDelete();
 				return $result;
 			}
@@ -590,6 +686,35 @@ class EMongoDocument extends EMongoModel{
 	{
 		return $this->collectionName() === $record->collectionName() && (string)$this->getPrimaryKey() === (string)$record->getPrimaryKey();
 	}
+	
+	/**
+	 * Is basically a find one of the last version to be saved
+	 * @return NULL|EMongoDocument
+	 */
+	public function getLastVersion(){
+		$c=$this->find(array($this->primaryKey()=>$this->getPrimaryKey()))->sort(array($this->versionField() => -1))->limit(1);
+		if($c->count()<=0){
+			return null;
+		}else{
+			foreach($c as $row)
+				return $this->populateRecord($row);
+		}
+	}
+	
+	/**
+	 * Is basically a find one of a version
+	 * @param int $num
+	 * @return NULL|EMongoDocument
+	 */
+	public function getVersion($num){
+		$c=$this->find(array($this->primaryKey()=>$this->getPrimaryKey(), $this->versionField() => $num))->sort(array($this->versionField() => -1))->limit(1);
+		if($c->count()<=0){
+			return null;
+		}else{
+			foreach($c as $row)
+				return $this->populateRecord($row);
+		}	
+	}	
 
 	/**
 	 * Find one record
@@ -599,6 +724,8 @@ class EMongoDocument extends EMongoModel{
      */
     public function findOne($criteria = array(), $fields = array()){
 		$this->trace(__FUNCTION__);
+		
+		$this->beforeFind(); // Apparently this is applied before even scopes...
 
 		if($criteria instanceof EMongoCriteria)
 			$criteria = $criteria->getCondition();
@@ -650,7 +777,9 @@ class EMongoDocument extends EMongoModel{
      */
     public function find($criteria = array(), $fields = array()){
     	$this->trace(__FUNCTION__);
-
+    	
+    	$this->beforeFind(); // Apparently this is applied before even scopes...
+    	
 		if($criteria instanceof EMongoCriteria){
 			$c = $criteria->mergeWith($this->getDbCriteria())->toArray();
 			$criteria = array();
@@ -783,7 +912,7 @@ class EMongoDocument extends EMongoModel{
 					unset($counters[$key]);
 			}
 			if(count($counters) > 0)
-				return $this->updateByPk($this->{$this->primaryKey()}, array('$inc' => $counters));
+				return $this->updateByPk($this->getPrimaryKey(), array('$inc' => $counters));
 		}
 		return true; // Assume true since the action did run it just had nothing to update...		
 	}
@@ -813,45 +942,54 @@ class EMongoDocument extends EMongoModel{
      * @param array $project
      * @return EMongoDataProvider
      */
-    public function search($query = array(), $project = array()){
+    public function search($query = array(), $project = array(), $partialMatch=false){
 		$this->trace(__FUNCTION__);
 
 		foreach($this->getSafeAttributeNames() as $attribute){
-
+			
 			$value = $this->{$attribute};
-			if($value !== null && $value !== ''){
+			if ($value !== null && $value !== ''){
 				if((is_array($value) && count($value)) || is_object($value)){
 					$query[$attribute] = $value;
-				} elseif (is_string($value) && preg_match('/^(?:\s*(<>|\!=|<=|>=|<|>|=))?(.*)$/', $value, $matches)){
+				}elseif(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)) {
 					$value = $matches[2];
 					$op = $matches[1];
-
+					if ($partialMatch === true)
+						$value = new MongoRegex("/$value/i");
+					else {
+						if(
+						!is_bool($value) && !is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0
+						&& ( (PHP_INT_MAX > 2147483647 && (string)$value < '9223372036854775807') /* If it is a 64 bit system and the value is under the long max */
+								|| (string)$value < '2147483647' /* value is under 32bit limit */)
+						)
+							$value = (int)$value;
+					}
+				
 					switch($op){
-						case '<>':
-						case '!=':
+						case "<>":
 							$query[$attribute] = array('$ne' => $value);
 							break;
-						case '<=':
+						case "<=":
 							$query[$attribute] = array('$lte' => $value);
 							break;
-						case '>=':
+						case ">=":
 							$query[$attribute] = array('$gte' => $value);
 							break;
-						case '<':
+						case "<":
 							$query[$attribute] = array('$lt' => $value);
 							break;
-						case '>':
+						case ">":
 							$query[$attribute] = array('$gt' => $value);
 							break;
-						case '=':
+						case "=":
 						default:
 							$query[$attribute] = $value;
 							break;
 					}
 				}
-			}
+			}		
 		}
-		return new EMongoDataProvider(get_class($this), array('criteria' => array('condition' => $query, 'project' => $project)));
+		return new EMongoDataProvider($this, array('criteria' => array('condition' => $query, 'project' => $project)));
 	}
 
 	/**

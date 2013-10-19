@@ -64,6 +64,27 @@ If you wish to call a function on the `MongoClient` or `Mongo` class you will ne
 **Note:** The models will by default seek a `mongodb` component within your configuration so please make sure that unless you modify the extension, or use it without active record, to
 make your default (master) connection be a component called `mongodb`.
 
+If you wish to setup the log to insert entries into MongoDB (like in `CDbLogRoute`) you can add the following to your 'log' component configuration:
+
+		'log'=>array(
+			'class'=>'CLogRouter',
+			'routes'=>array(
+				array(
+					'class'=>'CFileLogRoute',
+					'levels'=>'error, warning',
+				),
+
+				[ ... ]
+
+				array(
+					'class'=>'EMongoLogRoute',
+					'connectionId'=>'my_connection_id' // optional, defaults to 'mongodb'
+					'logCollectionName'=>'my_log_collection', // optional, defaults to 'YiiLog'
+				),
+				
+			),
+		),
+
 ### Composer
 
 MongoYii fully supports Composer and is listed on [packagist](https://packagist.org/packages/sammaye/mongoyii).
@@ -215,6 +236,8 @@ Returns a string representing the collection name. All active record models shou
 ### primaryKey()
 
 Currently only returns `_id` as the key.
+
+### Using a Custom Primary Key
 
 If you are using a primary key that IS NOT a `ObjectId` (otherwise known as a `MongoId` in the PHP driver) then you should override the `getPrimaryKey` function of the `EMongoDocument`
 to not return a `MongoId`:
@@ -450,10 +473,45 @@ Same as above really except these translate directly to the MongoDB drivers own 
 
 ## Validation
 
-The validation has pretty much not changed except for one validator which required some rewriting, the unique validator.
+The validation has pretty much not changed except for the names of certain validators due to Yiis own requiring SQL.
 
-Basically the `CUniqueValidator` has been retro-fitted to work for MongoDB so the call to the validator is the same but you must take into account that the name of the
-validator is now `EMongoUniqueValidator`.
+### unique
+
+The `unique` validator is now the `EMongoUnqiueValidator`.
+
+	array('username', 'EMongoUniqueValidator', 'className' => 'User', 'attributeName' => 'username')
+	
+### exist
+
+The `exist` validator is now the `EMongoExistValidator`.
+
+	array('user_id', 'EMongoExistValidator', 'className' => 'User', 'attributeName' => '_id')
+	
+### EMongoIdValidator
+
+This validator was added as a easy, yet flexible, method to automate the conversion of hexidecimal representation of `MongoId`s (for example: `addffrg33334455add0001`) to the 
+`MongoId` object for database manipulation. This validator can also handle arrays of strings that need converting to `MongoId`s.
+
+	array('ids,id', 'EMongoIdValidator'), // ids is an array while id is a single string value
+
+### EMongoSubdocumentValidator
+
+This is the subdocument validator, please see the "Subdocuments" section for full documentation.
+
+## Behaviours
+
+### EMongoTimestampBehaviour
+
+This is the MongoYii edition of `CTimestampBehavior` behaviour and will use `MongoDate` fields, however, an expression can be added to `timestampExpression` to make the 
+behaviour return integer timestamps.
+
+The usage of the behaviour is very much alike to normal, infact only the name is different:
+
+	function behaviors(){
+		return array(
+			'EMongoTimestampBehaviour'
+		);
+	}
 
 ## Subdocuments
 
@@ -665,6 +723,10 @@ Get and set the limit of the query.
 
 Sets the projection of the criteria to state specific fields to include/omit.
 
+### getSelect() / setSelect()
+
+These provide aliases for `getProject()` and `setProject()`.
+
 ### compare()
 
 This works a lot like `CDbCriteria`s and is heavily based on it.
@@ -705,26 +767,6 @@ This basically will convert your EMongoCriteria into array form of the syntax:
 and, by default, is called like:
 
 	$c->toArray();
-
-### Important for Contributors
-
-If you are intending to contribute changes to MongoYii I should explain my own position on the existance of the `EMongoCriteria` class. I, personally, believe it is not needed.
-
-There are a number of reasons why. In SQL an abstraction is justified by, some but not all, of these reasons:
-
-- Different implementations (i.e. MySQL and MSSQL and PostgreSQL) creates slightly different syntax
-- SQL is a string based querying language as such it makes sense to have an object oriented abstraction layer
-- SQL has some rather complex and difficult to form queries that would make an abstraction layer useful
-
-MongoDB suffers from none of these problems; first it has an OO querying interface already, secondly it is easy to merge different queries together simply using `CMap::MergeArray()`
-and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying
-and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do `$or`s in this class).
-
-As such I believe that the `EMongoCriteria` class is just dead weight consuming memory which I could use for other tasks.
-
-This extension does not rely on `EMongoCriteria` internally.
-
-So I expect all modifications to certain parts of MongoYii to be compatible with and without `EMongoCriteria`.
 
 ## Covered and Partial Queries
 
@@ -784,6 +826,43 @@ Retreiving the file later is just as easy as saving it and is no different to fi
 
 This code snippet assumes we wish to find a file whose metadata field `userId` is of the current user in session.
 
+## Using urlManager
+
+If you wish to regex out the `_id` within a URL for use with the urlManager you can use:
+
+	'<controller:\w+>/<action:\w+>/<id:[a-z0-9]{24}>'=>'<controller>/<action>',
+	
+Whereby it will try and pick out a alphanumeric `_id` of 24 characters in length. 
+
+## Versioned Document Models
+
+2.5.x of MongoYii adds the ability to version your documents. 
+
+If you are confused about versioning or how it can be beneficial for some scenarios then a well explained, yet simple and easy to read [blog post can actually be found by the 
+creators of MongoDB describing its addition to Mongoose](http://aaronheckmann.tumblr.com/post/48943525537/mongoose-v3-part-1-versioning).
+
+To setup a versioned document you can simply create a model implementing `version()` which returns `true` and, optionally, `versionField()`:
+
+	class versioned extends EMongoDocument{
+		public versioned(){
+			return true;
+		}
+		
+		public versionField(){
+			return '_v'; // This is actually the default value in EMongoDocument
+		}
+		
+		public static function model($className=__CLASS__){
+			return parent::model($className);
+		}	
+	}
+
+The verisoning ability of a document cannot be changed during runtime once it has been set, in other words you cannot do `$doc->removeVersion()` to stop versioning from having 
+an effect for a certain insert. 
+
+After the documents model has been setup versioning works behind the scenes, there is no need for you to do anything else, everytime `save` is called it will make sure the 
+version you have is upto date.
+
 ## Known Flaws
 
 - Subdocuments are not automated, however, I have stated why above
@@ -796,12 +875,16 @@ I am sure there are more but that is the immediate flaws you need to consider in
 
 Probably some, however, I will endeavour to accept pull requests and fix reported bugs.
 
+Please report all issues, including bugs and/or questions, on the [GitHub issue tracker](https://github.com/Sammaye/MongoYii/issues). 
+
 ## Examples
 
 Please look to the tests folder for further examples of how to use this extension, it is quite comprehensive.
 
-There is also an example application which is in the process of being built to accomodate for providing example usages of MongoYii and is worth a look at for most Yii users:
-[here](https://github.com/Sammaye/MongoYii-test)
+There is also a demonstration application built using MongoYii. It is effectively mimicking a Wikipedia type website and allows for user (including sessions) and article management. 
+It is not a good place to start if you are still learning Yii, however, it is a good place to start if you are learning MongoYii. 
+
+[You can find the demonstration application repository here](https://github.com/Sammaye/MongoYii-test).
 
 ## Running the Tests
 
@@ -810,12 +893,36 @@ The tests require the PHPUnit plugin with all dependencies compiled. Using PEAR 
 	sudo pear install --force --alldeps phpunit/PHPUnit &&
 	pear install phpunit/dbUnit &&
 	pear install phpunit/PHPUnit_Story &&
-	pear install phpunit/PHPUnit_Selenium
+	pear install phpunit/PHPUnit_Selenium &&
+	pear install phpunit/PHP_Invoker
 
 After that you can just tell PHPUnit to run all tests within the `tests/` folder with no real order.
 
-## Upgrade Notes
+## Contributing
 
+When adding extensive functionality to MongoYii please try and provide the corresponding unit tests. Without the unit tests your functionality, the very same your project most 
+likely relies on, may break in future versions.
+
+If you are intending to contribute changes to MongoYii I should explain my own position on the existance of the `EMongoCriteria` class. I, personally, believe it is not needed.
+
+There are a number of reasons why. In SQL an abstraction is justified by, some but not all, of these reasons:
+
+- Different implementations (i.e. MySQL and MSSQL and PostgreSQL) creates slightly different syntax
+- SQL is a string based querying language as such it makes sense to have an object oriented abstraction layer
+- SQL has some rather complex and difficult to form queries that would make an abstraction layer useful
+
+MongoDB suffers from none of these problems; first it has an OO querying interface already, secondly it is easy to merge different queries together simply using `CMap::MergeArray()`
+and most of all it has only one syntax since MongoDB is only one database. On top of this, due to the way MongoDBs querying is built up this class can actually constrict your querying
+and make life a little harder and maybe even create unperformant queries (especially due to how difficult it is to do `$or`s in this class).
+
+As such I believe that the `EMongoCriteria` class is just dead weight consuming memory which I could use for other tasks.
+
+This extension does not rely on `EMongoCriteria` internally.
+
+So I expect all modifications to certain parts of MongoYii to be compatible with and without `EMongoCriteria`.
+
+## Upgrade Notes
+ 
 There has been a small but dramatic change between version 1.x and 2.x of MongoYii. The `compare()` function within the `EMongoCriteria` now no longer uses partial matching by
 default. This means that by default it will try and match the entire field value.
 

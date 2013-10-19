@@ -17,18 +17,18 @@ class EMongoFile extends EMongoDocument{
 	// Helper functions to get some common functionality on this class
 	
 	public function getFilename(){
-		if($this->_file instanceof MongoGridFSFile)
-			return $this->_file->getFilename();
-		return $this->_file->getTempName();
+		if($this->getFile() instanceof MongoGridFSFile)
+			return $this->getFile()->getFilename();
+		return $this->getFile()->getTempName();
 	}
 	
 	public function getSize(){
-		return $this->_file->getSize();
+		return $this->getFile()->getSize();
 	}
 
 	public function getBytes(){
-		if($this->_file instanceof MongoGridFSFile)
-			return $this->_file->getBytes();
+		if($this->getFile() instanceof MongoGridFSFile)
+			return $this->getFile()->getBytes();
 		return file_get_contents($this->getFilename());
 	}
 	
@@ -36,6 +36,11 @@ class EMongoFile extends EMongoDocument{
 	 * Gets the file object
 	 */
 	public function getFile(){
+		// This if statement allows for you to continue using this class AFTER insert 
+		// basically it will only get the file if you plan on using it further which means that
+		// otherwise it omits at least one database call each time
+		if($this->_id instanceof MongoId && !$this->_file instanceof MongoGridFSFile)
+			return $this->_file=$this->getCollection()->get($this->_id);
 		return $this->_file;
 	}
 	
@@ -61,6 +66,16 @@ class EMongoFile extends EMongoDocument{
 	public static function model($className=__CLASS__){
 		return parent::model($className);
 	}	
+	
+	/**
+	 * Magic will either call a function on the file if it exists or bubble to parent
+	 * @see EMongoDocument::__call()
+	 */
+	public function __call($name,$parameters){
+		if($this->getFile() instanceof MongoGridFSFile && method_exists($this->getFile(), $name))
+			return call_user_func_array(array($this->getFile(), $name), $parameters);
+		return parent::__call($name,$parameters);
+	}
 	
 	/**
 	 * This can populate from a $_FILES instance
@@ -90,7 +105,6 @@ class EMongoFile extends EMongoDocument{
 			// set it as our attributes and then set this classes file as the first param we got
 			$file=$attributes;
 			$attributes=$file->file;
-					
 			$record=$this->instantiate($attributes);			
 			$record->setFile($file);			
 			$record->setScenario('update');
@@ -131,8 +145,8 @@ class EMongoFile extends EMongoDocument{
 		{
 			$this->trace(__FUNCTION__);
 		
-			if(!isset($this->{$this->primaryKey()})) $this->{$this->primaryKey()} = new MongoId;
-			if($this->getCollection()->storeFile($this->getFilename(), $this->getRawDocument())){ // The key change
+			if($_id=$this->getCollection()->storeFile($this->getFilename(), $this->getRawDocument())){ // The key change
+				$this->_id=$_id;
 				$this->afterSave();
 				$this->setIsNewRecord(false);
 				$this->setScenario('update');

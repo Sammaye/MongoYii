@@ -104,18 +104,40 @@ class MongoDocumentTest extends CTestCase{
 		// we will assume the set up was successful and we will leave it to further testing to see
 		// whether it really was.
 	}
+	
+	function setUpProperSubdocumentErrorsIndexationTest() {
+		return array(
+		array(
+			array(
+			'username'=>'kate',
+			'addresses'=>array(
+				0 => array(
+				'country' => 'Ukraine',
+				'telephone' => 11111
+				),
+				1 => array(
+				'country' => 'Russia',
+				'telephone' => 'wrongString'
+				)
+			)
+			)
+		)
+		);
+	}	
 
 	function tearDown(){
 		Yii::app()->mongodb->drop();
 		parent::tearDown();
 	}
 
-
 	function testModel(){
 		$c=User::model();
 		$this->assertInstanceOf('EMongoDocument', $c);
 	}
 
+	/**
+	 * @covers EMongoDocument::save
+	 */
 	function testSaving(){
 		$c=new User;
 		$c->username='sammaye';
@@ -128,8 +150,14 @@ class MongoDocumentTest extends CTestCase{
 			$doc->username="dan";
 			$this->assertTrue($doc->save());
 		}
+		// Dan, is it you? 
+		$r = User::model()->findOne(array('username' => 'dan') , array('username' => 1));
+		$this->assertEquals('dan', $r->username);
 	}
 
+	/**
+	 * @covers EMongoDocument::delete
+	 */
 	function testDeleting(){
 		$c=new User;
 		$c->username='sammaye';
@@ -141,15 +169,22 @@ class MongoDocumentTest extends CTestCase{
 		$this->assertFalse($r->count()>0);
 	}
 
+	/**
+	 * @covers EMongoDocument::findOne
+	 */
 	function testFindOne(){
 		$c=new User;
-		$c->username='sammaye';
+		$c->username='sally';
 		$this->assertTrue($c->save());
 
-		$r=User::model()->find();
-		$this->assertTrue($r->count()>0);
+		$r=User::model()->findOne(array('username' => 'sally') , array('username' => 1));
+		$this->assertTrue($r->count() > 0);
+		$this->assertEquals('sally', $r->username);
 	}
 
+	/**
+	 * @covers EMongoDocument::findBy_id
+	 */
 	function testFindBy_id(){
 		$c=new User;
 		$c->username='sammaye';
@@ -160,11 +195,16 @@ class MongoDocumentTest extends CTestCase{
 
 		$r=User::model()->findBy_id((string)$c->_id);
 		$this->assertTrue(!is_null($r));
+
+		$this->assertEquals('sammaye', $r->username);
 	}
 	
+	/**
+	 * @covers EMongoDocument::findAllByPk
+	 */
 	function testFindAllByPk(){
 		$c=new User;
-		$c->username='sammaye';
+		$c->username='harry';
 		$this->assertTrue($c->save());
 
 		$r=User::model()->findAllByPk($c->_id);
@@ -174,9 +214,17 @@ class MongoDocumentTest extends CTestCase{
 		$this->assertTrue(!is_null($r));
 		
 		$r=User::model()->findAllByPk(array((string)$c->_id));
-		$this->assertTrue(!is_null($r));		
+		$this->assertTrue(!is_null($r));
+
+		$this->assertInstanceOf('EMongoCursor', $r);
+
+		$r=User::model()->findOne(array('_id' => $c->_id) , array('username' => 1));
+		$this->assertEquals('harry', $r->username);
 	}
 
+	/**
+	 * @covers EMongoDocument::updateByPk
+	 */
 	function testUpdateByPk(){
 		$c=new User;
 		$c->username='sammaye';
@@ -186,8 +234,12 @@ class MongoDocumentTest extends CTestCase{
 
 		$r=User::model()->findOne(array('username' => 'gfgfgf'));
 		$this->assertInstanceOf('EMongoDocument', $r);
+		$this->assertEquals('gfgfgf', $r->username);
 	}
 
+	/**
+	 * @covers EMongoDocument::deleteByPk
+	 */
 	function testDeleteByPk(){
 		$c=new User;
 		$c->username='sammaye';
@@ -199,17 +251,28 @@ class MongoDocumentTest extends CTestCase{
 		$this->assertNull($r);
 	}
 
+	/**
+	 * @covers EMongoDocument::updateAll
+	 */
 	function testUpdateAll(){
-		$c=new User;
-		$c->username='sammaye';
-		$this->assertTrue($c->save());
+		for($i=0;$i<4;$i++){
+			$c=new User;
+			$c->username='frodo';
+			$this->assertTrue($c->save());
+		}
 
-		$c->updateAll(array('_id' => $c->_id),array('$set' => array('username' => 'gfgfgf')));
+		$c->updateAll(array('username' => 'frodo'),array('$set' => array('username' => 'gdgdgd')));
 
-		$r=User::model()->findOne(array('username' => 'gfgfgf'));
+		$r=User::model()->findOne(array('username' => 'gdgdgd'));
 		$this->assertInstanceOf('EMongoDocument', $r);
+
+		$r=User::model()->find(array('username' => 'gdgdgd'));
+		$this->assertEquals(4, $r->count());
 	}
 
+	/**
+	 * @covers EMongoDocument::deleteAll
+	 */
 	function testDeleteAll(){
 		$c=new User;
 		$c->username='sammaye';
@@ -219,20 +282,50 @@ class MongoDocumentTest extends CTestCase{
 
 		$r=User::model()->findOne();
 		$this->assertNull($r);
+
+		for($i=0;$i<9;$i++){
+			$c=new User;
+			$c->username='ringwraith';
+			$c->mainSkill='LoTR';
+			$this->assertTrue($c->save());
+		}
+
+		$c=new User;
+		$c->username='gandalf';
+		$c->mainSkill='LoTR';
+		$this->assertTrue($c->save());
+
+		$r=User::model()->find(array('mainSkill' => 'LoTR'));
+		$this->assertEquals(10, $r->count());		
+
+		$c->deleteAll(array('username' => 'ringwraith'));
+		$r=User::model()->find(array('mainSkill' => 'LoTR'));
+		$this->assertEquals(1, $r->count());		
+
 	}
 
+	/**
+	 * @covers EMongoDocument::saveAttributes
+	 */
 	function testSaveAttributes(){
 
 		$c=new User;
-		$c->username='sammaye';
+		$c->username='saruman';
 		$this->assertTrue($c->save());
 
-		$c->job_title='programmer';
-		$r=$c->saveAttributes(array('username'));
+		$c->job_title='wizard';
+		$r=$c->saveAttributes(array('job_title'));
 		$this->assertNull($r['err']);
 
 		$r=User::model()->findOne();
-		$this->assertFalse(isset($r->job_title));
+		$this->assertTrue(isset($r->job_title));
+		$this->assertEquals('wizard', $r->job_title);
+
+		$c=new User;
+		$c->username='radagast';
+		$c->job_title='wizard';
+		$this->setExpectedException('CDbException');
+		$c->saveAttributes(array('job_title'));
 	}
 
 	function testPartialDocuments(){
@@ -309,6 +402,9 @@ class MongoDocumentTest extends CTestCase{
 		$this->assertTrue($rel->count()>0);
 	}
 
+	/**
+	 * @covers EMongoTimestampBehaviour
+	 */
 	function testTimestampBehaviour(){
 		$c=new User;
 		$c->username='sammaye';
@@ -318,8 +414,35 @@ class MongoDocumentTest extends CTestCase{
 		$c->job_title='programmer';
 		$this->assertTrue($c->save());
 		$this->assertTrue(isset($c->update_time));
+
+		$d=new UserTsTest;
+		$d->setScenario('testMe');
+		$d->username='testman1';
+		$this->assertTrue($d->save());
+		$this->assertTrue(isset($d->create_time));
+
+		$f=new UserTsTest;
+		$f->setScenario('testMeFalse');
+		$f->username='testman2';
+		$this->assertTrue($f->save());
+		$this->assertFalse(isset($f->create_time));
+
+		$g=new UserTsTestBroken;
+		$g->setScenario('testMeFalse');
+		$g->username='testman3';
+		$this->setExpectedException('CException');		
+
+		$h=new UserTsTestBroken2;
+		$h->setScenario('testMeFalseOn');
+		$h->username='testman4';
+		$this->setExpectedException('CException');
+		$h->save();
+
 	}
 
+	/**
+	 * @covers EMongoUniqueValidator
+	 */
 	function testUniqueValidator(){
 		$c=new User;
 		$c->setScenario('testUnqiue');
@@ -333,6 +456,9 @@ class MongoDocumentTest extends CTestCase{
 		$this->assertNotEmpty($c->getError('username'));
 	}
 
+	/**
+	 * @covers ESubdocumentValidator
+	 */
 	function testArraySubdocumentValidator(){
 
 		$c=new User;
@@ -350,6 +476,9 @@ class MongoDocumentTest extends CTestCase{
 		$this->assertTrue($c->validate());
 	}
 
+	/**
+	 * @covers ESubdocumentValidator
+	 */
 	function testClassSubdocumentValidator(){
 		$c=new User;
 		$c->username='sammaye';
@@ -374,7 +503,22 @@ class MongoDocumentTest extends CTestCase{
 		$this->assertTrue(!$c->url instanceof SocialUrl);
 
 	}
+	
+	/**
+	 * @covers ESubdocumentValidator
+	 * @dataProvider setUpProperSubdocumentErrorsIndexationTest
+	 */
+	function testProperSubdocumentErrorsIndexation($post) {
+		$c=new User;
+		$c->attributes = $post;
+		$this->assertFalse($c->validate());
+		$errors = $c->errors;
+		$this->assertNotNull($errors['addresses'][1]['telephone']);
+	}	
 
+	/**
+	 * @covers EMongoDocument::exists
+	 */
 	function testExists(){
 		$c=new User;
 		$c->username='sammaye';
@@ -382,6 +526,9 @@ class MongoDocumentTest extends CTestCase{
 		$this->assertTrue(User::model()->exists(array('username' => 'sammaye')));
 	}
 
+	/**
+	 * @covers EMongoDocument::equals
+	 */
 	function testEquals(){
 		$c=new User;
 		$c->username='sammaye';
@@ -430,6 +577,9 @@ class MongoDocumentTest extends CTestCase{
 		$this->assertEquals('sammaye', $r->username);
 	}
 
+	/**
+	 * @covers EMongoDocument::getAttributeLabel
+	 */
 	function testGetAttributeLabel(){
 		$c=new User;
 		$c->username='sammaye';
@@ -454,5 +604,67 @@ class MongoDocumentTest extends CTestCase{
 
 		$e=User::model()->findOne(array('username' => 'sammaye'));
 		$this->assertTrue($e->i==0);
+
+		$f=new User;
+		$f->username='merry';
+		$this->setExpectedException('EMongoException');
+		$f->saveCounters(array('i' => 1));
+	}
+	
+	function testVersioning(){
+		$m=new versionedDocument();
+		$m->name="sammaye";
+		$this->assertTrue($m->save());
+
+		$o=versionedDocument::model()->findOne(array('_id'=>$m->_id));
+		$o->name="meh";
+		$this->assertTrue($o->save());
+		
+		$m->name="sammaye";
+		$this->assertFalse($m->save());
+	}
+	
+	function testIncrementVersion(){
+		$m=new versionedDocument();
+		$m->name="sammaye";
+		$this->assertTrue($m->save()); // 1
+
+		$o=versionedDocument::model()->findOne(array('_id'=>$m->_id));
+		$this->assertTrue($o->incrementVersion()); // 2
+		
+		$oo=versionedDocument::model()->findOne(array('_id'=>$m->_id));
+		$this->assertEquals(2,$oo->version());
+	}
+	
+	function testSetVersion(){
+		$m=new versionedDocument();
+		$m->name="sammaye";
+		$this->assertTrue($m->save()); // 1
+
+		$o=versionedDocument::model()->findOne(array('_id'=>$m->_id));
+		$this->assertTrue($o->setVersion(4)); // 4
+		
+		$oo=versionedDocument::model()->findOne(array('_id'=>$m->_id));
+		$this->assertEquals(4,$oo->version());
+	}
+	
+	function testGetLastVersion(){
+		$m=new versionedDocument();
+		$m->name="sammaye";
+		$this->assertTrue($m->save()); // 1
+		
+		$m->age=2500;
+		$this->assertTrue($m->save()); // 2
+		
+		$doc=versionedDocument::model()->getLastVersion();
+		
+		$this->assertEquals(2,$doc->version());		
+	}
+	
+	function testGetVersion(){
+		$m=new versionedDocument();
+		$m->name="sammaye";
+		$this->assertTrue($m->save()); // 1
+		$this->assertInstanceOf('EMongoDocument',versionedDocument::model()->getVersion(1));
 	}
 }
