@@ -691,8 +691,8 @@ class EMongoDocument extends EMongoModel{
 	 * Is basically a find one of the last version to be saved
 	 * @return NULL|EMongoDocument
 	 */
-	public function getLastVersion(){
-		$c=$this->find(array($this->primaryKey()=>$this->getPrimaryKey()))->sort(array($this->versionField() => -1))->limit(1);
+	public function getLatest(){
+		$c=$this->find(array($this->primaryKey()=>$this->getPrimaryKey()));
 		if($c->count()<=0){
 			return null;
 		}else{
@@ -700,21 +700,6 @@ class EMongoDocument extends EMongoModel{
 				return $this->populateRecord($row);
 		}
 	}
-	
-	/**
-	 * Is basically a find one of a version
-	 * @param int $num
-	 * @return NULL|EMongoDocument
-	 */
-	public function getVersion($num){
-		$c=$this->find(array($this->primaryKey()=>$this->getPrimaryKey(), $this->versionField() => $num))->sort(array($this->versionField() => -1))->limit(1);
-		if($c->count()<=0){
-			return null;
-		}else{
-			foreach($c as $row)
-				return $this->populateRecord($row);
-		}	
-	}	
 
 	/**
 	 * Find one record
