@@ -60,6 +60,12 @@ class EMongoClient extends CApplicationComponent{
 	 * @var boolean
 	 */
 	public $setSlaveOkay = false;
+	
+	/**
+	 * Enables logging to the profiler
+	 * @var boolean
+	 */
+	public $enableProfiling = false;
 
 	/**
 	 * The Mongo Connection instance
