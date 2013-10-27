@@ -596,10 +596,7 @@ class EMongoDocument extends EMongoModel{
 			if(YII_DEBUG){
 				// we're actually physically testing for Yii debug mode here to stop us from
 				// having to do the serialisation on the update doc normally.
-				Yii::trace('Executing updateAll: '.
-						'{$query:'.json_encode($criteria)
-						.',$document:'.json_encode($updateDoc)
-						.',$options:'.$options.'}','extensions.MongoYii.EMongoDocument');
+				$this->profile('extensions.MongoYii.EMongoDocument.insert('.'{$document:'.json_encode($document).'})', 'extensions.MongoYii.EMongoDocument.insert');				
 			}			
 			if($this->getDbConnection()->enableProfiling)
 				$this->profile('extensions.MongoYii.EMongoDocument.insert('.'{$document:'.json_encode($document).'})', 'extensions.MongoYii.EMongoDocument.insert');			
