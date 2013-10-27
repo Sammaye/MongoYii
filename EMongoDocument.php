@@ -752,7 +752,7 @@ class EMongoDocument extends EMongoModel{
 
 		if(($record=$this->getCollection()->findOne($query,$project)) !== null){
 			$this->resetScope();
-			return $this->populateRecord($record, true, $fields === array() ? false : true);
+			return $this->populateRecord($record, true, $project === array() ? false : true);
 		}
 		return null;
 	}
@@ -831,7 +831,7 @@ class EMongoDocument extends EMongoModel{
 			$this->resetScope();
 			return $cursor;
 		}
-		return new EMongoCursor($this, $criteria, $fields);
+		return new EMongoCursor($this, $criteria, $project);
 	}
 
 	/**
