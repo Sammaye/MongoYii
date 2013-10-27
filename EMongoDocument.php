@@ -730,9 +730,12 @@ class EMongoDocument extends EMongoModel{
 		if($criteria instanceof EMongoCriteria)
 			$criteria = $criteria->getCondition();
 		$c = $this->getDbCriteria();
+		$fields = $this->mergeCriteria(isset($c['project']) ? $c['project'] : array(), $fields);
 		if((
-			$record=$this->getCollection()->findOne($this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria),
-				$this->mergeCriteria(isset($c['project']) ? $c['project'] : array(), $fields))
+			$record = $this->getCollection()->findOne(
+				$this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria),
+				$fields
+			)
 		) !== null){
 			$this->resetScope();
 			return $this->populateRecord($record, true, $fields === array() ? false : true);
