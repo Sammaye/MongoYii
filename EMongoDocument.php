@@ -592,15 +592,7 @@ class EMongoDocument extends EMongoModel{
 				$document[$this->versionField()]=$this->{$this->versionField()}=1;
 
 			if(!isset($this->{$this->primaryKey()})) $document['_id']=$this->{$this->primaryKey()} = new MongoId;
-			
-			if(YII_DEBUG){
-				// we're actually physically testing for Yii debug mode here to stop us from
-				// having to do the serialisation on the update doc normally.
-				Yii::trace('Executing updateAll: '.
-						'{$query:'.json_encode($criteria)
-						.',$document:'.json_encode($updateDoc)
-						.',$options:'.$options.'}','extensions.MongoYii.EMongoDocument');
-			}			
+
 			if($this->getDbConnection()->enableProfiling)
 				$this->profile('extensions.MongoYii.EMongoDocument.insert('.'{$document:'.json_encode($document).'})', 'extensions.MongoYii.EMongoDocument.insert');			
 			
