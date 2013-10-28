@@ -138,14 +138,27 @@ class EMongoFile extends EMongoDocument{
 	 * The only difference between the normal insert is that this uses the storeFile function on the GridFS object
 	 * @see EMongoDocument::insert()
 	 */
-	public function insert(){
+	public function insert($attributes=null){
 		if(!$this->getIsNewRecord())
 			throw new CDbException(Yii::t('yii','The active record cannot be inserted to database because it is not new.'));
 		if($this->beforeSave())
 		{
 			$this->trace(__FUNCTION__);
+			if($attributes===null){
+				$document=$this->getRawDocument();
+			}else{
+				$document=$this->filterRawDocument($this->getAttributes($attributes));
+			}
+			
+			if(YII_DEBUG){
+				// we're actually physically testing for Yii debug mode here to stop us from
+				// having to do the serialisation on the update doc normally.
+				Yii::trace('Executing storeFile: {$document:'.json_encode($document).'}', 'extensions.MongoYii.EMongoDocument');
+			}
+			if($this->getDbConnection()->enableProfiling)
+				$this->profile('extensions.MongoYii.EMongoFile.insert({$document:'.json_encode($document).'})', 'extensions.MongoYii.EMongoFile.insert');			
 		
-			if($_id=$this->getCollection()->storeFile($this->getFilename(), $this->getRawDocument())){ // The key change
+			if($_id=$this->getCollection()->storeFile($this->getFilename(), $document)){ // The key change
 				$this->_id=$_id;
 				$this->afterSave();
 				$this->setIsNewRecord(false);
