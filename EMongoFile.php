@@ -138,7 +138,7 @@ class EMongoFile extends EMongoDocument{
 	 * The only difference between the normal insert is that this uses the storeFile function on the GridFS object
 	 * @see EMongoDocument::insert()
 	 */
-	public function insert($attributes=null){
+	public function insert(){
 		if(!$this->getIsNewRecord())
 			throw new CDbException(Yii::t('yii','The active record cannot be inserted to database because it is not new.'));
 		if($this->beforeSave())
