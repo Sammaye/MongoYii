@@ -405,7 +405,7 @@ class EMongoDocument extends EMongoModel{
 	 * @param array $data
 	 * @param string $callAfterFind
 	 * @param string $index
-	 * @return Array of the records
+	 * @return array - Array of the records
 	 */
 	public function populateRecords(array $data, $callAfterFind = true, $index = null)
 	{
@@ -615,6 +615,7 @@ class EMongoDocument extends EMongoModel{
 	 * @param array $attributes
 	 * @return bool
 	 * @throws CDbException
+	 * @throws EMongoException
 	 */
 	public function update($attributes=null){
 		if($this->getIsNewRecord())
@@ -1187,6 +1188,7 @@ class EMongoDocument extends EMongoModel{
 	 * inline as such doing it stepped like in CDbCommand would be pointless. This function acts as nothing more than a log
 	 * to be compatible with certain extensions tbh.
 	 * @param string $token
+	 * @param string $category
 	 */
 	public function profile($token,$category='extensions.MongoYii.EMongoDocument.query'){
 		Yii::beginProfile($token,$category);
