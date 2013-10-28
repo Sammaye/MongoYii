@@ -1093,6 +1093,27 @@ class EMongoDocument extends EMongoModel{
 	}
 
 	/**
+	 * A mapreduce helper for this model
+	 * @param MongoCode $map
+	 * @param MongoCode $reduce
+	 * @param MongoCode $finalize
+	 * @param array $out
+	 * @param array $query
+	 * @param array $options // All other options for input to the command
+	 * @return mixed
+	 */
+	public function mapreduce($map,$reduce,$finalize=null,$out,$query=array(),$options=array()){ 
+		return $this->getDbConnection()->getDB()->command(array_merge(array(
+			"mapreduce" => $this->collectionName(),
+			"map" => $map,
+			"reduce" => $reduce,
+			"finalize" => $finalize,
+			"query" => $query,
+			"out" => $out
+		),$options));
+	}	
+	
+	/**
 	 * Refreshes the data from the database
 	 * @return bool
 	 */
