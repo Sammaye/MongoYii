@@ -927,12 +927,12 @@ class EMongoDocument extends EMongoModel{
 			Yii::trace('Executing updateAll: '.
 					'{$query:'.json_encode($criteria)
 					.',$document:'.json_encode($updateDoc)
-					.',$options:'.$options.'}','extensions.MongoYii.EMongoDocument');			
+					.',$options:'.json_encode($options).'}','extensions.MongoYii.EMongoDocument');			
 		}
 		if($this->getDbConnection()->enableProfiling)
 			$this->profile('extensions.MongoYii.EMongoDocument.updateAll('.'{$query:'.json_encode($criteria)
 					.',$document:'.json_encode($updateDoc)
-					.',$options:'.$options.'})', 'extensions.MongoYii.EMongoDocument.updateAll');		
+					.',$options:'.json_encode($options).'})', 'extensions.MongoYii.EMongoDocument.updateAll');		
 
 		return $this->getCollection()->update($criteria, $updateDoc, $options);
 	}
