@@ -934,15 +934,15 @@ This is a MongoYii implementation of `CCache` by [Rajcsányi Zoltán](http://ezmeg
 
 To use it first place it in your configuration:
 
-'components'=>array(
-	...
-	'cache' => array(
-		'class'=>'application.extensions.MongoYii.util.EMongoCache',
-		// 'ensureIndex' => true, //set to false after first use of the cache
-		// 'mongoConnectionId' => 'mongodb',
-		// 'collectionName' => 'mongodb_cache',		
-	),
-}
+	'components'=>array(
+		...
+		'cache' => array(
+			'class'=>'application.extensions.MongoYii.util.EMongoCache',
+			// 'ensureIndex' => true, //set to false after first use of the cache
+			// 'mongoConnectionId' => 'mongodb',
+			// 'collectionName' => 'mongodb_cache',		
+		),
+	}
 
 The commented out lines are optional parameters you can send in if required.
 
