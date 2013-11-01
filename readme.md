@@ -969,7 +969,7 @@ And now an example of its usage:
 	// multiple read from cache
 	$arr = Yii::app()->cache->mget(array('apple', 1, 'two'));
 
-  	print_r($arr); // Array( [apple] => fruit [1] => 'one' [two] => 2 )
+  	print_r($arr); // Array( [apple] => fruit [1] => [two] => )
   	
 ## EMongoMessageSource
 
