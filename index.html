@@ -1013,6 +1013,85 @@ and make life a little harder and maybe even create unperformant queries (especi
 
 <p>So I expect all modifications to certain parts of MongoYii to be compatible with and without <code>EMongoCriteria</code>.</p>
 
+<h1>Utilities</h1>
+
+<p>The <code>util</code> folder contains general awesome extensions to MongoYii that people may find useful. The sort of things that count as part of this folder are replacements for internal pieces 
+of Yii that might seem outside of the scope of the root of this repository.</p>
+
+<p>THESE ARE NOT MADE BY THE AUTHOR OF MONGOYII. That being said I will attempt to maintain them.</p>
+
+<h2>EMongoCache</h2>
+
+<p>This is a MongoYii implementation of <code>CCache</code> by <a href="http://ezmegaz.hu/">Rajcsányi Zoltán</a>.</p>
+
+<p>To use it first place it in your configuration:</p>
+
+<p>'components'=&gt;array(
+    ...
+    'cache' =&gt; array(
+        'class'=&gt;'application.extensions.MongoYii.util.EMongoCache',
+        // 'ensureIndex' =&gt; true, //set to false after first use of the cache
+        // 'mongoConnectionId' =&gt; 'mongodb',
+        // 'collectionName' =&gt; 'mongodb_cache', <br>
+    ),
+}</p>
+
+<p>The commented out lines are optional parameters you can send in if required.</p>
+
+<p>And now an example of its usage: </p>
+
+<pre><code>// flush cache
+Yii::app()-&gt;cache-&gt;flush();
+
+// add data to cache
+Yii::app()-&gt;cache-&gt;set('apple', 'fruit');
+Yii::app()-&gt;cache-&gt;set('onion', 'vegetables');
+Yii::app()-&gt;cache-&gt;set(1, 'one');
+Yii::app()-&gt;cache-&gt;set(2, 'two');
+Yii::app()-&gt;cache-&gt;set('one', 1);
+Yii::app()-&gt;cache-&gt;set('two', 2);
+
+// delete from cache
+Yii::app()-&gt;cache-&gt;delete(1);
+Yii::app()-&gt;cache-&gt;delete('two');
+
+// read from cache
+echo Yii::app()-&gt;cache-&gt;get(2);
+
+// multiple read from cache
+$arr = Yii::app()-&gt;cache-&gt;mget(array('apple', 1, 'two'));
+
+  print_r($arr); // Array( [apple] =&gt; fruit [1] =&gt; [two] =&gt; )
+</code></pre>
+
+<h2>EMongoMessageSource</h2>
+
+<p>This is a MongoYii <code>Yii::t()</code> implementation by <a href="http://ezmegaz.hu/">Rajcsányi Zoltán</a>.</p>
+
+<p>To use it first add it to your configuration:</p>
+
+<pre><code>'components' =&gt; array(
+    ...
+    'messages' =&gt; array(
+        'class' =&gt; 'application.extensions.MongoYii.util.EMongoMessageSource',
+        // 'mongoConnectionId' =&gt; 'mongodb', 
+        // 'collectionName' =&gt; 'YiiMessages',               
+    )        
+)
+</code></pre>
+
+<p>The commented out lines are optional parameters you can send in if required.</p>
+
+<p>And then add some messages to the translation table:</p>
+
+<pre><code>db.YiiMessages.insert( { category:"users", message:"Freund", translations: [ {language:"eng", message:"Friend"} ] } );
+</code></pre>
+
+<p>And then simply get that message:</p>
+
+<pre><code>&lt;?=Yii::t('users', 'Freund'); ?&gt;
+</code></pre>
+
 <h2>Upgrade Notes</h2>
 
 <p>There has been a small but dramatic change between version 1.x and 2.x of MongoYii. The <code>compare()</code> function within the <code>EMongoCriteria</code> now no longer uses partial matching by
