@@ -926,8 +926,6 @@ So I expect all modifications to certain parts of MongoYii to be compatible with
 The `util` folder contains general awesome extensions to MongoYii that people may find useful. The sort of things that count as part of this folder are replacements for internal pieces 
 of Yii that might seem outside of the scope of the root of this repository.
 
-THESE ARE NOT MADE BY THE AUTHOR OF MONGOYII. That being said I will attempt to maintain them.
-
 ## EMongoCache
 
 This is a MongoYii implementation of `CCache` by [Rajcsányi Zoltán](http://ezmegaz.hu/).
@@ -995,6 +993,18 @@ And then add some messages to the translation table:
 And then simply get that message:
   
 	<?=Yii::t('users', 'Freund'); ?>
+	
+## EMongoSession
+
+This is a MongoYii `CHttpSession` implementation by yours truly.
+
+To use it simply include it in your configuration:
+
+	'session' => array(
+		'class' => 'application.extensions.MongoYii.util.EMongoSession',
+	)
+
+And use it as you would Yiis own normal session.
 
 ## Upgrade Notes
  
