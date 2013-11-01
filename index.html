@@ -1018,8 +1018,6 @@ and make life a little harder and maybe even create unperformant queries (especi
 <p>The <code>util</code> folder contains general awesome extensions to MongoYii that people may find useful. The sort of things that count as part of this folder are replacements for internal pieces 
 of Yii that might seem outside of the scope of the root of this repository.</p>
 
-<p>THESE ARE NOT MADE BY THE AUTHOR OF MONGOYII. That being said I will attempt to maintain them.</p>
-
 <h2>EMongoCache</h2>
 
 <p>This is a MongoYii implementation of <code>CCache</code> by <a href="http://ezmegaz.hu/">Rajcsányi Zoltán</a>.</p>
@@ -1092,6 +1090,19 @@ $arr = Yii::app()-&gt;cache-&gt;mget(array('apple', 1, 'two'));
 
 <pre><code>&lt;?=Yii::t('users', 'Freund'); ?&gt;
 </code></pre>
+
+<h2>EMongoSession</h2>
+
+<p>This is a MongoYii <code>CHttpSession</code> implementation by yours truly.</p>
+
+<p>To use it simply include it in your configuration:</p>
+
+<pre><code>'session' =&gt; array(
+    'class' =&gt; 'application.extensions.MongoYii.util.EMongoSession',
+)
+</code></pre>
+
+<p>And use it as you would Yiis own normal session.</p>
 
 <h2>Upgrade Notes</h2>
 
