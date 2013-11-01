@@ -1026,15 +1026,16 @@ of Yii that might seem outside of the scope of the root of this repository.</p>
 
 <p>To use it first place it in your configuration:</p>
 
-<p>'components'=&gt;array(
+<pre><code>'components'=&gt;array(
     ...
     'cache' =&gt; array(
         'class'=&gt;'application.extensions.MongoYii.util.EMongoCache',
         // 'ensureIndex' =&gt; true, //set to false after first use of the cache
         // 'mongoConnectionId' =&gt; 'mongodb',
-        // 'collectionName' =&gt; 'mongodb_cache', <br>
+        // 'collectionName' =&gt; 'mongodb_cache',     
     ),
-}</p>
+}
+</code></pre>
 
 <p>The commented out lines are optional parameters you can send in if required.</p>
 
