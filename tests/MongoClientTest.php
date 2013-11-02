@@ -4,32 +4,45 @@ require_once 'bootstrap.php';
 
 class MongoClientTest extends CTestCase{
 
+	/**
+	 * @covers MongoClient::getConnection
+	 */
 	function testSettingUpConnection(){
 
 		$mongo = Yii::app()->mongodb;
 
-		$this->assertTrue($mongo instanceof EMongoClient);
+		$this->assertInstanceOf('EMongoClient', $mongo);
 
 		if(version_compare(phpversion('mongo'), '1.3.0', '<')){
-			$this->assertTrue($mongo->getConnection() instanceof Mongo);
+			$this->assertInstanceOf('Mongo', $mongo->getConnection());
 		}else{
-			$this->assertTrue($mongo->getConnection() instanceof MongoClient);
+			$this->assertInstanceOf('MongoClient', $mongo->getConnection());
 		}
 	}
 
+	/**
+	 * @covers MongoClient::selectCollection
+	 */
 	function testSelectCollection(){
 
 		$mongo = Yii::app()->mongodb;
 
 		$this->assertTrue($mongo->new_collection instanceof MongoCollection);
-		$this->assertTrue($mongo->selectCollection('new_collection') instanceof MongoCollection);
+		$this->assertInstanceOf('MongoCollection', $mongo->new_collection);
+		$this->assertInstanceOf('MongoCollection', $mongo->selectCollection('new_collection'));
 	}
 
+	/**
+	 * @covers MongoClient::getDB
+	 */
 	function testGetDB(){
 		$mongo = Yii::app()->mongodb;
-		$this->assertTrue($mongo->getDB() instanceof MongoDB);
+		$this->assertInstanceOf('MongoDB', $mongo->getDB());
 	}
 
+	/**
+	 * @covers MongoClient::getDefaultWriteConcern
+	 */
 	function testWriteConcern(){
 		$mongo = Yii::app()->mongodb;
 
@@ -44,7 +57,7 @@ class MongoClientTest extends CTestCase{
 		$mongo->w = 1;
 		$mongo->j = true;
 
-		$w=null;
+		$w = null;
 		$w = $mongo->getDefaultWriteConcern();
 
 		if(version_compare(phpversion('mongo'), '1.3.0', '<')){
@@ -54,6 +67,9 @@ class MongoClientTest extends CTestCase{
 		}
 	}
 
+	/**
+	 * @covers MongoClient::createMongoIdFromTimestamp
+	 */
 	function testCreateMongoIDFromTimestamp(){
 		$mongo = Yii::app()->mongodb;
 		$id = $mongo->createMongoIdFromTimestamp(time());

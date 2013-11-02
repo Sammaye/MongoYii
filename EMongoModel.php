@@ -1,8 +1,5 @@
 <?php
 
-/**
- *
- */
 class EMongoModel extends CModel{
 
 	/**
@@ -390,7 +387,7 @@ class EMongoModel extends CModel{
 		// Let's get the parts of the relation to understand it entirety of its context
 		$cname = $relation[1];
 		$fkey = $relation[2];
-		$pk = isset($relation['on']) ? $this->{$relation['on']} : $this->{$this->primaryKey()};
+		$pk = isset($relation['on']) ? $this->{$relation['on']} : $this->getPrimaryKey();
 
 		// Form the where clause
 		$where = array();
@@ -434,20 +431,17 @@ class EMongoModel extends CModel{
 		return $cursor;
 	}
 
-
-
 	/**
-     	* @param mixed $reference Reference to populate
-     	* @param null|string $cname Class of model to populate. If not specified, populates data on current model
-     	* @return EMongoModel
-     	*/
-    	public function populateReference($reference, $cname = null)
-    	{
-        	$row = MongoDBRef::get(self::$db->getDB(), $reference);
-        	$o=(is_null($cname))?$this:$cname::model();
-        	return $o->populateRecord($row);
-    	}
-
+	 * @param mixed $reference Reference to populate
+	 * @param null|string $cname Class of model to populate. If not specified, populates data on current model
+	 * @return EMongoModel
+	 */
+	public function populateReference($reference, $cname = null)
+	{
+		$row = MongoDBRef::get(self::$db->getDB(), $reference);
+		$o=(is_null($cname))?$this:$cname::model();
+		return $o->populateRecord($row);
+	}
 
 	/**
 	 * Returns a value indicating whether the named related object(s) has been loaded.
@@ -493,8 +487,20 @@ class EMongoModel extends CModel{
 	{
 		if($attribute===null)
 			return $this->_errors;
-		else
+		else{
+			$attribute=trim(strtr($attribute,'][','['),']');
+			if(strpos($attribute,'[')!==false){
+				$prev=null;
+				foreach(explode('[',$attribute) as $piece){
+					if($prev===null&&isset($this->errors[$piece]))
+						$prev=&$this->_errors[$piece];
+					elseif(isset($prev[$piece]))
+					$prev=is_array($prev)?$prev[$piece]:$prev->$piece;
+				}
+				return $prev===null?array():$prev;
+			}		
 			return isset($this->_errors[$attribute]) ? $this->_errors[$attribute] : array();
+		}
 	}
 
 	/**
@@ -504,6 +510,17 @@ class EMongoModel extends CModel{
 	 */
 	public function getError($attribute)
 	{
+		$attribute=trim(strtr($attribute,'][','['),']');
+		if(strpos($attribute,'[')!==false){
+			$prev=null;
+			foreach(explode('[',$attribute) as $piece){
+				if($prev===null&&isset($this->errors[$piece]))
+					$prev=&$this->_errors[$piece];
+				elseif(isset($prev[$piece]))
+				$prev=is_array($prev)?$prev[$piece]:$prev->$piece;
+			}
+			return $prev===null?array():reset($prev);
+		}		
 		return isset($this->_errors[$attribute]) ? reset($this->_errors[$attribute]) : null;
 	}
 

@@ -1,11 +1,11 @@
 <?php
-
 /**
  * EMongoClient
  *
  * The MongoDB and MongoClient class combined.
  *
- * Quite deceptively this classes magics actually represents the DATABASE not the connection.
+ * Quite deceptively the magic functions of this class actually represent the DATABASE not the connection.
+ * This is in contrast to MongoClient whos' own represent the SERVER.
  *
  * Normally this would represent the MongoClient or Mongo and it is even named after them and implements
  * some of their functions but it is not due to the way Yii works.
@@ -39,7 +39,9 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * Are we using journaled writes here? Beware this makes all writes wait for the journal, it does not
-	 * state whether MongoDB is using journaling. Only works 1.3+ driver
+	 * state whether MongoDB is using journaling. Note: this is NOT straight to disk, 
+	 * it infact makes the journal to disk time a third of its normal time (anywhere between 2-30ms). 
+	 * Only works 1.3+ driver
 	 * @var boolean
 	 */
 	public $j = false;
@@ -58,6 +60,12 @@ class EMongoClient extends CApplicationComponent{
 	 * @var boolean
 	 */
 	public $setSlaveOkay = false;
+	
+	/**
+	 * Enables logging to the profiler
+	 * @var boolean
+	 */
+	public $enableProfiling = false;
 
 	/**
 	 * The Mongo Connection instance
@@ -79,7 +87,8 @@ class EMongoClient extends CApplicationComponent{
 	private $_meta = array();
 
 	/**
-	 * The default action is to get a collection
+	 * The default action is to find a getX whereby X is the $k param 
+	 * you input. The secondary function, if not getter found, is to get a collection
 	 */
 	public function __get($k){
 		$getter='get'.$k;
@@ -89,7 +98,7 @@ class EMongoClient extends CApplicationComponent{
 	}
 
 	/**
-	 * Will either call a function on the database or call for a collection
+	 * Will call a function on the database or error out stating that the function does not exist
 	 */
 	public function __call($name,$parameters = array()){
 		if(method_exists($this->getDB(), $name)){
@@ -144,6 +153,7 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * Gets the connection object
+	 * Use this to access the Mongo/MongoClient instance within the extension
 	 * @return Mongo|MongoClient
 	 */
 	public function getConnection(){
@@ -156,7 +166,7 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * Sets the raw database adhoc
-	 * @param $name
+	 * @param string $name
 	 */
 	public function setDB($name){
 		$this->_db = $this->getConnection()->selectDb($name);
@@ -186,10 +196,11 @@ class EMongoClient extends CApplicationComponent{
 	}
 
 	/**
-	 * Since there is no easy definition of the public collection class without drilling down
-	 * this function is designed to be a helper to make aggregation calling more standard.
-	 * @param $collection
+	 * This function is designed to be a helper to make calling the aggregate command 
+	 * more standard across all drivers.
+	 * @param string $collection
 	 * @param $pipelines
+	 * @return array
 	 */
 	public function aggregate($collection, $pipelines){
 		if(version_compare(phpversion('mongo'), '1.3.0', '<')){
@@ -203,7 +214,8 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * Command helper
-	 * @param array|sting $command
+	 * @param array|string $command
+	 * @return array
 	 */
 	public function command($command = array()){
 		return $this->getDB()->command($command);
@@ -211,7 +223,8 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * ATM does nothing but the original processing; ATM
-	 * @param $name
+	 * @param string $name
+	 * @return MongoCollection
 	 */
 	public function selectCollection($name){
 		return $this->getDB()->selectCollection($name);
@@ -219,7 +232,8 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * Sets the document cache for any particular document (EMongoDocument/EMongoModel)
-	 * sent in as the first parameter of this function
+	 * sent in as the first parameter of this function. Will not cache actual EMongoDocument/EMongoModel instances 
+	 * only active classes that inherit these
 	 * @param $o
 	 */
 	function setDocumentCache($o){
@@ -231,7 +245,7 @@ class EMongoClient extends CApplicationComponent{
 			$_meta = array();
 
 			$reflect = new ReflectionClass(get_class($o));
-			$class_vars = $reflect->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED); // Pre-defined doc attributes
+			$class_vars = $reflect->getProperties(ReflectionProperty::IS_PUBLIC); // Pre-defined doc attributes
 
 			foreach ($class_vars as $prop) {
 
@@ -259,6 +273,7 @@ class EMongoClient extends CApplicationComponent{
 	 * Get a list of the fields (attributes) for a document from cache
 	 * @param string $name
 	 * @param boolean $include_virtual
+	 * @return array
 	 */
 	public function getFieldCache($name, $include_virtual = false){
 		$doc = isset($this->_meta[$name]) ? $this->_meta[$name] : array();
@@ -272,7 +287,7 @@ class EMongoClient extends CApplicationComponent{
 	/**
 	 * Just gets the document cache for a model
 	 * @param string $name
-	 * @return NULL|array
+	 * @return array
 	 */
 	public function getDocumentCache($name){
 		return isset($this->_meta[$name]) ? $this->_meta[$name] : array();
@@ -298,9 +313,10 @@ class EMongoClient extends CApplicationComponent{
 	/**
 	 * Create ObjectId from timestamp. This function is not actively used it is
 	 * here as a helper for anyone who needs it
-	 * @param $yourTimestamp
+	 * @param int $yourTimestamp
+	 * @return MongoID
 	 */
-	public function createMongoIdFromTimestamp( $yourTimestamp )
+	public function createMongoIdFromTimestamp($yourTimestamp)
 	{
 	    static $inc = 0;
 
@@ -321,8 +337,9 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * Set read preference on MongoClient
-	 * @param $pref
-	 * @param $options
+	 * @param string $pref
+	 * @param array $options
+	 * @return bool
 	 */
 	public function setReadPreference($pref, $options=array()){
 		return $this->getConnection()->setReadPreference($pref, $options);
@@ -330,13 +347,18 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * setSlaveOkay on Mongo
-	 * @param $bool
+	 * @param bool $bool
+	 * @return bool
 	 */
 	public function setSlaveOkay($bool){
 		return $this->getConnection()->setSlaveOkay($bool);
 	}
 }
 
+/**
+ * EMongoException
+ * The Exception class that is used by this extension
+ */
 class EMongoException extends CException{
 	public $errorInfo;
 	public function __construct($message,$code=0,$errorInfo=null){
