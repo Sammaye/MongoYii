@@ -18,18 +18,32 @@ class EMongoFile extends EMongoDocument{
 	
 	public function getFilename(){
 		if($this->getFile() instanceof MongoGridFSFile)
-			return $this->getFile()->getFilename();
-		return $this->getFile()->getTempName();
+				return $this->getFile()->getFilename();
+    elseif($this->getFile() instanceof CUploadedFile)
+				return $this->getFile()->getTempName();
+		elseif(is_string($this->getFile()) && is_file($this->getFile()))
+				return $this->getFile();
+
+		return false;
 	}
 	
 	public function getSize(){
-		return $this->getFile()->getSize();
+		if($this->getFile() instanceof EMongoGridFSFile || $this->getFile() instanceof CUploadedFile)
+				return $this->getFile()->getSize();
+		elseif(is_file($this->getFile()))
+				return filesize($this->getFile());
+
+		return false;
 	}
 
 	public function getBytes(){
 		if($this->getFile() instanceof MongoGridFSFile)
-			return $this->getFile()->getBytes();
-		return file_get_contents($this->getFilename());
+				return $this->getFile()->getBytes();
+		elseif($this->getFile() instanceof CUploadedFile ||
+						(is_file($this->getFile()) && is_readable($this->getFile())))
+				return file_get_contents($this->getFilename());
+
+		return false;
 	}
 	
 	/**
