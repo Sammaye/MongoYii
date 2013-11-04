@@ -28,7 +28,7 @@ class EMongoFile extends EMongoDocument{
 	}
 	
 	public function getSize(){
-		if($this->getFile() instanceof EMongoGridFSFile or $this->getFile() instanceof CUploadedFile)
+		if($this->getFile() instanceof EMongoGridFSFile || $this->getFile() instanceof CUploadedFile)
 				return $this->getFile()->getSize();
 		elseif(is_file($this->getFile()))
 				return filesize($this->getFile());
