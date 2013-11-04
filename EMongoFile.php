@@ -19,10 +19,10 @@ class EMongoFile extends EMongoDocument{
 	public function getFilename(){
 		if($this->getFile() instanceof MongoGridFSFile)
 				return $this->getFile()->getFilename();
-		elseif(is_file($this->getFile()))
-				return $this->getFile();
     elseif($this->getFile() instanceof CUploadedFile)
 				return $this->getFile()->getTempName();
+		elseif(is_string($this->getFile()) && is_file($this->getFile()))
+				return $this->getFile();
 
 		return false;
 	}
