@@ -40,7 +40,7 @@ class EMongoFile extends EMongoDocument{
 		if($this->getFile() instanceof MongoGridFSFile)
 				return $this->getFile()->getBytes();
 		elseif($this->getFile() instanceof CUploadedFile ||
-						is_file($this->getFile()) && is_readable($this->getFile()))
+						(is_file($this->getFile()) && is_readable($this->getFile())))
 				return file_get_contents($this->getFilename());
 
 		return false;
