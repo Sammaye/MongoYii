@@ -112,7 +112,7 @@ class EMongoFile extends EMongoDocument{
 	 * You must unlink the tempfile yourself by calling unlink($file->getFilename())
 	 * @param string $stream
 	 * @return EMongoFile the new file generated from the stream
-	 */
+	 
 	public static function stream($stream){
 		$tempFile = tempnam(null, 'tmp'); // returns a temporary filename
 		
@@ -128,6 +128,7 @@ class EMongoFile extends EMongoDocument{
 		$file->setFile($tempFile);
 		return $file;
 	}
+	*/
 	
 	/**
 	 * Replaces the normal populateRecord specfically for GridFS by setting the attributes from the 
