@@ -107,6 +107,29 @@ class EMongoFile extends EMongoDocument{
 	}
 	
 	/**
+	 * This function populates from a stream
+	 * 
+	 * You must unlink the tempfile yourself by calling unlink($file->getFilename())
+	 * @param string $stream
+	 * @return EMongoFile the new file generated from the stream
+	 */
+	public static function stream($stream){
+		$tempFile = tempnam(null, 'tmp'); // returns a temporary filename
+		
+		$fp = fopen($tempFile, 'wb');     // open temporary file
+		$putData = fopen($stream, 'rb'); // open input stream
+		
+		stream_copy_to_stream($putData, $fp);  // write input stream directly into file
+		
+		fclose($putData);
+		fclose($fp);		
+		
+		$file = new EMongoFile();
+		$file->setFile($tempFile);
+		return $file;
+	}
+	
+	/**
 	 * Replaces the normal populateRecord specfically for GridFS by setting the attributes from the 
 	 * MongoGridFsFile object correctly and other file details like size and name.
 	 * @see EMongoDocument::populateRecord()
