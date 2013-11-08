@@ -1013,12 +1013,12 @@ and make life a little harder and maybe even create unperformant queries (especi
 
 <p>So I expect all modifications to certain parts of MongoYii to be compatible with and without <code>EMongoCriteria</code>.</p>
 
-<h1>Utilities</h1>
+<h2>Utilities</h2>
 
 <p>The <code>util</code> folder contains general awesome extensions to MongoYii that people may find useful. The sort of things that count as part of this folder are replacements for internal pieces 
 of Yii that might seem outside of the scope of the root of this repository.</p>
 
-<h2>EMongoCache</h2>
+<h3>EMongoCache</h3>
 
 <p>This is a MongoYii implementation of <code>CCache</code> by <a href="http://ezmegaz.hu/">Rajcsányi Zoltán</a>.</p>
 
@@ -1063,7 +1063,7 @@ $arr = Yii::app()-&gt;cache-&gt;mget(array('apple', 1, 'two'));
   print_r($arr); // Array( [apple] =&gt; fruit [1] =&gt; [two] =&gt; )
 </code></pre>
 
-<h2>EMongoMessageSource</h2>
+<h3>EMongoMessageSource</h3>
 
 <p>This is a MongoYii <code>Yii::t()</code> implementation by <a href="http://ezmegaz.hu/">Rajcsányi Zoltán</a>.</p>
 
@@ -1091,7 +1091,7 @@ $arr = Yii::app()-&gt;cache-&gt;mget(array('apple', 1, 'two'));
 <pre><code>&lt;?=Yii::t('users', 'Freund'); ?&gt;
 </code></pre>
 
-<h2>EMongoSession</h2>
+<h3>EMongoSession</h3>
 
 <p>This is a MongoYii <code>CHttpSession</code> implementation by yours truly.</p>
 
