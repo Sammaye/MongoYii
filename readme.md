@@ -921,12 +921,12 @@ This extension does not rely on `EMongoCriteria` internally.
 
 So I expect all modifications to certain parts of MongoYii to be compatible with and without `EMongoCriteria`.
 
-# Utilities
+## Utilities
 
 The `util` folder contains general awesome extensions to MongoYii that people may find useful. The sort of things that count as part of this folder are replacements for internal pieces 
 of Yii that might seem outside of the scope of the root of this repository.
 
-## EMongoCache
+### EMongoCache
 
 This is a MongoYii implementation of `CCache` by [Rajcsányi Zoltán](http://ezmegaz.hu/).
 
@@ -969,7 +969,7 @@ And now an example of its usage:
 
   	print_r($arr); // Array( [apple] => fruit [1] => [two] => )
   	
-## EMongoMessageSource
+### EMongoMessageSource
 
 This is a MongoYii `Yii::t()` implementation by [Rajcsányi Zoltán](http://ezmegaz.hu/).
 
@@ -994,7 +994,7 @@ And then simply get that message:
   
 	<?=Yii::t('users', 'Freund'); ?>
 	
-## EMongoSession
+### EMongoSession
 
 This is a MongoYii `CHttpSession` implementation by yours truly.
 
