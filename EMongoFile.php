@@ -18,18 +18,32 @@ class EMongoFile extends EMongoDocument{
 	
 	public function getFilename(){
 		if($this->getFile() instanceof MongoGridFSFile)
-			return $this->getFile()->getFilename();
-		return $this->getFile()->getTempName();
+				return $this->getFile()->getFilename();
+    elseif($this->getFile() instanceof CUploadedFile)
+				return $this->getFile()->getTempName();
+		elseif(is_string($this->getFile()) && is_file($this->getFile()))
+				return $this->getFile();
+
+		return false;
 	}
 	
 	public function getSize(){
-		return $this->getFile()->getSize();
+		if($this->getFile() instanceof EMongoGridFSFile || $this->getFile() instanceof CUploadedFile)
+				return $this->getFile()->getSize();
+		elseif(is_file($this->getFile()))
+				return filesize($this->getFile());
+
+		return false;
 	}
 
 	public function getBytes(){
 		if($this->getFile() instanceof MongoGridFSFile)
-			return $this->getFile()->getBytes();
-		return file_get_contents($this->getFilename());
+				return $this->getFile()->getBytes();
+		elseif($this->getFile() instanceof CUploadedFile ||
+						(is_file($this->getFile()) && is_readable($this->getFile())))
+				return file_get_contents($this->getFilename());
+
+		return false;
 	}
 	
 	/**
@@ -91,6 +105,30 @@ class EMongoFile extends EMongoDocument{
 		}
 		return null;
 	}
+	
+	/**
+	 * This function populates from a stream
+	 * 
+	 * You must unlink the tempfile yourself by calling unlink($file->getFilename())
+	 * @param string $stream
+	 * @return EMongoFile the new file generated from the stream
+	 
+	public static function stream($stream){
+		$tempFile = tempnam(null, 'tmp'); // returns a temporary filename
+		
+		$fp = fopen($tempFile, 'wb');     // open temporary file
+		$putData = fopen($stream, 'rb'); // open input stream
+		
+		stream_copy_to_stream($putData, $fp);  // write input stream directly into file
+		
+		fclose($putData);
+		fclose($fp);		
+		
+		$file = new EMongoFile();
+		$file->setFile($tempFile);
+		return $file;
+	}
+	*/
 	
 	/**
 	 * Replaces the normal populateRecord specfically for GridFS by setting the attributes from the 
