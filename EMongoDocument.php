@@ -4,6 +4,7 @@
  * EMongoDocument
  *
  * The active record itself
+ * @property bool $isNewRecord
  */
 class EMongoDocument extends EMongoModel{
 
