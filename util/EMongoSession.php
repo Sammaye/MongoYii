@@ -127,35 +127,38 @@ class EMongoSession extends CHttpSession
 	 * @param string $data session data
 	 * @return boolean whether session write is successful
 	 */
-	public function writeSession($id,$data)
-	{
-		// exception must be caught in session write handler
-		// http://us.php.net/manual/en/function.session-set-save-handler.php
-		try
-		{
-			$expire=time()+$this->getTimeout();
-			$db=$this->getDbConnection();
-			if($db->{$this->sessionTableName}->findOne(array('id'=>$id))===null)
-				$db->{$this->sessionTableName}->insert(array(
-					'id'=>$id,
-					'data'=>$data,
-					'expire'=>$expire,
-				));
-			else
-				$db->{$this->sessionTableName}->update(array('id'=>$id), array('$set' => array(
-					'data'=>$data,
-					'expire'=>$expire
-				)));
-		}
-		catch(Exception $e)
-		{
-			if(YII_DEBUG)
-				echo $e->getMessage();
-			// it is too late to log an error message here
-			return false;
-		}
-		return true;
-	}
+    public function writeSession($id,$data)
+    {
+        // exception must be caught in session write handler
+        // http://us.php.net/manual/en/function.session-set-save-handler.php
+        try
+        {
+            $expire=time()+$this->getTimeout();
+            $this->getDbConnection()->{$this->sessionTableName}->update(
+                array(
+                    'id'=>$id,
+                ),
+                array(
+                    'id'=>$id,
+                    'expire'=>$expire,
+                    'data'=>$data,
+                ),
+                array(
+                    'upsert'=>true,
+                    'multiple'=>false,
+                    'fsync'=>false,
+                )
+            );
+        }
+        catch(Exception $e)
+        {
+            if(YII_DEBUG)
+                echo $e->getMessage();
+            // it is too late to log an error message here
+            return false;
+        }
+        return true;
+    }
 
 	/**
 	 * Session destroy handler.
