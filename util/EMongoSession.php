@@ -51,7 +51,7 @@ class EMongoSession extends CHttpSession
 		$db=$this->getDbConnection();
 
 		$row = $db->{$this->sessionTableName}->findOne(array('id'=>$oldID));
-		if($row!==false)
+		if($row!==null)
 		{
 			if($deleteOldSession)
 				$db->{$this->sessionTableName}->update(array('id'=>$oldID),array('$set'=>array('id'=>$newID)));
