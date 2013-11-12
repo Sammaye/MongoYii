@@ -622,6 +622,7 @@ class EMongoDocument extends EMongoModel{
 		if($this->beforeSave())
 		{
 			$this->trace(__FUNCTION__);
+
 			if($this->getPrimaryKey() === null) // An _id is required
 				throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it has primary key set.'));
 
@@ -1016,7 +1017,9 @@ class EMongoDocument extends EMongoModel{
 		foreach($this->getSafeAttributeNames() as $attribute){
 				
 			$value = $this->{$attribute};
-			if ($value !== null && $value !== ''){
+
+			if($value !== null && $value !== '' && (!$value instanceof EMongoArrayModel)){
+
 				if((is_array($value) && count($value)) || is_object($value)){
 					$query[$attribute] = $value;
 				}elseif(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)) {

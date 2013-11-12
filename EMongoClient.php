@@ -104,6 +104,7 @@ class EMongoClient extends CApplicationComponent{
 		if(method_exists($this->getDB(), $name)){
 			return call_user_func_array(array($this->getDB(), $name), $parameters);
 		}
+		parent::__call($name, $parameters);
 	}
 
 	public function __construct(){
@@ -277,10 +278,10 @@ class EMongoClient extends CApplicationComponent{
 	public function getFieldCache($name, $include_virtual = false){
 		$doc = isset($this->_meta[$name]) ? $this->_meta[$name] : array();
 		$fields = array();
-		
+
 		foreach($doc as $name => $opts)
 			if($include_virtual || !$opts['virtual']) $fields[] = $name;
-		return $fields;		
+		return $fields;
 	}
 
 	/**

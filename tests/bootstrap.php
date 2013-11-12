@@ -17,5 +17,8 @@ require_once 'models/User.php';
 require_once 'models/UserTsTest.php';
 require_once 'models/Interest.php';
 require_once 'models/Dummy.php';
+require_once 'models/Phone.php';
+require_once 'models/Account.php';
+require_once 'models/Skill.php';
 require_once 'models/Skill.php';
 require_once 'models/versionedDocument.php';

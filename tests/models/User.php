@@ -6,7 +6,6 @@ class User extends EMongoDocument{
 	public $avatar;
 	
 	public $username;
-	public $addresses = array();
 	public $url = null;
 	public $interests = array();
     public $mainSkill;
@@ -36,7 +35,9 @@ class User extends EMongoDocument{
 				array('road,town,county,post_code', 'safe'),
 				array('telephone', 'numerical', 'integerOnly' => true)
 			)),
-            array('mainSkill,otherSkills','safe'),
+			array('accounts', 'subdocument', 'type' => 'many', 'rules' => array(
+				array('swiftCode', 'numerical', 'integerOnly' => true)
+			)),
 			array('url', 'subdocument', 'type' => 'one', 'class' => 'SocialUrl'),
 			array('_id, username, addresses', 'safe', 'on'=>'search'),
 		);
@@ -70,6 +71,13 @@ class User extends EMongoDocument{
 	public static function model($className=__CLASS__)
 	{
 		return parent::model($className);
+	}
+
+	public function subDocuments(){
+		return array(
+			'phones' => array('Phone', 'index' => 'num'),
+			'accounts' => array('Account'),
+		);
 	}
 }
 

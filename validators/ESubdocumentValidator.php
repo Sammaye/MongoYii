@@ -48,12 +48,14 @@ class ESubdocumentValidator extends CValidator{
 		}
 
 		if($this->type == 'many'){
-			if(is_array($object->$attribute)){
+			if(is_array($object->$attribute) || ($object->$attribute instanceof EMongoArrayModel)){
 
 				$fieldErrors = array();
 				$fieldValue = array();
 
-				foreach($object->$attribute as $index=>$row){
+				$array = $object->$attribute instanceof EMongoArrayModel ? $object->$attribute->getRawValues() : $object->$attribute;
+
+				foreach($array as $index=>$row){
 					$c->clean();
 					if($this->preserveKeys)
 						$val = $fieldValue[$index] = $row instanceof $c ? $row->getRawDocument() : $row;

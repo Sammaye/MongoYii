@@ -4,6 +4,10 @@
 
 Another active record handler for the Yii framework that supports MongoDB.
 
+This fork adds some useful features:
+- lazy autoloading of subDocuments
+- write concern behavior
+
 ## Rationale
 
 There is already a great extension called YiiMongoDBSuite out for Yii so why make another? YiiMongoDBSuite has certain flaws which I wish to address:
@@ -928,7 +932,7 @@ of Yii that might seem outside of the scope of the root of this repository.
 
 ### EMongoCache
 
-This is a MongoYii implementation of `CCache` by [Rajcsányi Zoltán](http://ezmegaz.hu/).
+This is a MongoYii implementation of `CCache` by [Rajcsï¿½nyi Zoltï¿½n](http://ezmegaz.hu/).
 
 To use it first place it in your configuration:
 
@@ -971,7 +975,7 @@ And now an example of its usage:
   	
 ### EMongoMessageSource
 
-This is a MongoYii `Yii::t()` implementation by [Rajcsányi Zoltán](http://ezmegaz.hu/).
+This is a MongoYii `Yii::t()` implementation by [Rajcsï¿½nyi Zoltï¿½n](http://ezmegaz.hu/).
 
 To use it first add it to your configuration:
 
