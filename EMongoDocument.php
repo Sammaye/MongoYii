@@ -598,10 +598,10 @@ class EMongoDocument extends EMongoModel{
 				Yii::trace('Executing insert: {$document:'.json_encode($document).'}', 'extensions.MongoYii.EMongoDocument');
 			}
 			if($this->getDbConnection()->enableProfiling)
-				Yii::beginProfile('extensions.MongoYii.EMongoDocument.query.'.get_class($this).'.insert('.'{$document:'.json_encode($document).'})', 'extensions.MongoYii.EMongoDocument.insert');
+				Yii::beginProfile('extensions.MongoYii.EMongoDocument.query.'.$this->collectionName().'.insert('.'{$document:'.json_encode($document).'})', 'extensions.MongoYii.EMongoDocument.insert');
 			$this->lastError = $this->getCollection()->insert($document, $this->getDbConnection()->getDefaultWriteConcern());
 			if($this->getDbConnection()->enableProfiling)
-				Yii::endProfile('extensions.MongoYii.EMongoDocument.query.'.get_class($this).'.insert('.'{$document:'.json_encode($document).'})', 'extensions.MongoYii.EMongoDocument.insert');
+				Yii::endProfile('extensions.MongoYii.EMongoDocument.query.'.$this->collectionName().'.insert('.'{$document:'.json_encode($document).'})', 'extensions.MongoYii.EMongoDocument.insert');
 
 			if($this->lastError){
 				$this->afterSave();
@@ -746,13 +746,13 @@ class EMongoDocument extends EMongoModel{
 		Yii::trace('Executing findOne: '.'{$query:'.json_encode($query).',$project:'.json_encode($project).'}','extensions.MongoYii.EMongoDocument');
 
 		if($this->getDbConnection()->enableProfiling)
-			Yii::beginProfile('extensions.MongoYii.EMongoDocument.query.'.get_class($this).'.findOne('.'{$query:'.json_encode($query).',$project:'.json_encode($project).'}'.')',
+			Yii::beginProfile('extensions.MongoYii.EMongoDocument.query.'.$this->collectionName().'.findOne('.'{$query:'.json_encode($query).',$project:'.json_encode($project).'}'.')',
 				'extensions.MongoYii.EMongoDocument.findOne');
 
 		$record=$this->getCollection()->findOne($query,$project);
 
 		if($this->getDbConnection()->enableProfiling)
-			Yii::endProfile('extensions.MongoYii.EMongoDocument.query.'.get_class($this).'.findOne('.'{$query:'.json_encode($query).',$project:'.json_encode($project).'}'.')',
+			Yii::endProfile('extensions.MongoYii.EMongoDocument.query.'.$this->collectionName().'.findOne('.'{$query:'.json_encode($query).',$project:'.json_encode($project).'}'.')',
 				'extensions.MongoYii.EMongoDocument.findOne');
 
 
@@ -821,7 +821,7 @@ class EMongoDocument extends EMongoModel{
 			.(isset($c['limit']) ? ',$limit:'.json_encode($c['limit']).',' : '')
 			.'}','extensions.MongoYii.EMongoDocument');
 		if($this->getDbConnection()->enableProfiling) {
-			$token = 'extensions.MongoYii.EMongoDocument.query.'.get_class($this).'.find('.'{$query:'.json_encode($query)
+			$token = 'extensions.MongoYii.EMongoDocument.query.'.$this->collectionName().'.find('.'{$query:'.json_encode($query)
 				.',$project:'.json_encode($project)
 				.(isset($c['sort']) ? ',$sort:'.json_encode($c['sort']).',' : '')
 				.(isset($c['skip']) ? ',$skip:'.json_encode($c['skip']).',' : '')
@@ -887,10 +887,10 @@ class EMongoDocument extends EMongoModel{
 		Yii::trace('Executing deleteByPk: '.'{$query:'.json_encode($query).'}','extensions.MongoYii.EMongoDocument');
 
 		if($this->getDbConnection()->enableProfiling)
-			Yii::beginProfile('extensions.MongoYii.EMongoDocument.query.'.get_class($this).'.deleteByPk('.'{$query:'.json_encode($query).'}'.')'	,'extensions.MongoYii.EMongoDocument.deleteByPk');
+			Yii::beginProfile('extensions.MongoYii.EMongoDocument.query.'.$this->collectionName().'.deleteByPk('.'{$query:'.json_encode($query).'}'.')'	,'extensions.MongoYii.EMongoDocument.deleteByPk');
 		$result = $this->getCollection()->remove($query, array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 		if($this->getDbConnection()->enableProfiling)
-			Yii::endProfile('extensions.MongoYii.EMongoDocument.query.'.get_class($this).'.deleteByPk('.'{$query:'.json_encode($query).'}'.')'	,'extensions.MongoYii.EMongoDocument.deleteByPk');
+			Yii::endProfile('extensions.MongoYii.EMongoDocument.query.'.$this->collectionName().'.deleteByPk('.'{$query:'.json_encode($query).'}'.')'	,'extensions.MongoYii.EMongoDocument.deleteByPk');
 
 		return $result;
 	}
@@ -918,14 +918,14 @@ class EMongoDocument extends EMongoModel{
 			Yii::trace('Executing updateByPk: '.'{$query:'.json_encode($query).',$document:'.json_encode($updateDoc).'}','extensions.MongoYii.EMongoDocument');
 		}
 		if($this->getDbConnection()->enableProfiling)
-			Yii::beginProfile('extensions.MongoYii.EMongoDocument.query.'.get_class($this).'.updateByPk('.'{$query:'.json_encode($query).',$document:'.json_encode($updateDoc).'}'.')',
+			Yii::beginProfile('extensions.MongoYii.EMongoDocument.query.'.$this->collectionName().'.updateByPk('.'{$query:'.json_encode($query).',$document:'.json_encode($updateDoc).'}'.')',
 				'extensions.MongoYii.EMongoDocument.updateByPk');
 
 		$result = $this->getCollection()->update($query, $updateDoc,
 			array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 
 		if($this->getDbConnection()->enableProfiling)
-			Yii::endProfile('extensions.MongoYii.EMongoDocument.query.'.get_class($this).'.updateByPk('.'{$query:'.json_encode($query).',$document:'.json_encode($updateDoc).'}'.')',
+			Yii::endProfile('extensions.MongoYii.EMongoDocument.query.'.$this->collectionName().'.updateByPk('.'{$query:'.json_encode($query).',$document:'.json_encode($updateDoc).'}'.')',
 				'extensions.MongoYii.EMongoDocument.updateByPk');
 
 		return $result;
@@ -955,7 +955,7 @@ class EMongoDocument extends EMongoModel{
 		}
 		if($this->getDbConnection()->enableProfiling)
 		{
-			$token = 'extensions.MongoYii.EMongoDocument.query.'.get_class($this).'.updateAll('.'{$query:'.json_encode($criteria)
+			$token = 'extensions.MongoYii.EMongoDocument.query.'.$this->collectionName().'.updateAll('.'{$query:'.json_encode($criteria)
 				.',$document:'.json_encode($updateDoc)
 				.',$options:'.json_encode($options).'})';
 			Yii::beginProfile($token, 'extensions.MongoYii.EMongoDocument.updateAll');
@@ -983,12 +983,12 @@ class EMongoDocument extends EMongoModel{
 
 		Yii::trace('Executing deleteAll: '.'{$query:'.json_encode($criteria).'}','extensions.MongoYii.EMongoDocument');
 		if($this->getDbConnection()->enableProfiling)
-			Yii::beginProfile('extensions.MongoYii.EMongoDocument.query.'.get_class($this).'.deleteAll('.'{$query:'.json_encode($criteria).'}'.')','extensions.MongoYii.EMongoDocument.deleteAll');
+			Yii::beginProfile('extensions.MongoYii.EMongoDocument.query.'.$this->collectionName().'.deleteAll('.'{$query:'.json_encode($criteria).'}'.')','extensions.MongoYii.EMongoDocument.deleteAll');
 
 		$result = $this->getCollection()->remove($criteria, array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options));
 
 		if($this->getDbConnection()->enableProfiling)
-			Yii::endProfile('extensions.MongoYii.EMongoDocument.query.'.get_class($this).'.deleteAll('.'{$query:'.json_encode($criteria).'}'.')','extensions.MongoYii.EMongoDocument.deleteAll');
+			Yii::endProfile('extensions.MongoYii.EMongoDocument.query.'.$this->collectionName().'.deleteAll('.'{$query:'.json_encode($criteria).'}'.')','extensions.MongoYii.EMongoDocument.deleteAll');
 
 		return $result;
 	}
