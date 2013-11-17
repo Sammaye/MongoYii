@@ -329,7 +329,7 @@ class EMongoModel extends CModel{
 
         if($relation[0] == 'belongs_to') {
             $pk = $this->{$relation[2]};
-            $fkey = isset($relation['on']) ? $this->{$relation['on']} : '_id';
+            $fkey = isset($relation['on']) ? $relation['on'] : '_id';
         } else {
 	    	$fkey = $relation[2];
 	    	$pk = isset($relation['on']) ? $this->{$relation['on']} : $this->getPrimaryKey();
