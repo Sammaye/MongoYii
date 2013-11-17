@@ -326,8 +326,14 @@ class EMongoModel extends CModel{
 
 		// Let's get the parts of the relation to understand it entirety of its context
 		$cname = $relation[1];
-		$fkey = $relation[2];
-		$pk = isset($relation['on']) ? $this->{$relation['on']} : $this->getPrimaryKey();
+
+        if($relation[0] == 'belongs_to') {
+            $pk = $this->{$relation[2]};
+            $fkey = isset($relation['on']) ? $relation['on'] : '_id';
+        } else {
+	    	$fkey = $relation[2];
+	    	$pk = isset($relation['on']) ? $this->{$relation['on']} : $this->getPrimaryKey();
+        }
 
 		// Form the where clause
 		$where = array();
@@ -359,15 +365,14 @@ class EMongoModel extends CModel{
 		}
 
 		$o = $cname::model();
-		if($relation[0]==='one'){
-
+        if(in_array($relation[0], array('one', 'belongs_to'))){
 			// Lets find it and return it
 			$cursor = $o->findOne($clause);
 		}elseif($relation[0]==='many'){
-
 			// Lets find them and return them
 			$cursor = $o->find($clause);
 		}
+
 		return $cursor;
 	}
 
@@ -438,7 +443,7 @@ class EMongoModel extends CModel{
 					$prev=is_array($prev)?$prev[$piece]:$prev->$piece;
 				}
 				return $prev===null?array():$prev;
-			}		
+			}
 			return isset($this->_errors[$attribute]) ? $this->_errors[$attribute] : array();
 		}
 	}
@@ -460,7 +465,7 @@ class EMongoModel extends CModel{
 				$prev=is_array($prev)?$prev[$piece]:$prev->$piece;
 			}
 			return $prev===null?array():reset($prev);
-		}		
+		}
 		return isset($this->_errors[$attribute]) ? reset($this->_errors[$attribute]) : null;
 	}
 
