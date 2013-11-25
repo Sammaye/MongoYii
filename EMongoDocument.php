@@ -323,9 +323,10 @@ class EMongoDocument extends EMongoModel{
 
 	/**
 	 * Instantiates a model from an array
+	 * @param array $document
 	 * @return EMongoDocument
 	 */
-	protected function instantiate(){
+	protected function instantiate($document){
 		$class = get_class($this);
 		return new $class(null);
 	}
@@ -378,7 +379,7 @@ class EMongoDocument extends EMongoModel{
 	{
 		if($attributes !== false)
 		{
-			$record = $this->instantiate();
+			$record = $this->instantiate($attributes);
 			$record->setScenario('update');
 			$record->setIsNewRecord(false);
 			$record->init();
