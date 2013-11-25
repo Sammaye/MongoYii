@@ -143,7 +143,7 @@ class EMongoFile extends EMongoDocument{
 			// set it as our attributes and then set this classes file as the first param we got
 			$file=$attributes;
 			$attributes=$file->file;
-			$record=$this->instantiate($attributes);			
+			$record=$this->instantiate($attributes);
 			$record->setFile($file);			
 			$record->setScenario('update');
 			$record->setIsNewRecord(false);

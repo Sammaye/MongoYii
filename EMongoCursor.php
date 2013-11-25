@@ -11,7 +11,7 @@
  * I did try originally to make this into a active data provider and use this for two fold operations but the cactivedataprovider would extend
  * a lot for the cursor and the two took quite different constructors.
  */
-class EMongoCursor implements Iterator, Countable{
+class EMongoCursor implements Iterator, Countable {
 	/**
 	 * @var array|EMongoCriteria
 	 */
