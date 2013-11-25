@@ -39,8 +39,8 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * Are we using journaled writes here? Beware this makes all writes wait for the journal, it does not
-	 * state whether MongoDB is using journaling. Note: this is NOT straight to disk, 
-	 * it infact makes the journal to disk time a third of its normal time (anywhere between 2-30ms). 
+	 * state whether MongoDB is using journaling. Note: this is NOT straight to disk,
+	 * it infact makes the journal to disk time a third of its normal time (anywhere between 2-30ms).
 	 * Only works 1.3+ driver
 	 * @var boolean
 	 */
@@ -60,7 +60,7 @@ class EMongoClient extends CApplicationComponent{
 	 * @var boolean
 	 */
 	public $setSlaveOkay = false;
-	
+
 	/**
 	 * Enables logging to the profiler
 	 * @var boolean
@@ -87,7 +87,7 @@ class EMongoClient extends CApplicationComponent{
 	private $_meta = array();
 
 	/**
-	 * The default action is to find a getX whereby X is the $k param 
+	 * The default action is to find a getX whereby X is the $k param
 	 * you input. The secondary function, if not getter found, is to get a collection
 	 */
 	public function __get($k){
@@ -195,7 +195,7 @@ class EMongoClient extends CApplicationComponent{
 	}
 
 	/**
-	 * This function is designed to be a helper to make calling the aggregate command 
+	 * This function is designed to be a helper to make calling the aggregate command
 	 * more standard across all drivers.
 	 * @param string $collection
 	 * @param $pipelines
@@ -231,7 +231,7 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * Sets the document cache for any particular document (EMongoDocument/EMongoModel)
-	 * sent in as the first parameter of this function. Will not cache actual EMongoDocument/EMongoModel instances 
+	 * sent in as the first parameter of this function. Will not cache actual EMongoDocument/EMongoModel instances
 	 * only active classes that inherit these
 	 * @param $o
 	 */
@@ -277,10 +277,10 @@ class EMongoClient extends CApplicationComponent{
 	public function getFieldCache($name, $include_virtual = false){
 		$doc = isset($this->_meta[$name]) ? $this->_meta[$name] : array();
 		$fields = array();
-		
+
 		foreach($doc as $name => $opts)
 			if($include_virtual || !$opts['virtual']) $fields[] = $name;
-		return $fields;		
+		return $fields;
 	}
 
 	/**
@@ -352,6 +352,38 @@ class EMongoClient extends CApplicationComponent{
 	public function setSlaveOkay($bool){
 		return $this->getConnection()->setSlaveOkay($bool);
 	}
+
+    /**
+     * @return array the first element indicates the number of query statements executed,
+     * and the second element the total time spent in query execution.
+     */
+    public function getStats()
+    {
+        $logger=Yii::getLogger();
+        $timings=$logger->getProfilingResults(null,'extensions.MongoYii.EMongoDocument.findOne');
+        $count=count($timings);
+        $time=array_sum($timings);
+        $timings=$logger->getProfilingResults(null,'extensions.MongoYii.EMongoDocument.insert');
+        $count+=count($timings);
+        $time+=array_sum($timings);
+        $timings=$logger->getProfilingResults(null,'extensions.MongoYii.EMongoDocument.find');
+        $count+=count($timings);
+        $time+=array_sum($timings);
+        $timings=$logger->getProfilingResults(null,'extensions.MongoYii.EMongoDocument.deleteByPk');
+        $count+=count($timings);
+        $time+=array_sum($timings);
+        $timings=$logger->getProfilingResults(null,'extensions.MongoYii.EMongoDocument.updateByPk');
+        $count+=count($timings);
+        $time+=array_sum($timings);
+        $timings=$logger->getProfilingResults(null,'extensions.MongoYii.EMongoDocument.updateAll');
+        $count+=count($timings);
+        $time+=array_sum($timings);
+        $timings=$logger->getProfilingResults(null,'extensions.MongoYii.EMongoDocument.deleteAll');
+        $count+=count($timings);
+        $time+=array_sum($timings);
+
+        return array($count,$time);
+    }
 }
 
 /**

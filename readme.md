@@ -921,6 +921,91 @@ This extension does not rely on `EMongoCriteria` internally.
 
 So I expect all modifications to certain parts of MongoYii to be compatible with and without `EMongoCriteria`.
 
+## Utilities
+
+The `util` folder contains general awesome extensions to MongoYii that people may find useful. The sort of things that count as part of this folder are replacements for internal pieces 
+of Yii that might seem outside of the scope of the root of this repository.
+
+### EMongoCache
+
+This is a MongoYii implementation of `CCache` by [Rajcsányi Zoltán](http://ezmegaz.hu/).
+
+To use it first place it in your configuration:
+
+	'components'=>array(
+		...
+		'cache' => array(
+			'class'=>'application.extensions.MongoYii.util.EMongoCache',
+			// 'ensureIndex' => true, //set to false after first use of the cache
+			// 'mongoConnectionId' => 'mongodb',
+			// 'collectionName' => 'mongodb_cache',		
+		),
+	}
+
+The commented out lines are optional parameters you can send in if required.
+
+And now an example of its usage: 
+
+	// flush cache
+	Yii::app()->cache->flush();
+	
+	// add data to cache
+	Yii::app()->cache->set('apple', 'fruit');
+	Yii::app()->cache->set('onion', 'vegetables');
+	Yii::app()->cache->set(1, 'one');
+	Yii::app()->cache->set(2, 'two');
+	Yii::app()->cache->set('one', 1);
+	Yii::app()->cache->set('two', 2);
+	
+	// delete from cache
+	Yii::app()->cache->delete(1);
+	Yii::app()->cache->delete('two');
+	
+	// read from cache
+	echo Yii::app()->cache->get(2);
+	
+	// multiple read from cache
+	$arr = Yii::app()->cache->mget(array('apple', 1, 'two'));
+
+  	print_r($arr); // Array( [apple] => fruit [1] => [two] => )
+  	
+### EMongoMessageSource
+
+This is a MongoYii `Yii::t()` implementation by [Rajcsányi Zoltán](http://ezmegaz.hu/).
+
+To use it first add it to your configuration:
+
+	'components' => array(
+		...
+		'messages' => array(
+			'class' => 'application.extensions.MongoYii.util.EMongoMessageSource',
+			// 'mongoConnectionId' => 'mongodb', 
+			// 'collectionName' => 'YiiMessages',               
+		)        
+	)
+
+The commented out lines are optional parameters you can send in if required.
+
+And then add some messages to the translation table:
+
+	db.YiiMessages.insert( { category:"users", message:"Freund", translations: [ {language:"eng", message:"Friend"} ] } );
+
+And then simply get that message:
+  
+	<?=Yii::t('users', 'Freund'); ?>
+	
+### EMongoSession
+
+This is a MongoYii `CHttpSession` implementation by yours truly.
+
+To use it simply include it in your configuration:
+
+	'session' => array(
+		'class' => 'application.extensions.MongoYii.util.EMongoSession',
+	)
+
+And use it as you would Yiis own normal session.
+
 ## Upgrade Notes
  
 There has been a small but dramatic change between version 1.x and 2.x of MongoYii. The `compare()` function within the `EMongoCriteria` now no longer uses partial matching by
