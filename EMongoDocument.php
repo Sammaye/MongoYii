@@ -255,6 +255,7 @@ class EMongoDocument extends EMongoModel{
 
 	/**
 	 * Forceably increments the version of this document
+	 * @return bool
 	 */
 	public function incrementVersion(){
 		$resp=$this->updateByPk($this->getPrimaryKey(),array('$inc'=>array($this->versionField() => 1)));
@@ -262,10 +263,13 @@ class EMongoDocument extends EMongoModel{
 			$this->{$this->versionField()}+=1;
 			return true;
 		}
+		return false;
 	}
 
 	/**
 	 * Forceably sets the version of this document
+	 * @param mixed $n
+	 * @return bool
 	 */
 	public function setVersion($n){
 		$resp=$this->updateByPk($this->getPrimaryKey(),array('$set'=>array($this->versionField() => $n)));
@@ -273,6 +277,7 @@ class EMongoDocument extends EMongoModel{
 			$this->{$this->versionField()}=$n;
 			return true;
 		}
+		return false;
 	}
 
 	/**
@@ -318,13 +323,11 @@ class EMongoDocument extends EMongoModel{
 
 	/**
 	 * Instantiates a model from an array
-	 * @param array $document
 	 * @return EMongoDocument
 	 */
-	protected function instantiate($document){
+	protected function instantiate(){
 		$class = get_class($this);
-		$model = new $class(null);
-		return $model;
+		return new $class(null);
 	}
 
 	/**
@@ -375,7 +378,7 @@ class EMongoDocument extends EMongoModel{
 	{
 		if($attributes !== false)
 		{
-			$record = $this->instantiate($attributes);
+			$record = $this->instantiate();
 			$record->setScenario('update');
 			$record->setIsNewRecord(false);
 			$record->init();
@@ -403,7 +406,7 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * Returns an array of records populated by incoming data
 	 * @param array $data
-	 * @param string $callAfterFind
+	 * @param bool $callAfterFind
 	 * @param string $index
 	 * @return array - Array of the records
 	 */
@@ -714,16 +717,15 @@ class EMongoDocument extends EMongoModel{
 
 	/**
 	 * Is basically a find one of the last version to be saved
-	 * @return NULL|EMongoDocument
+	 * @return null|EMongoDocument
 	 */
 	public function getLatest(){
 		$c=$this->find(array($this->primaryKey()=>$this->getPrimaryKey()));
-		if($c->count()<=0){
+		if($c->count()<=0)
 			return null;
-		}else{
-			foreach($c as $row)
-				return $this->populateRecord($row);
-		}
+		foreach($c as $row)
+			return $this->populateRecord($row);
+		return null;
 	}
 
 	/**
@@ -1046,7 +1048,9 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * Gives basic searching abilities for things like CGridView
 	 * @param array $query - allows you to specify a query which should always take hold along with the searched fields
-	 * @param array $project
+	 * @param array $project - search fields
+	 * @param bool $partialMatch
+	 * @param array $sort
 	 * @return EMongoDataProvider
 	 */
 	public function search($query = array(), $project = array(), $partialMatch=false, $sort = array()){
@@ -1241,5 +1245,4 @@ class EMongoDocument extends EMongoModel{
 	public function trace($func){
 		Yii::trace(get_class($this) . '.' . $func . '()', 'extensions.MongoYii.EMongoDocument');
 	}
-
 }
