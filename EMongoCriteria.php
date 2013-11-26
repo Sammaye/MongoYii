@@ -121,7 +121,7 @@ class EMongoCriteria extends CComponent {
 	
 	/**
 	 * Sets the projection (SELECT in MongoDB Lingo) of the criteria
-	 * @param $document - The document specification for projection
+	 * @param array $document - The document specification for projection
 	 * @return EMongoCriteria
 	 */
 	public function setProject($document){
@@ -141,14 +141,17 @@ class EMongoCriteria extends CComponent {
 	/**
 	 * An alias for those too used to select
 	 * @see EMongoCriteria::setProject()
-	 */
-	public function setSelect($document){
+     * @param array $document
+     * @return EMongoCriteria
+     */
+    public function setSelect($document){
 		return $this->setProject($document);	
 	}
 	
 	/**
 	 * An alias for those too used to select
 	 * @see EMongoCriteria::getProject()
+     * @return array
 	 */
 	public function getSelect(){
 		return $this->getProject();

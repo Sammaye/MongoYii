@@ -22,7 +22,7 @@ class EMongoLogRoute extends CLogRoute
 	
 	/**
 	 * Get a MongoCollection object
-	 * @return Instance of MongoCollection
+	 * @return MongoCollection - Instance of MongoCollection
 	 */
 	public function getMongoConnection()
 	{
