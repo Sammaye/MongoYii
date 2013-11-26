@@ -45,7 +45,7 @@ class EMongoDataProvider extends CActiveDataProvider {
 	 * @param string|EMongoDocument $modelClass
 	 * @param array $config
 	 */
-    public function __construct($modelClass,$config = array()){
+    public function __construct($modelClass, $config = array()){
 
 		if(is_string($modelClass))
 		{

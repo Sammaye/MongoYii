@@ -99,11 +99,14 @@ class EMongoClient extends CApplicationComponent{
 
 	/**
 	 * Will call a function on the database or error out stating that the function does not exist
-	 */
-	public function __call($name,$parameters = array()){
-		if(method_exists($this->getDB(), $name)){
-			return call_user_func_array(array($this->getDB(), $name), $parameters);
-		}
+     * @param string $name
+     * @param array $parameters
+     * @return mixed
+     */
+    public function __call($name,$parameters = array()){
+		if(!method_exists($this->getDB(), $name))
+            return null;
+		return call_user_func_array(array($this->getDB(), $name), $parameters);
 	}
 
 	public function __construct(){
@@ -176,7 +179,6 @@ class EMongoClient extends CApplicationComponent{
 	 * @return MongoDB
 	 */
 	public function getDB(){
-
 		if(empty($this->_db))
 			$this->setDB($this->db);
 
@@ -297,15 +299,12 @@ class EMongoClient extends CApplicationComponent{
 	 * @return array
 	 */
 	public function getDefaultWriteConcern(){
-		if(version_compare(phpversion('mongo'), '1.3.0', '<')){
-			if($this->w == 1){
-				return array('safe' => true);
-			}elseif($this->w > 0){
-				return array('safe' => $this->w);
-			}
-		}else{
-			return array('w' => $this->w, 'j' => $this->j);
-		}
+		if(!version_compare(phpversion('mongo'), '1.3.0', '<'))
+            return array('w' => $this->w, 'j' => $this->j);
+        if($this->w == 1)
+            return array('safe' => true);
+        if($this->w > 0)
+            return array('safe' => $this->w);
 		return array();
 	}
 
