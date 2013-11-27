@@ -200,8 +200,6 @@ class EMongoDocument extends EMongoModel{
 	public function getPrimaryKey($value = null){
 		if($value === null)
 			$value = $this->{$this->primaryKey()};
-		if($this->getIsNewRecord())
-			return new MongoId();
 		return $this->getMongoId($value);
 	}
 
