@@ -200,6 +200,8 @@ class EMongoDocument extends EMongoModel{
 	public function getPrimaryKey($value = null){
 		if($value === null)
 			$value = $this->{$this->primaryKey()};
+		if($this->getIsNewRecord())
+			return new MongoId();
 		return $this->getMongoId($value);
 	}
 
@@ -580,7 +582,7 @@ class EMongoDocument extends EMongoModel{
         if($this->versioned())
             $document[$this->versionField()]=$this->{$this->versionField()}=1;
 
-        if(!isset($this->{$this->primaryKey()})) $document['_id']=$this->{$this->primaryKey()} = new MongoId;
+        if(!isset($this->{$this->primaryKey()})) $document['_id']=$this->{$this->primaryKey()} = $this->getPrimaryKey();
         if(YII_DEBUG){
             // we're actually physically testing for Yii debug mode here to stop us from
             // having to do the serialisation on the update doc normally.
