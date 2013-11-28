@@ -364,7 +364,7 @@ class EMongoModel extends CModel{
 		if($relation[0]==='one'){
 
 			// Lets find it and return it
-			$cursor = $this->_related[$name] = $o->findOne($clause);
+			return $this->_related[$name] = $o->findOne($clause);
 		}elseif($relation[0]==='many'){
 
 			// Lets find them and return them
@@ -373,9 +373,9 @@ class EMongoModel extends CModel{
 				->skip(isset($relation['skip'])?$relation['skip']:null)
 				->limit(isset($relation['limit'])?$relation['limit']:null);
 			if(isset($relation['cache']) && $relation['cache']===true)
-				$this->_related[$name]=$cursor=iterator_to_array($cursor);
+				return $this->_related[$name]=iterator_to_array($cursor);
 		}
-		return $cursor;
+		return $cursor; // FAIL SAFE
 	}
 
 	/**
