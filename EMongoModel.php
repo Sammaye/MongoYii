@@ -334,7 +334,7 @@ class EMongoModel extends CModel{
 		// Form the where clause
 		$where = array();
 		if(isset($relation['where'])) $where = array_merge($relation['where'], $params);
-
+		
 		// Find out what the pk is and what kind of condition I should apply to it
 		if (is_array($pk)) {
 			//It is an array of references
@@ -344,7 +344,7 @@ class EMongoModel extends CModel{
 					$row = $this->populateReference($singleReference, $cname);
 					if ($row) array_push($result, $row);
 				}
-				return $result;
+				return $this->_related[$name]=$result;
 			}
 			// It is an array of _ids
 			$clause = array_merge($where, array($fkey=>array('$in' => $pk)));
@@ -352,7 +352,7 @@ class EMongoModel extends CModel{
 
 			// I should probably just return it here
 			// otherwise I will continue on
-			return $this->populateReference($pk, $cname);
+			return $this->_related[$name]=$this->populateReference($pk, $cname);
 
 		}else{
 
@@ -364,11 +364,11 @@ class EMongoModel extends CModel{
 		if($relation[0]==='one'){
 
 			// Lets find it and return it
-			$cursor = $o->findOne($clause);
+			$cursor = $this->_related[$name] = $o->findOne($clause);
 		}elseif($relation[0]==='many'){
 
 			// Lets find them and return them
-			$cursor = $o->find($clause);
+			$cursor = $o->find($clause)->sort(isset($relation['sort'])?$relation['sort']:array());
 		}
 		return $cursor;
 	}
