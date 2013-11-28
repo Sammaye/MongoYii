@@ -235,7 +235,7 @@ will not translate to <code>slaveOkay</code>.</p>
 
 <pre><code>function relations(){
     return array(
-        'others' =&gt; array('many', 'Other', 'otherId')
+        'others' =&gt; array('many', 'Other', 'otherId', 'sort' =&gt; array('_id'=&gt;-1), 'skip' =&gt; 1, 'limit' =&gt; 10)
     );
 }
 </code></pre>
@@ -253,6 +253,28 @@ clause with the primary key field you define in order to query for the relation.
 
 <p>All relations are returned as <code>EMongoCursor</code>s which is basically the Yii active record implementation of <code>MongoCursor</code>. There is no eager loading, if you wish to use eager loading
 please look into using <code>iterator_to_array()</code> on the return value from calling the relation.</p>
+
+<h4>Caching</h4>
+
+<p>Currently there is no relationship caching on relation types of <code>many</code> due to the historical reason of returning an <code>EMongoCursor</code> for all relationships. 
+You can add caching by setting <code>cache</code> to <code>true</code> in the relation properties like so:</p>
+
+<pre><code>function relations(){
+    return array(
+        'others' =&gt; array('many', 'Other', 'otherId', 'cache' =&gt; true)
+    );
+}
+</code></pre>
+
+<h4>Deprecation Notice</h4>
+
+<p>By default currently a <code>many</code> relation has no caching to it. This goes against how Yii works as such caching will be turned on by default at some point in the future: 
+<a href="https://github.com/Sammaye/MongoYii/issues/169">https://github.com/Sammaye/MongoYii/issues/169</a>.</p>
+
+<p>The change will not happen for a long time to give people who have come to expect the behaviour of no caching a chance to move their code.</p>
+
+<p>The ability to declare a relationship as uncached is staying. This will help for very large relationships that exist which should not really be 
+brought into memory for performance reasons.</p>
 
 <h3>getDocument()</h3>
 
