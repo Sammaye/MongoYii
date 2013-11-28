@@ -187,7 +187,7 @@ As you have guessed, you can only define two types of relation in this extension
 
 	function relations(){
 		return array(
-			'others' => array('many', 'Other', 'otherId')
+			'others' => array('many', 'Other', 'otherId', 'sort' => array('_id'=>-1), 'skip' => 1, 'limit' => 10)
 		);
 	}
 
@@ -204,6 +204,27 @@ clause with the primary key field you define in order to query for the relation.
 
 All relations are returned as `EMongoCursor`s which is basically the Yii active record implementation of `MongoCursor`. There is no eager loading, if you wish to use eager loading
 please look into using `iterator_to_array()` on the return value from calling the relation.
+
+#### Caching
+
+Currently there is no relationship caching on relation types of `many`. You can add caching by setting `cache` to `true` in the relation properties like so:
+
+	function relations(){
+		return array(
+			'others' => array('many', 'Other', 'otherId', 'cache' => true)
+		);
+	}
+
+#### Deprecation Notice
+
+By default currently a `many` relation has no caching to it. This goes against how Yii works and actually can lead to less peformant applications in the real world, unless 
+speciifically coded for, as such caching willk be turned on by default as some point in the future: 
+[https://github.com/Sammaye/MongoYii/issues/169](https://github.com/Sammaye/MongoYii/issues/169).
+
+The change will not happen for a long time to give people who have come to expect the behaviour of no caching a chance to move their code.
+
+The ability to declare a relationship as uncached is staying. This will help for very large relationships that exist which should not really be 
+brought into memory for performance reasons.
 
 ### getDocument()
 
