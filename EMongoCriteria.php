@@ -31,7 +31,7 @@ class EMongoCriteria extends CComponent {
 
 	/**
 	 * Holds information for what should be projected from the cursor
-	 * into active models. The reason for this obscure name is because this 
+	 * into active models. The reason for this obscure name is because this
 	 * is what it is called in MongoDB, basically it is SELECT though.
 	 * @var array
 	 */
@@ -40,7 +40,7 @@ class EMongoCriteria extends CComponent {
 	/**
 	 * Constructor.
 	 * @param array $data - criteria initial property values (indexed by property name)
-	 */
+	*/
 	public function __construct($data = array()){
 		foreach($data as $name => $value)
 			$this->$name = $value;
@@ -63,7 +63,7 @@ class EMongoCriteria extends CComponent {
 	public function getCondition() {
 		return $this->_condition;
 	}
-	
+
 	/**
 	 * Sets the sort
 	 * @param array $sort
@@ -72,7 +72,7 @@ class EMongoCriteria extends CComponent {
 	public function setSort(array $sort) {
 		$this->_sort = CMap::mergeArray($sort, $this->_sort);
 		return $this;
-	}	
+	}
 
 	/**
 	 * Gets the sort
@@ -90,8 +90,8 @@ class EMongoCriteria extends CComponent {
 	public function setSkip($skip) {
 		$this->_skip = (int)$skip;
 		return $this;
-	}	
-	
+	}
+
 	/**
 	 * Gets the skip
 	 * @return int
@@ -99,7 +99,7 @@ class EMongoCriteria extends CComponent {
 	public function getSkip() {
 		return $this->_skip;
 	}
-	
+
 	/**
 	 * Sets the limit
 	 * @param int $limit
@@ -109,7 +109,7 @@ class EMongoCriteria extends CComponent {
 		$this->_limit = (int)$limit;
 		return $this;
 	}
-	
+
 
 	/**
 	 * Gets the limit
@@ -118,7 +118,7 @@ class EMongoCriteria extends CComponent {
 	public function getLimit() {
 		return $this->_limit;
 	}
-	
+
 	/**
 	 * Sets the projection (SELECT in MongoDB Lingo) of the criteria
 	 * @param array $document - The document specification for projection
@@ -127,7 +127,7 @@ class EMongoCriteria extends CComponent {
 	public function setProject($document){
 		$this->_project = $document;
 		return $this;
-	}	
+	}
 
 	/**
 	 * This means that the getters and setters for projection will be access like:
@@ -137,21 +137,21 @@ class EMongoCriteria extends CComponent {
 	public function getProject(){
 		return $this->_project;
 	}
-	
+
 	/**
 	 * An alias for those too used to select
 	 * @see EMongoCriteria::setProject()
-     * @param array $document
-     * @return EMongoCriteria
-     */
-    public function setSelect($document){
-		return $this->setProject($document);	
+	 * @param array $document
+	 * @return EMongoCriteria
+	 */
+	public function setSelect($document){
+		return $this->setProject($document);
 	}
-	
+
 	/**
 	 * An alias for those too used to select
 	 * @see EMongoCriteria::getProject()
-     * @return array
+	 * @return array
 	 */
 	public function getSelect(){
 		return $this->getProject();
@@ -200,9 +200,9 @@ class EMongoCriteria extends CComponent {
 				$value = new MongoRegex("/$value/i");
 			else {
 				if(
-					!is_bool($value) && !is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0
-					&& ( (PHP_INT_MAX > 2147483647 && (string)$value < '9223372036854775807') /* If it is a 64 bit system and the value is under the long max */
-					|| (string)$value < '2147483647' /* value is under 32bit limit */)
+				!is_bool($value) && !is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0
+				&& ( (PHP_INT_MAX > 2147483647 && (string)$value < '9223372036854775807') /* If it is a 64 bit system and the value is under the long max */
+						|| (string)$value < '2147483647' /* value is under 32bit limit */)
 				)
 					$value = (int)$value;
 			}
