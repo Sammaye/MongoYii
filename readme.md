@@ -218,8 +218,7 @@ You can add caching by setting `cache` to `true` in the relation properties like
 
 #### Deprecation Notice
 
-By default currently a `many` relation has no caching to it. This goes against how Yii works and actually can lead to less peformant applications in the real world, unless 
-speciifically coded for, as such caching willk be turned on by default as some point in the future: 
+By default currently a `many` relation has no caching to it. This goes against how Yii works as such caching will be turned on by default at some point in the future: 
 [https://github.com/Sammaye/MongoYii/issues/169](https://github.com/Sammaye/MongoYii/issues/169).
 
 The change will not happen for a long time to give people who have come to expect the behaviour of no caching a chance to move their code.
