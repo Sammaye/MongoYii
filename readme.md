@@ -207,7 +207,8 @@ please look into using `iterator_to_array()` on the return value from calling th
 
 #### Caching
 
-Currently there is no relationship caching on relation types of `many`. You can add caching by setting `cache` to `true` in the relation properties like so:
+Currently there is no relationship caching on relation types of `many` due to the historical reason of returning an `EMongoCursor` for all relationships. 
+You can add caching by setting `cache` to `true` in the relation properties like so:
 
 	function relations(){
 		return array(
