@@ -369,6 +369,8 @@ class EMongoModel extends CModel{
 
 			// Lets find them and return them
 			$cursor = $o->find($clause)->sort(isset($relation['sort'])?$relation['sort']:array());
+			if(isset($relation['cache']) && $relation['cache']===true)
+				$this->_related[$name]=$cursor=iterator_to_array($cursor);
 		}
 		return $cursor;
 	}
