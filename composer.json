@@ -9,5 +9,8 @@
             "name": "Sammaye",
             "homepage": "http://sammaye.wordpress.com"
         }
-    ]
+    ],
+    "autoload": {
+        "classmap": ["./"]
+    }
 }
