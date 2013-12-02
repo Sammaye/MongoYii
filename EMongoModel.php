@@ -360,7 +360,7 @@ class EMongoModel extends CModel{
 			$clause = array_merge($where, array($fkey=>$pk));
 		}
 
-		$o = $cname::model();
+        $o = $cname::model($cname);
 		if($relation[0]==='one'){
 
 			// Lets find it and return it

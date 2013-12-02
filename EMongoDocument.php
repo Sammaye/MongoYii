@@ -154,6 +154,7 @@ class EMongoDocument extends EMongoModel{
 	 * @return string
 	 */
 	public function collectionName(){
+        throw new CException('Collection name not specified');
 	}
 
 	/**
