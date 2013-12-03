@@ -78,7 +78,7 @@ If you wish to setup the log to insert entries into MongoDB (like in `CDbLogRout
 
 				array(
 					'class'=>'EMongoLogRoute',
-					'connectionId'=>'my_connection_id' // optional, defaults to 'mongodb'
+					'connectionId'=>'my_connection_id', // optional, defaults to 'mongodb'
 					'logCollectionName'=>'my_log_collection', // optional, defaults to 'YiiLog'
 				),
 				
