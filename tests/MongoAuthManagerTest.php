@@ -1,7 +1,7 @@
 <?php
 require_once 'bootstrap.php';
 
-class MongoAuthManager extends CTestCase{
+class MongoAuthManagerTest extends CTestCase{
 
     function tearDown(){
         Yii::app()->mongodb->drop();
