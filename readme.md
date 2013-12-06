@@ -1029,7 +1029,7 @@ And use it as you would Yiis own normal session.
 
 ### EMongoAuthManager
 
-This is drop in replacement Yiis normal auth manager by [@tvollstaedt](https://github.com/tvollstaedt).
+This is a MongoDB replacement for Yiis auth manager by [@tvollstaedt](https://github.com/tvollstaedt).
 
 To use it simply place it in your configuration:
 
@@ -1037,7 +1037,7 @@ To use it simply place it in your configuration:
     	'class' => 'EMongoAuthManager',
     )
     
-And it will work the same way as any other auth manager.
+It will work the same way as any other auth manager.
 
 ## Upgrade Notes
  
