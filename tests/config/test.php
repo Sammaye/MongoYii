@@ -8,6 +8,9 @@ return CMap::mergeArray(
 				'server' => 'mongodb://localhost:27017',
 				'db' => 'super_test'
 			),
+            'authManager' => array(
+                'class' => 'EMongoAuthManager',
+            )
         ),
     )
 );
