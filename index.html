@@ -1126,6 +1126,19 @@ $arr = Yii::app()-&gt;cache-&gt;mget(array('apple', 1, 'two'));
 
 <p>And use it as you would Yiis own normal session.</p>
 
+<h3>EMongoAuthManager</h3>
+
+<p>This is a MongoDB replacement for Yiis auth manager by <a href="https://github.com/tvollstaedt">@tvollstaedt</a>.</p>
+
+<p>To use it simply place it in your configuration:</p>
+
+<pre><code>'authManager' =&gt; array(
+    'class' =&gt; 'EMongoAuthManager',
+)
+</code></pre>
+
+<p>It will work the same way as any other auth manager.</p>
+
 <h2>Upgrade Notes</h2>
 
 <p>There has been a small but dramatic change between version 1.x and 2.x of MongoYii. The <code>compare()</code> function within the <code>EMongoCriteria</code> now no longer uses partial matching by
