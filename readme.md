@@ -44,7 +44,8 @@ And add the MongoYii directories to your `import` section:
 
 	'application.extensions.MongoYii.*',
 	'application.extensions.MongoYii.validators.*',
-	'application.extensions.MongoYii.behaviors.*'
+	'application.extensions.MongoYii.behaviors.*',
+	'application.extensions.MongoYii.util.*'
 
 That is the basic setup of the extension.
 
@@ -949,7 +950,7 @@ of Yii that might seem outside of the scope of the root of this repository.
 
 ### EMongoCache
 
-This is a MongoYii implementation of `CCache` by [Rajcsányi Zoltán](http://ezmegaz.hu/).
+This is a MongoYii implementation of `CCache` by [Rajcsï¿½nyi Zoltï¿½n](http://ezmegaz.hu/).
 
 To use it first place it in your configuration:
 
@@ -992,7 +993,7 @@ And now an example of its usage:
   	
 ### EMongoMessageSource
 
-This is a MongoYii `Yii::t()` implementation by [Rajcsányi Zoltán](http://ezmegaz.hu/).
+This is a MongoYii `Yii::t()` implementation by [Rajcsï¿½nyi Zoltï¿½n](http://ezmegaz.hu/).
 
 To use it first add it to your configuration:
 
@@ -1026,6 +1027,18 @@ To use it simply include it in your configuration:
 	)
 
 And use it as you would Yiis own normal session.
+
+### EMongoAuthManager
+
+This is a MongoDB replacement for Yiis auth manager by [@tvollstaedt](https://github.com/tvollstaedt).
+
+To use it simply place it in your configuration:
+
+	'authManager' => array(
+    	'class' => 'EMongoAuthManager',
+    )
+    
+It will work the same way as any other auth manager.
 
 ## Upgrade Notes
  
