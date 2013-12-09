@@ -465,7 +465,7 @@ class EMongoModel extends CModel{
 			elseif(isset($prev[$piece]))
 			$prev=is_array($prev)?$prev[$piece]:$prev->$piece;
 		}
-		return $prev===null?array():reset($prev);
+		return $prev===null?null:reset($prev);
 	}
 
 	/**
