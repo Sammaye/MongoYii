@@ -333,7 +333,7 @@ class EMongoModel extends CModel{
 
 		// Form the where clause
 		$where = $params;
-		if(isset($relation['where'])) $where = array_merge($relation['where'], $params);
+		if(isset($relation['where'])&&!$params) $where = array_merge($relation['where'], $params);
 		
 		// Find out what the pk is and what kind of condition I should apply to it
 		if (is_array($pk)) {
