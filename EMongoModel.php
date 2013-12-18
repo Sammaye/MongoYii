@@ -332,8 +332,8 @@ class EMongoModel extends CModel{
 		$pk = isset($relation['on']) ? $this->{$relation['on']} : $this->getPrimaryKey();
 
 		// Form the where clause
-		$where = array();
-		if(isset($relation['where'])) $where = array_merge($relation['where'], $params);
+		$where = $params;
+		if(isset($relation['where'])&&!$params) $where = array_merge($relation['where'], $params);
 		
 		// Find out what the pk is and what kind of condition I should apply to it
 		if (is_array($pk)) {
@@ -465,7 +465,7 @@ class EMongoModel extends CModel{
 			elseif(isset($prev[$piece]))
 			$prev=is_array($prev)?$prev[$piece]:$prev->$piece;
 		}
-		return $prev===null?array():reset($prev);
+		return $prev===null?null:reset($prev);
 	}
 
 	/**
