@@ -745,7 +745,7 @@ class EMongoDocument extends EMongoModel{
 		if($record === null)
 			return null;
 
-		$this->resetScope();
+		$this->resetScope(false);
 		return $this->populateRecord($record, true, $project === array() ? false : true);
 	}
 
