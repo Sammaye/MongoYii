@@ -206,8 +206,8 @@ class EMongoClient extends CApplicationComponent{
     public function aggregate($collection, $pipelines){
         if(version_compare(phpversion('mongo'), '1.3.0', '<')){
             return $this->getDB()->command(array(
-                    'aggregate' => $collection,
-                    'pipeline' => $pipelines
+                'aggregate' => $collection,
+                'pipeline' => $pipelines
             ));
         }
         return $this->getDB()->$collection->aggregate($pipelines);
