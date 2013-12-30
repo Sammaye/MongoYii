@@ -70,7 +70,7 @@ class ESubdocumentValidator extends CValidator{
 					
 					// Lets get the field value again to apply filters etc
 					if($this->preserveKeys)
-					    $newfieldValue[$index] = $c->getRawDocument();
+					    $newFieldValue[$index] = $c->getRawDocument();
 					else
 					    $newFieldValue[] = $c->getRawDocument();
 				}
