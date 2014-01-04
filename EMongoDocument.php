@@ -1138,6 +1138,35 @@ class EMongoDocument extends EMongoModel{
 				'out' => $out
 		),$options));
 	}
+	
+	/**
+	 * Allows a user to ensure a number of indexes using the format:
+	 * 
+	 * ensureIndexes(array(
+	 * 	array(array('email' => 1), array('unique' => true))
+	 * ))
+	 *
+	 * where the 0 offset in each nested array is the fields for the index and the 1 offset 
+	 * is the options. You don't have to define options for the index.
+	 * 
+	 * or:
+	 * 
+	 * ensureIndexes(array(
+	 * 	array('email' => 1, 'address' => -1)
+	 * ))
+	 * 
+	 * @param unknown $indexes
+	 */
+	public function ensureIndexes($indexes){
+		foreach($indexes as $index){
+			if(isset($index[0])){
+				$this->getCollection()->ensureIndex($index[0], isset($index[1]) ? $index[1] : array());
+			}else{
+				$this->getCollection()->ensureIndex($index, array());
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * Refreshes the data from the database
