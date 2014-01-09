@@ -16,23 +16,6 @@
   <body>
 
 	<div class="sidebar">
-        <h1 class="header">Mongoyii</h1>
-        <p class="header">A Yii MongoDB ORM</p>
-
-        <ul class="button_menu">
-          <li class="download"><a class="buttons" href="https://github.com/Sammaye/MongoYii/zipball/master">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/Sammaye/MongoYii/tarball/master">Download TAR</a></li>
-          <li><a class="buttons github" href="https://github.com/Sammaye/MongoYii">View On GitHub</a></li>
-        </ul>
-
-		<div id="toc">
-
-
-		</div>
-	</div>
-
-    <div class="wrapper">
-      <section id="contents">
 <h1>MongoYii</h1>
 
 <p>Another active record handler for the Yii framework that supports MongoDB.</p>
@@ -82,7 +65,8 @@ the following type of configuration:</p>
 
 <pre><code>'application.extensions.MongoYii.*',
 'application.extensions.MongoYii.validators.*',
-'application.extensions.MongoYii.behaviors.*'
+'application.extensions.MongoYii.behaviors.*',
+'application.extensions.MongoYii.util.*'
 </code></pre>
 
 <p>That is the basic setup of the extension.</p>
@@ -405,6 +389,31 @@ have no impact on the model itself and merely merges criteria to be returned. As
 
 <p>It is normally best not to use this but instead to use the extension wrapped editions - <code>updateAll</code> and <code>deleteAll</code>. The only difference of said functions
 from doing it manually on <code>getCollection()</code> is that these functions understand the write concern of the extension.</p>
+
+<h3>ensureIndexes()</h3>
+
+<p>This function allows the user to ensure a set of indexes by array definition.</p>
+
+<p>This is most useful when used in the <code>init()</code> function to produce pre-made indexes on the start up of the model. A good example is:</p>
+
+<pre><code>public function init()
+{
+    if(YII_DEBUG){
+        $this-&gt;ensureIndexes(array(
+            array('username' =&gt; 1),
+            array(array('email' =&gt; 1), array('unique' =&gt; true)),
+            array(array('description' =&gt; 1))
+        ));
+    }
+}
+</code></pre>
+
+<p>The above example snippet shows all the different ways you can define indexes.</p>
+
+<p>By default each element of the function input array will be an index definition, element <code>0</code> being the fields and <code>1</code> being the options.</p>
+
+<p>However you are not required to define index options. You can also simplify the definition further by not defining a <code>0</code> element but instead an associative array 
+defining only the fields of the index.</p>
 
 <h3>setAttributes()</h3>
 
@@ -1042,7 +1051,7 @@ of Yii that might seem outside of the scope of the root of this repository.</p>
 
 <h3>EMongoCache</h3>
 
-<p>This is a MongoYii implementation of <code>CCache</code> by <a href="http://ezmegaz.hu/">Rajcsányi Zoltán</a>.</p>
+<p>This is a MongoYii implementation of <code>CCache</code> by <a href="http://ezmegaz.hu/">Rajcsï¿½nyi Zoltï¿½n</a>.</p>
 
 <p>To use it first place it in your configuration:</p>
 
@@ -1087,7 +1096,7 @@ $arr = Yii::app()-&gt;cache-&gt;mget(array('apple', 1, 'two'));
 
 <h3>EMongoMessageSource</h3>
 
-<p>This is a MongoYii <code>Yii::t()</code> implementation by <a href="http://ezmegaz.hu/">Rajcsányi Zoltán</a>.</p>
+<p>This is a MongoYii <code>Yii::t()</code> implementation by <a href="http://ezmegaz.hu/">Rajcsï¿½nyi Zoltï¿½n</a>.</p>
 
 <p>To use it first add it to your configuration:</p>
 
