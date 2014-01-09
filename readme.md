@@ -351,6 +351,30 @@ Returns the raw `MongoCollection`.
 It is normally best not to use this but instead to use the extension wrapped editions - `updateAll` and `deleteAll`. The only difference of said functions
 from doing it manually on `getCollection()` is that these functions understand the write concern of the extension.
 
+### ensureIndexes()
+
+This function allows the user to ensure a set of indexes by array definition.
+
+This is most useful when used in the `init()` function to produce pre-made indexes on the start up of the model. A good example is:
+
+    public function init()
+    {
+        if(YII_DEBUG){
+            $this->ensureIndexes(array(
+                array('username' => 1),
+                array(array('email' => 1), array('unique' => true)),
+                array(array('description' => 1))
+            ));
+        }
+    }
+
+The above example snippet shows all the different ways you can define indexes.
+
+By default each element of the function input array will be an index definition, element `0` being the fields and `1` being the options.
+
+However you are not required to define index options. You can also simplify the definition further by not defining a `0` element but instead an associative array 
+defining only the fields of the index.
+
 ### setAttributes()
 
 It is important, nay, imperative that you understand exactly how, by default MongoYii assigns integers. Since MongoDB has no strict handling of field types it is very easy
