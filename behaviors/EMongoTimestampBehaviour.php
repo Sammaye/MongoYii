@@ -14,14 +14,14 @@
 /**
  * EMongoTimestampBheaviour will automatically fill date and time related attributes.
  *
- * EMongoTimestampBheaviour will automatically fill date and time related attributes when the active record
+ * EMongoTimestampBehaviour will automatically fill date and time related attributes when the active record
  * is created and/or upadated.
  * You may specify an active record model to use this behavior like so:
  * <pre>
  * public function behaviors(){
  * 	return array(
- * 		'EMongoTimestampBheaviour' => array(
- * 			'class' => 'EMongoTimestampBheaviour',
+ * 		'EMongoTimestampBehaviour' => array(
+ * 			'class' => 'EMongoTimestampBehaviour',
  * 			'createAttribute' => 'create_time_attribute',
  * 			'updateAttribute' => 'update_time_attribute',
  *          'onScenario' => array('scenarioName'),
