@@ -15,7 +15,8 @@ class ESubdocumentValidator extends CValidator{
 
 	public $scenario;
 
-	public $preserveKeys=true;
+	public $preserveKeys = true;
+	public $strict = true;
 
 	public function validateAttribute($object, $attribute){
 
@@ -69,10 +70,16 @@ class ESubdocumentValidator extends CValidator{
 					}
 					
 					// Lets get the field value again to apply filters etc
-					if($this->preserveKeys)
-					    $newFieldValue[$index] = $c->getRawDocument();
-					else
-					    $newFieldValue[] = $c->getRawDocument();
+					if($this->strict){
+						if($this->preserveKeys)
+						    $newFieldValue[$index] = $c->getRawDocument();
+						else
+						    $newFieldValue[] = $c->getRawDocument();
+					}
+				}
+				
+				if(!$this->strict){
+					$newFieldValue = $fieldValue;
 				}
 
 				if($this->message!==null){
@@ -97,7 +104,9 @@ class ESubdocumentValidator extends CValidator{
 			}
 			
 			// Lets get the field value again to apply filters etc
-			$fieldValue = $c->getRawDocument();
+			if($this->strict){
+				$fieldValue = $c->getRawDocument();
+			}
 
 			// Strip the models etc from the field value
 			$object->$attribute = $fieldValue;

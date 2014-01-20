@@ -611,6 +611,9 @@ however with `many` it will create a new element for each model (row) with embed
 			)
 		)
 	)
+	
+**Note:** In order to get filters working on 1.1.4 the validator will now, by default, overwrite what you send into it with the results of the validator output. This means that if your
+rules are not defined correctly you will lose fields within your subdocuments. You can combat this by setting the `strict` parameter of this validator to `false`.
 
 **Note:** While on the subject, to avoid the iteration every time you save the root document (since validation is run by default in Yii on save) you should confine your subdocument
 validators to specific scenarios where they will be actively used.
