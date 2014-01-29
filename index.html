@@ -16,23 +16,7 @@
   <body>
 
 	<div class="sidebar">
-        <h1 class="header">Mongoyii</h1>
-        <p class="header">A Yii MongoDB ORM</p>
 
-        <ul class="button_menu">
-          <li class="download"><a class="buttons" href="https://github.com/Sammaye/MongoYii/zipball/master">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/Sammaye/MongoYii/tarball/master">Download TAR</a></li>
-          <li><a class="buttons github" href="https://github.com/Sammaye/MongoYii">View On GitHub</a></li>
-        </ul>
-
-		<div id="toc">
-
-
-		</div>
-	</div>
-
-    <div class="wrapper">
-      <section id="contents">
 <h1>MongoYii</h1>
 
 <p>Another active record handler for the Yii framework that supports MongoDB.</p>
@@ -1001,6 +985,22 @@ an effect for a certain insert. </p>
 <p>After the documents model has been setup versioning works behind the scenes, there is no need for you to do anything else, everytime <code>save</code> is called it will make sure the 
 version you have is upto date.</p>
 
+<p><a name="migrations"></a></p>
+
+<h2>Database migrations</h2>
+
+<p>Even though MongoDB is schemaless, you sometimes may need to modify your records. To do so, you may use the <code>yiic mongomigrate</code> command. 
+It works exactly like <code>yiic migrate</code>. For detailed usage, please refer to the <a href="http://www.yiiframework.com/doc/guide/1.1/en/database.migration">yii docs</a>.</p>
+
+<p>To enable the command in your application, add a <code>commandMap</code> entry in your config file:</p>
+
+<pre><code>'commandMap' =&gt; array(
+    'migratemongo' =&gt; array(
+        'class' =&gt; 'application.extensions.MongoYii.util.EMigrateMongoCommand'
+    )
+)
+</code></pre>
+
 <h2>Known Flaws</h2>
 
 <ul>
@@ -1166,7 +1166,9 @@ $arr = Yii::app()-&gt;cache-&gt;mget(array('apple', 1, 'two'));
 )
 </code></pre>
 
-<p>It will work the same way as any other auth manager.</p>
+<p>It will work the same way as any other auth manager. </p>
+
+<p><strong>Note:</strong> You may want to use <a href="#migrations">Database migrations</a> to keep authorization settings across your application instances up to date.</p>
 
 <h2>Upgrade Notes</h2>
 
