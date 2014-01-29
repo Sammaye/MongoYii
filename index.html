@@ -16,6 +16,23 @@
   <body>
 
 	<div class="sidebar">
+        <h1 class="header">Mongoyii</h1>
+        <p class="header">A Yii MongoDB ORM</p>
+
+        <ul class="button_menu">
+          <li class="download"><a class="buttons" href="https://github.com/Sammaye/MongoYii/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/Sammaye/MongoYii/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/Sammaye/MongoYii">View On GitHub</a></li>
+        </ul>
+
+		<div id="toc">
+
+
+		</div>
+	</div>
+
+    <div class="wrapper">
+      <section id="contents">
 
 <h1>MongoYii</h1>
 
@@ -987,17 +1004,16 @@ version you have is upto date.</p>
 
 <h2>Database migrations</h2>
 
-<p>Even though MongoDB is schemaless, you sometimes may need to modify your records. To do so, you may use the <code>yiic mongomigrate</code> command. 
-It works exactly like <code>yiic migrate</code>. For detailed usage, please refer to the <a href="http://www.yiiframework.com/doc/guide/1.1/en/database.migration">yii docs</a>.</p>
+<p>Even though MongoDB is schemaless, you sometimes may need to modify your records. To do so, you may use the <code>yiic mongomigrate</code> command. It works exactly like <code>yiic migrate</code>. For detailed usage, please refer to the <a href="http://www.yiiframework.com/doc/guide/1.1/en/database.migration">yii docs</a>.</p>
 
 <p>To enable the command in your application, add a <code>commandMap</code> entry in your config file:</p>
 
-<pre><code>'commandMap' =&gt; array(
+<pre>'commandMap' =&gt; array(
     'migratemongo' =&gt; array(
         'class' =&gt; 'application.extensions.MongoYii.util.EMigrateMongoCommand'
     )
 )
-</code></pre>
+</pre>
 
 <h2>Known Flaws</h2>
 
@@ -1069,7 +1085,7 @@ of Yii that might seem outside of the scope of the root of this repository.</p>
 
 <h3>EMongoCache</h3>
 
-<p>This is a MongoYii implementation of <code>CCache</code> by <a href="http://ezmegaz.hu/">Rajcsï¿½nyi Zoltï¿½n</a>.</p>
+<p>This is a MongoYii implementation of <code>CCache</code> by <a href="http://ezmegaz.hu/">Rajcs?nyi Zolt?n</a>.</p>
 
 <p>To use it first place it in your configuration:</p>
 
@@ -1114,7 +1130,7 @@ $arr = Yii::app()-&gt;cache-&gt;mget(array('apple', 1, 'two'));
 
 <h3>EMongoMessageSource</h3>
 
-<p>This is a MongoYii <code>Yii::t()</code> implementation by <a href="http://ezmegaz.hu/">Rajcsï¿½nyi Zoltï¿½n</a>.</p>
+<p>This is a MongoYii <code>Yii::t()</code> implementation by <a href="http://ezmegaz.hu/">Rajcs?nyi Zolt?n</a>.</p>
 
 <p>To use it first add it to your configuration:</p>
 
