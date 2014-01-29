@@ -917,7 +917,7 @@ version you have is upto date.
 <a name="migrations"></a>
 ## Database migrations
 
-Even though mongodb is schemaless, you sometimes may need to modify your records. To do so, you may use the `yiic mongomigrate` command. It works exactly like `yiic migrate`. For detailed usage, please refer to the [yii docs](http://www.yiiframework.com/doc/guide/1.1/en/database.migration).
+Even though MongoDB is schemaless, you sometimes may need to modify your records. To do so, you may use the `yiic mongomigrate` command. It works exactly like `yiic migrate`. For detailed usage, please refer to the [yii docs](http://www.yiiframework.com/doc/guide/1.1/en/database.migration).
 
 To enable the command in your application, add a `commandMap` entry in your config file:
 
