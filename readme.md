@@ -990,7 +990,7 @@ of Yii that might seem outside of the scope of the root of this repository.
 
 ### EMongoCache
 
-This is a MongoYii implementation of `CCache` by [Rajcs�nyi Zolt�n](http://ezmegaz.hu/).
+This is a MongoYii implementation of `CCache` by [Rajcsányi Zoltán](http://ezmegaz.hu/).
 
 To use it first place it in your configuration:
 
@@ -1033,7 +1033,7 @@ And now an example of its usage:
   	
 ### EMongoMessageSource
 
-This is a MongoYii `Yii::t()` implementation by [Rajcs�nyi Zolt�n](http://ezmegaz.hu/).
+This is a MongoYii `Yii::t()` implementation by [Rajcsányi Zoltán](http://ezmegaz.hu/).
 
 To use it first add it to your configuration:
 
