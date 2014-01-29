@@ -903,7 +903,7 @@ To setup a versioned document you can simply create a model implementing `versio
 		
 		public static function model($className=__CLASS__){
 			return parent::model($className);
-		}	
+	    }	
 	}
 
 The verisoning ability of a document cannot be changed during runtime once it has been set, in other words you cannot do `$doc->removeVersion()` to stop versioning from having 
@@ -915,17 +915,16 @@ version you have is upto date.
 <a name="migrations"></a>
 ## Database migrations
 
-Even though MongoDB is schemaless, you sometimes may need to modify your records. To do so, you may use the `yiic mongomigrate` command. It works exactly like `yiic migrate`. For detailed usage, please refer to the [yii docs](http://www.yiiframework.com/doc/guide/1.1/en/database.migration).
+Even though MongoDB is schemaless, you sometimes may need to modify your records. To do so, you may use the `yiic mongomigrate` command. 
+It works exactly like `yiic migrate`. For detailed usage, please refer to the [yii docs](http://www.yiiframework.com/doc/guide/1.1/en/database.migration).
 
 To enable the command in your application, add a `commandMap` entry in your config file:
 
-<pre>
-'commandMap' => array(
-    'migratemongo' => array(
-        'class' => 'application.extensions.MongoYii.util.EMigrateMongoCommand'
+    'commandMap' => array(
+        'migratemongo' => array(
+            'class' => 'application.extensions.MongoYii.util.EMigrateMongoCommand'
+        )
     )
-)
-</pre>
 
 ## Known Flaws
 
@@ -1080,7 +1079,9 @@ To use it simply place it in your configuration:
     	'class' => 'EMongoAuthManager',
     )
     
-It will work the same way as any other auth manager. You may want to use [Database migrations](#migrations) to keep authorization settings across your application instances up to date.
+It will work the same way as any other auth manager. 
+
+**Note:** You may want to use [Database migrations](#migrations) to keep authorization settings across your application instances up to date.
 
 ## Upgrade Notes
  
