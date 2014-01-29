@@ -4,6 +4,8 @@
 
 Another active record handler for the Yii framework that supports MongoDB.
 
+[toc]
+
 ## Rationale
 
 There is already a great extension called YiiMongoDBSuite out for Yii so why make another? YiiMongoDBSuite has certain flaws which I wish to address:
