@@ -912,7 +912,6 @@ an effect for a certain insert.
 After the documents model has been setup versioning works behind the scenes, there is no need for you to do anything else, everytime `save` is called it will make sure the 
 version you have is upto date.
 
-<a name="migrations"></a>
 ## Database migrations
 
 Even though MongoDB is schemaless, you sometimes may need to modify your records. To do so, you may use the `yiic mongomigrate` command. 
@@ -1081,7 +1080,7 @@ To use it simply place it in your configuration:
     
 It will work the same way as any other auth manager. 
 
-**Note:** You may want to use [Database migrations](#migrations) to keep authorization settings across your application instances up to date.
+**Note:** You may want to use [Database migrations](#database-migrations) to keep authorization settings across your application instances up to date.
 
 ## Upgrade Notes
  
