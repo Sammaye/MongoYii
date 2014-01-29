@@ -12,7 +12,7 @@ Yii::import('system.cli.commands.MigrateCommand');
  * <pre>
  *   'commandMap' => array(
  *       'migratemongo' => array(
- *           'class' => 'common.extensions.mongoyii.util.EMigrateMongoCommand'
+ *           'class' => 'application.extensions.MongoYii.util.EMigrateMongoCommand'
  *       )
  *   )
  * </pre>
