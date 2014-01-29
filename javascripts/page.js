@@ -18,8 +18,8 @@ window.onload = function () {
 
     			level = parseInt(openLevel);
 //console.log('here');
-    			var anchor = titleText.replace(/ /g, "_");
-	    		toc += "<li><a href=\"#" + anchor + "\">" + titleText
+    			var anchor = titleText.replace(/ /g, "-");
+	    		toc += "<li><a href=\"#" + anchor.toLowerCase() + "\">" + titleText
 	    			+ "</a></li>";
 
     			return "<h" + openLevel + "><a name=\"" + anchor + "\">"
