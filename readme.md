@@ -914,6 +914,21 @@ an effect for a certain insert.
 After the documents model has been setup versioning works behind the scenes, there is no need for you to do anything else, everytime `save` is called it will make sure the 
 version you have is upto date.
 
+<a name="migrations"></a>
+## Database migrations
+
+Even though mongodb is schemaless, you sometimes may need to modify your records. To do so, you may use the `yiic mongomigrate` command. It works exactly like `yiic migrate`. For detailed usage, please refer to the [yii docs](http://www.yiiframework.com/doc/guide/1.1/en/database.migration).
+
+To enable the command in your application, add a `commandMap` entry in your config file:
+
+<pre>
+'commandMap' => array(
+    'migratemongo' => array(
+        'class' => 'application.extensions.MongoYii.util.EMigrateMongoCommand'
+    )
+)
+</pre>
+
 ## Known Flaws
 
 - Subdocuments are not automated, however, I have stated why above
@@ -1067,7 +1082,7 @@ To use it simply place it in your configuration:
     	'class' => 'EMongoAuthManager',
     )
     
-It will work the same way as any other auth manager.
+It will work the same way as any other auth manager. You may want to use [Database migrations](#migrations) to keep authorization settings across your application instances up to date.
 
 ## Upgrade Notes
  
