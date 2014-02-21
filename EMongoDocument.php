@@ -10,7 +10,7 @@ class EMongoDocument extends EMongoModel{
 	/**
 	 * Holds a set of cached models for the active record to instantiate from
 	 *
-	 * Whenever you call ::model() it will either find the class in this cache arrray and use it or will
+	 * Whenever you call ::model() it will either find the class in this cache array and use it or will
 	 * make a whole new class and cache it into this array
 	 *
 	 * @var array
