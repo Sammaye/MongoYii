@@ -1,5 +1,11 @@
 <?php
-
+/**
+ * EMongoPagination
+ * @author Kim BeeJay <kim@beejay.ru>
+ * corresponding to CPagination for MongoYii
+ * @see yii/framework/web/CPagination
+ */
+ 
 class EMongoPagination extends CPagination {
 
     /**
