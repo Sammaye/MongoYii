@@ -1082,6 +1082,12 @@ It will work the same way as any other auth manager.
 
 **Note:** You may want to use [Database migrations](#database-migrations) to keep authorization settings across your application instances up to date.
 
+### EMongoPagination
+
+This is a replacement `CPagination` for MongoYii built by [@kimbeejay](https://github.com/kimbeejay).
+
+It uses the same API as `CPagination` and requires no extra documentation (outside of `CPagination`) aside from making you aware of its existance.
+
 ## Upgrade Notes
  
 There has been a small but dramatic change between version 1.x and 2.x of MongoYii. The `compare()` function within the `EMongoCriteria` now no longer uses partial matching by
