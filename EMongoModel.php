@@ -32,11 +32,12 @@ class EMongoModel extends CModel{
 		try {
 			return parent::__get($name);
 		} catch (CException $e) {
-			if(method_exists($this,$getter))
+			$getter='get'.$name;
+			if(method_exists($this,$getter)){
 				throw $e;
-			elseif(strncasecmp($name,'on',2)===0 && method_exists($this,$name))
+			}elseif(strncasecmp($name,'on',2)===0 && method_exists($this,$name)){
 				throw $e;
-
+			}
 			return null;
 		}
 	}
