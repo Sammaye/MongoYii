@@ -188,12 +188,15 @@ class EMongoCriteria extends CComponent {
 	 * @return EMongoCriteria
 	 */
 	public function compare($column, $value = null, $partialMatch = false) {
-		if ($value === null)
-			return $this;
 		$query = array();
-		if(is_array($value)){
+		
+		if($value === null){
+			$query[$column] = null;
+		}elseif(is_array($value)){
 			$query[$column] = array('$in' => $value);
 		}elseif(is_object($value)){
+			$query[$column] = $value;
+		}elseif(is_bool($value)){
 			$query[$column] = $value;
 		}elseif(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)) {
 			$value = $matches[2];
