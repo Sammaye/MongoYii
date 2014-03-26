@@ -33,7 +33,6 @@
 
     <div class="wrapper">
       <section id="contents">
-
 <h1>MongoYii</h1>
 
 <p>Another active record handler for the Yii framework that supports MongoDB.</p>
@@ -1190,17 +1189,6 @@ $arr = Yii::app()-&gt;cache-&gt;mget(array('apple', 1, 'two'));
 <p>This is a replacement <code>CPagination</code> for MongoYii built by <a href="https://github.com/kimbeejay">@kimbeejay</a>.</p>
 
 <p>It uses the same API as <code>CPagination</code> and requires no extra documentation (outside of <code>CPagination</code>) aside from making you aware of its existance.</p>
-
-<h2>Upgrade Notes</h2>
-
-<p>There has been a small but dramatic change between version 1.x and 2.x of MongoYii. The <code>compare()</code> function within the <code>EMongoCriteria</code> now no longer uses partial matching by
-default. This means that by default it will try and match the entire field value.</p>
-
-<p>This change was implemented to match Yiis own behaviour. Yii, by default, will not match by <code>LIKE</code> when using this function.</p>
-
-<p>This behaviour WILL NOT change here after. After complying to Yiis own behaviour it will be left alone.</p>
-
-<p><strong>Note:</strong> Only direct accession of <code>compare()</code> through <code>EMongoCriteria</code> is effected, no section of the extension relies on <code>EMongoCriteria</code>.</p>
 
 <h2>Versioning</h2>
 
