@@ -1004,16 +1004,17 @@ version you have is upto date.</p>
 
 <h2>Database migrations</h2>
 
-<p>Even though MongoDB is schemaless, you sometimes may need to modify your records. To do so, you may use the <code>yiic mongomigrate</code> command. It works exactly like <code>yiic migrate</code>. For detailed usage, please refer to the <a href="http://www.yiiframework.com/doc/guide/1.1/en/database.migration">yii docs</a>.</p>
+<p>Even though MongoDB is schemaless, you sometimes may need to modify your records. To do so, you may use the <code>yiic mongomigrate</code> command. 
+It works exactly like <code>yiic migrate</code>. For detailed usage, please refer to the <a href="http://www.yiiframework.com/doc/guide/1.1/en/database.migration">yii docs</a>.</p>
 
 <p>To enable the command in your application, add a <code>commandMap</code> entry in your config file:</p>
 
-<pre>'commandMap' =&gt; array(
+<pre><code>'commandMap' =&gt; array(
     'migratemongo' =&gt; array(
         'class' =&gt; 'application.extensions.MongoYii.util.EMigrateMongoCommand'
     )
 )
-</pre>
+</code></pre>
 
 <h2>Known Flaws</h2>
 
@@ -1085,7 +1086,7 @@ of Yii that might seem outside of the scope of the root of this repository.</p>
 
 <h3>EMongoCache</h3>
 
-<p>This is a MongoYii implementation of <code>CCache</code> by <a href="http://ezmegaz.hu/">Rajcs?nyi Zolt?n</a>.</p>
+<p>This is a MongoYii implementation of <code>CCache</code> by <a href="http://ezmegaz.hu/">RajcsÃ¡nyi ZoltÃ¡n</a>.</p>
 
 <p>To use it first place it in your configuration:</p>
 
@@ -1130,7 +1131,7 @@ $arr = Yii::app()-&gt;cache-&gt;mget(array('apple', 1, 'two'));
 
 <h3>EMongoMessageSource</h3>
 
-<p>This is a MongoYii <code>Yii::t()</code> implementation by <a href="http://ezmegaz.hu/">Rajcs?nyi Zolt?n</a>.</p>
+<p>This is a MongoYii <code>Yii::t()</code> implementation by <a href="http://ezmegaz.hu/">RajcsÃ¡nyi ZoltÃ¡n</a>.</p>
 
 <p>To use it first add it to your configuration:</p>
 
@@ -1184,16 +1185,11 @@ $arr = Yii::app()-&gt;cache-&gt;mget(array('apple', 1, 'two'));
 
 <p><strong>Note:</strong> You may want to use <a href="#database-migrations">Database migrations</a> to keep authorization settings across your application instances up to date.</p>
 
-<h2>Upgrade Notes</h2>
+<h3>EMongoPagination</h3>
 
-<p>There has been a small but dramatic change between version 1.x and 2.x of MongoYii. The <code>compare()</code> function within the <code>EMongoCriteria</code> now no longer uses partial matching by
-default. This means that by default it will try and match the entire field value.</p>
+<p>This is a replacement <code>CPagination</code> for MongoYii built by <a href="https://github.com/kimbeejay">@kimbeejay</a>.</p>
 
-<p>This change was implemented to match Yiis own behaviour. Yii, by default, will not match by <code>LIKE</code> when using this function.</p>
-
-<p>This behaviour WILL NOT change here after. After complying to Yiis own behaviour it will be left alone.</p>
-
-<p><strong>Note:</strong> Only direct accession of <code>compare()</code> through <code>EMongoCriteria</code> is effected, no section of the extension relies on <code>EMongoCriteria</code>.</p>
+<p>It uses the same API as <code>CPagination</code> and requires no extra documentation (outside of <code>CPagination</code>) aside from making you aware of its existance.</p>
 
 <h2>Versioning</h2>
 
