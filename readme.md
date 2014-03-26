@@ -1088,17 +1088,6 @@ This is a replacement `CPagination` for MongoYii built by [@kimbeejay](https://g
 
 It uses the same API as `CPagination` and requires no extra documentation (outside of `CPagination`) aside from making you aware of its existance.
 
-## Upgrade Notes
- 
-There has been a small but dramatic change between version 1.x and 2.x of MongoYii. The `compare()` function within the `EMongoCriteria` now no longer uses partial matching by
-default. This means that by default it will try and match the entire field value.
-
-This change was implemented to match Yiis own behaviour. Yii, by default, will not match by `LIKE` when using this function.
-
-This behaviour WILL NOT change here after. After complying to Yiis own behaviour it will be left alone.
-
-**Note:** Only direct accession of `compare()` through `EMongoCriteria` is effected, no section of the extension relies on `EMongoCriteria`.
-
 ## Versioning
 
 This project uses [semantic versioning 2.0.0](http://semver.org/).
