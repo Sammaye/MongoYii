@@ -1094,7 +1094,7 @@ class EMongoDocument extends EMongoModel{
 	 */
 	public function aggregate($pipeline){
 		$this->trace(__FUNCTION__);
-		return Yii::app()->mongodb->aggregate($this->collectionName(), $pipeline);
+		return $this->getDbConnection()->aggregate($this->collectionName(), $pipeline);
 	}
 
 	/**
