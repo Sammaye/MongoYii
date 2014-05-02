@@ -70,6 +70,15 @@ class EMongoCriteria extends CComponent {
 	 * @return EMongoCriteria
 	 */
 	public function setSort(array $sort) {
+		
+		foreach(sort as $field){
+			if($field === 'asc'){
+				$sort[$field] = 1;
+			}elseif ($field === 'desc'){
+				$sort[$field] = -1;
+			}
+		}
+		
 		$this->_sort = CMap::mergeArray($sort, $this->_sort);
 		return $this;
 	}
