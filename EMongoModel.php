@@ -337,6 +337,9 @@ class EMongoModel extends CModel{
 		$fkey = $relation[2];
 		$pk = isset($relation['on']) ? $this->{$relation['on']} : $this->getPrimaryKey();
 
+        if ($relation[0]==='one' && is_array($pk) && array_key_exists('$ref', $pk)) {
+            $pk = [$pk];
+        }
 		// Form the where clause
 		$where = $params;
 		if(isset($relation['where'])&&!$params) $where = array_merge($relation['where'], $params);
@@ -350,6 +353,9 @@ class EMongoModel extends CModel{
 					$row = $this->populateReference($singleReference, $cname);
 					if ($row) array_push($result, $row);
 				}
+                if ($relation[0]==='one' && count($result) == 1) {
+                    $result = $result[0];
+                }
 				return $this->_related[$name]=$result;
 			}
 			// It is an array of _ids
