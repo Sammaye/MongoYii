@@ -71,7 +71,7 @@ class EMongoCriteria extends CComponent {
 	 */
 	public function setSort(array $sort) {
 		
-		foreach(sort as $field){
+		foreach($sort as $field){
 			if($field === 'asc'){
 				$sort[$field] = 1;
 			}elseif ($field === 'desc'){
