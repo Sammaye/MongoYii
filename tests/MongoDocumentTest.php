@@ -359,8 +359,9 @@ class MongoDocumentTest extends CTestCase{
 	function testManyRelation(){
 		$this->setUpRelationalModel();
 		$r=User::model()->findOne();
-		$this->assertInstanceOf('EMongoCursor', $r->many_interests);
-		$this->assertTrue($r->many_interests->count()>0);
+		// No longer valid due to relation caching
+		//$this->assertInstanceOf('EMongoCursor', $r->many_interests);
+		$this->assertTrue(count($r->many_interests)>0);
 	}
 
 
@@ -378,13 +379,12 @@ class MongoDocumentTest extends CTestCase{
         foreach ($secondarySkills as $skill) $this->assertInstanceOf('Skill', $skill);
     }
 
-
-
 	function testEmbeddedRelation(){
 		$this->setUpRelationalModel();
 		$r=User::model()->findOne();
-		$this->assertInstanceOf('EMongoCursor', $r->embedInterest);
-		$this->assertTrue($r->embedInterest->count()>0);
+		// No longer valid due to relation caching
+		//$this->assertInstanceOf('EMongoCursor', $r->embedInterest);
+		$this->assertTrue(count($r->embedInterest)>0);
 	}
 
 	function testWhereRelation(){
@@ -398,8 +398,9 @@ class MongoDocumentTest extends CTestCase{
 		$r=User::model()->findOne();
 
 		$rel=$r->many_interests(array('name' => 'computers'));
-		$this->assertInstanceOf('EMongoCursor', $rel);
-		$this->assertTrue($rel->count()>0);
+		// No longer valid due to relation caching
+		//$this->assertInstanceOf('EMongoCursor', $rel);
+		$this->assertTrue(count($rel)>0);
 	}
 
 	/**
