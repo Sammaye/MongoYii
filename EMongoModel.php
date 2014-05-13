@@ -325,10 +325,6 @@ class EMongoModel extends CModel{
 
 		Yii::trace('lazy loading '.get_class($this).'.'.$name,'extensions.MongoYii.EMongoModel');
 
-		// I am unsure as to the purpose of this bit
-		//if($this->getIsNewRecord() && !$refresh && ($relation instanceof CHasOneRelation || $relation instanceof CHasManyRelation))
-		//return $relation instanceof CHasOneRelation ? null : array();
-
 		$cursor = array();
 		$relation = $relations[$name];
 
@@ -387,8 +383,10 @@ class EMongoModel extends CModel{
 				->sort(isset($relation['sort'])?$relation['sort']:array())
 				->skip(isset($relation['skip'])?$relation['skip']:null)
 				->limit(isset($relation['limit'])?$relation['limit']:null);
-			if(isset($relation['cache']) && $relation['cache']===true)
+			
+			if(!isset($relation['cache']) || $relation['cache'] === true){
 				return $this->_related[$name]=iterator_to_array($cursor);
+			}
 		}
 		return $cursor; // FAIL SAFE
 	}

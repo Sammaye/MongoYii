@@ -13,9 +13,9 @@ class EMongoCacheDependency extends CCacheDependency
 	 * Constructor.
 	 * @param string $cursor the Mongo Cursor whose result is used to determine if the dependency has been changed.
 	 */
-	public function __construct($query=null)
+	public function __construct($cursor=null)
 	{
-		$this->cursor = $query;
+		$this->cursor = $cursor;
 	}
 
 	/**

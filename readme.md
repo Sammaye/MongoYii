@@ -203,29 +203,18 @@ The `on` clause supports multiple field types. It can take a `DBRef` or an `Obje
 You can also, just like in Yii, define a `where` clause. This is a 1-1 relation to the syntax used within normal querying in MongoDB and the extension will basically merge this
 clause with the primary key field you define in order to query for the relation.
 
-All relations are returned as `EMongoCursor`s which is basically the Yii active record implementation of `MongoCursor`. There is no eager loading, if you wish to use eager loading
-please look into using `iterator_to_array()` on the return value from calling the relation.
-
 #### Caching
 
-Currently there is no relationship caching on relation types of `many` due to the historical reason of returning an `EMongoCursor` for all relationships. 
-You can add caching by setting `cache` to `true` in the relation properties like so:
+As of 5.x relation caching in MongoYii is turned ON by default. This means that all relations are now cached. If you wish to make sure a relation is not cached you can explicitly add 
+`'cache' => false` to the relation definition like so:
 
 	function relations(){
 		return array(
-			'others' => array('many', 'Other', 'otherId', 'cache' => true)
+			'others' => array('many', 'Other', 'otherId', 'cache' => false)
 		);
 	}
 
-#### Deprecation Notice
-
-By default currently a `many` relation has no caching to it. This goes against how Yii works as such caching will be turned on by default at some point in the future: 
-[https://github.com/Sammaye/MongoYii/issues/169](https://github.com/Sammaye/MongoYii/issues/169).
-
-The change will not happen for a long time to give people who have come to expect the behaviour of no caching a chance to move their code.
-
-The ability to declare a relationship as uncached is staying. This will help for very large relationships that exist which should not really be 
-brought into memory for performance reasons.
+Versions prior to 5.x do not have relation caching turned on by default.
 
 ### getDocument()
 
@@ -1087,6 +1076,10 @@ It will work the same way as any other auth manager.
 This is a replacement `CPagination` for MongoYii built by [@kimbeejay](https://github.com/kimbeejay).
 
 It uses the same API as `CPagination` and requires no extra documentation (outside of `CPagination`) aside from making you aware of its existance.
+
+### EMongoCacheDependency
+
+Similar in kind to `CDbCacheDependency` only it does not take a `sql` parameter but intead an `EMongoCursor`. Created by yours truly.
 
 ## Versioning
 
