@@ -121,6 +121,11 @@ class EMongoClient extends CApplicationComponent{
      */
     public function init(){
         parent::init();
+        
+        if($this->db){
+        	$this->options['db'] = $this->db;
+        }
+        
         $this->connect();
     }
 
