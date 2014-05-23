@@ -173,6 +173,11 @@ class EMongoCursor implements Iterator, Countable {
 		$this->cursor()->limit($num);
 		return $this;
     }
+    
+    public function timeout($ms){
+    	$this->cursor()->timeout($ms);
+    	return $this;
+    }
 
 	/**
 	 * Reset the MongoCursor to the beginning
