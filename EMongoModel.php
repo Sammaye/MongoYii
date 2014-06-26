@@ -610,4 +610,17 @@ class EMongoModel extends CModel{
 	public function getBSONDocument(){
 		return bson_encode($this->getRawDocument());
 	}
+	
+	public function populateRecord($attributes)
+    	{
+		$this->setScenario('update');
+        	$this->init();
+
+        	foreach ($attributes as $name => $value) {
+            		$this->setAttribute($name, $value);
+        	}
+
+        	$this->attachBehaviors($this->behaviors());
+        	$this->afterConstruct();
+    	}
 }
