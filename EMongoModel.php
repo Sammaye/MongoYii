@@ -23,15 +23,17 @@ class EMongoModel extends CModel{
 	 */
 	public function __get($name){
 
-		if(isset($this->_attributes[$name]))
+		
+		try {
+			return parent::__get($name);
+		} catch (CException $e) {
+			if(isset($this->_attributes[$name]))
 			return $this->_attributes[$name];
 		if(isset($this->_related[$name]))
 			return $this->_related[$name];
 		if(array_key_exists($name, $this->relations()))
 			return $this->_related[$name]=$this->getRelated($name);
-		try {
-			return parent::__get($name);
-		} catch (CException $e) {
+			
 			$getter='get'.$name;
 			if(method_exists($this,$getter)){
 				throw $e;
