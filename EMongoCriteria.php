@@ -185,7 +185,7 @@ class EMongoCriteria extends CComponent {
 	 * @return EMongoCriteria
 	 */
 	public function addOrCondition($condition){
-		$this->_condition['$or'] = $condition;
+		$this->_condition['$and'][] = array('$or' => $condition);
 		return $this;
 	}
 
