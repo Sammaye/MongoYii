@@ -5,7 +5,7 @@ require_once 'bootstrap.php';
 class MongoClientTest extends CTestCase{
 
 	/**
-	 * @covers MongoClient::getConnection
+	 * @covers EMongoClient::getConnection
 	 */
 	function testSettingUpConnection(){
 
@@ -21,7 +21,7 @@ class MongoClientTest extends CTestCase{
 	}
 
 	/**
-	 * @covers MongoClient::selectCollection
+	 * @covers EMongoClient::selectCollection
 	 */
 	function testSelectCollection(){
 
@@ -33,7 +33,7 @@ class MongoClientTest extends CTestCase{
 	}
 
 	/**
-	 * @covers MongoClient::getDB
+	 * @covers EMongoClient::getDB
 	 */
 	function testGetDB(){
 		$mongo = Yii::app()->mongodb;
@@ -41,7 +41,7 @@ class MongoClientTest extends CTestCase{
 	}
 
 	/**
-	 * @covers MongoClient::getDefaultWriteConcern
+	 * @covers EMongoClient::getDefaultWriteConcern
 	 */
 	function testWriteConcern(){
 		$mongo = Yii::app()->mongodb;
@@ -68,7 +68,7 @@ class MongoClientTest extends CTestCase{
 	}
 
 	/**
-	 * @covers MongoClient::createMongoIdFromTimestamp
+	 * @covers EMongoClient::createMongoIdFromTimestamp
 	 */
 	function testCreateMongoIDFromTimestamp(){
 		$mongo = Yii::app()->mongodb;
