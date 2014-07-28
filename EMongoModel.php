@@ -274,6 +274,26 @@ class EMongoModel extends CModel{
 		foreach($names as $name)
 			$this->$name=null;
 	}
+	
+	/**
+	 * Allows for mass assignment of the record in question
+	 */
+	public function populateRecord($attributes, $runEvent = true)
+	{
+		$this->setScenario('update');
+		
+		foreach($attributes as $name => $value){
+			$this->$name = $value;
+		}
+		
+		$this->init();
+		$this->attachBehaviors($this->behaviors());
+
+		if($runEvent){
+			$this->afterConstruct();
+		}
+		return $this;
+	}
 
 	/**
 	 * Sets whether or not this is a partial document
