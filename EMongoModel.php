@@ -280,6 +280,10 @@ class EMongoModel extends CModel{
 	 */
 	public function populateRecord($attributes, $runEvent = true)
 	{
+		if($attributes === false){
+			return null;
+		}
+		
 		$this->setScenario('update');
 		
 		foreach($attributes as $name => $value){
