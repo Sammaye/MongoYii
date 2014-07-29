@@ -284,19 +284,20 @@ class EMongoModel extends CModel{
 			return null;
 		}
 		
-		$this->setScenario('update');
+		$record = new $this;
+		$record->setScenario('update');
 		
 		foreach($attributes as $name => $value){
-			$this->$name = $value;
+			$record->setAttribute($name, $value);
 		}
 		
-		$this->init();
-		$this->attachBehaviors($this->behaviors());
+		$record->init();
+		$record->attachBehaviors($record->behaviors());
 
 		if($runEvent){
-			$this->afterConstruct();
+			$record->afterConstruct();
 		}
-		return $this;
+		return $record;
 	}
 
 	/**

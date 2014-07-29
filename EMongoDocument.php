@@ -377,7 +377,7 @@ class EMongoDocument extends EMongoModel{
 		foreach($attributes as $name=>$value)
 		{
 			$labels[$name] = 1;
-			$record->$name = $value;
+			$record->setAttribute($name, $value);
 		}
 
 		if($partial){
