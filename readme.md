@@ -1131,7 +1131,7 @@ The first (`0`) index of the query parameter will always be the `find()` query, 
 currently the quey parameter of this class only accepts the parts to be shown as parsed above, it does not currently allow you to actually grab the cursor directly.
 
 **Note:** Do not put a cursor into this class, it will not save to your datastore in a manner that the PHP driver for MongoDB will be able to use it. Instead you will be 
-told that the `MongoCursor` wass not correctly inited by its parent class(es).
+told that the `MongoCursor` was not correctly inited by its parent class(es).
 
 ## Versioning
 
