@@ -1109,7 +1109,7 @@ The constructor for this cache class accepts two parameters, one being the colle
 
 The first (`0`) index of the query parameter will always be the `find()` query, this is in fact how the query parameter is parsed by the class:
 
-	$query = [];
+	$query = array();
 	if(isset($this->query[0])){
 		$query = $this->query[0];
 	}
