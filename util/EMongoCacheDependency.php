@@ -7,15 +7,25 @@
  */
 class EMongoCacheDependency extends CCacheDependency
 {
-	public $cursor;
+	/**
+	 * @var string the ID of a {@link EMongoClient} application component. Defaults to 'mongodb'.
+	 */
+	public $connectionID = 'mongodb';
+	
+	public $collection = null;
+	
+	public $query = [];
+	
+	private $_db;
 
 	/**
 	 * Constructor.
 	 * @param string $cursor the Mongo Cursor whose result is used to determine if the dependency has been changed.
 	 */
-	public function __construct($cursor=null)
+	public function __construct($collection, $query = null)
 	{
-		$this->cursor = $cursor;
+		$this->collection = $collection;
+		$this->query = $query;
 	}
 
 	/**
@@ -25,6 +35,7 @@ class EMongoCacheDependency extends CCacheDependency
 	 */
 	public function __sleep()
 	{
+		$this->_db = null;
 		return array_keys((array)$this);
 	}
 
@@ -36,19 +47,83 @@ class EMongoCacheDependency extends CCacheDependency
 	 */
 	protected function generateDependentData()
 	{
-		if($this->query!==null){
-			if($db->queryCachingDuration>0){
+		if($this->query !== null){
+			
+			$db = $this->getDbConnection();
+			
+			if($db->queryCachingDuration > 0){
 				// temporarily disable and re-enable query caching
 				$duration=$db->queryCachingDuration;
-				$db->queryCachingDuration=0;
-				$result=iterator_to_array($this->cursor);
-				$db->queryCachingDuration=$duration;
+				$db->queryCachingDuration = 0;
+				$result = iterator_to_array($this->createCursor());
+				$db->queryCachingDuration = $duration;
 			}else{
-				$result=iterator_to_array($this->cursor);
+				
+				$result = iterator_to_array($this->createCursor());
+				/*
+				try{
+				$result = iterator_to_array($this->cursor);
+				}catch(MongoException $e){
+					var_dump($this->cursor);
+					exit();
+					//var_dump($e);
+				}
+				//var_dump($result);
+				//exit();
+				//$result = iterator_to_array($this->cursor);
+				 * 
+				 */
 			}
 			return $result;
 		}else{
-			throw new CException(Yii::t('yii','EMongoCacheDependency.cursor cannot be empty.'));
+			throw new EMongoException(Yii::t('yii','EMongoCacheDependency.query cannot be empty.'));
+		}
+	}
+	
+	protected function createCursor()
+	{
+		$query = [];
+		if(isset($this->query[0])){
+			$query = $this->query[0];
+		}
+		
+		$cursor = $this->getDbConnection()->{$this->collection}->find($query);
+		
+		if(isset($this->query['sort'])){
+			$cursor->sort($this->query['sort']);
+		}
+		
+		if(isset($this->query['skip'])){
+			$cursor->limit($this->query['skip']);
+		}		
+		
+		if(isset($this->query['limit'])){
+			$cursor->limit($this->query['limit']);
+		}
+		
+		return $cursor;
+	}
+	
+	/**
+	 * @return CDbConnection the DB connection instance
+	 * @throws CException if {@link connectionID} does not point to a valid application component.
+	 */
+	protected function getDbConnection()
+	{
+		if($this->_db!==null){
+			return $this->_db;
+		}else{
+			if(($this->_db=Yii::app()->getComponent($this->connectionID)) instanceof EMongoClient){
+				return $this->_db;
+			}else{
+				throw new EMongoException(
+					Yii::t(
+						'yii', 
+						'EMongoCacheDependency.connectionID "{id}" is invalid. Please make sure it refers to the ID of a EMongoClient application component.',
+						array('{id}' => $this->connectionID)
+					)
+				);
+			}
 		}
 	}
 }

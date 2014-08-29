@@ -1079,7 +1079,61 @@ It uses the same API as `CPagination` and requires no extra documentation (outsi
 
 ### EMongoCacheDependency
 
+This is to enable MongoYiis edition of [caching](http://www.yiiframework.com/doc/guide/1.1/en/caching.data).
+
 Similar in kind to `CDbCacheDependency` only it does not take a `sql` parameter but intead an `EMongoCursor`. Created by yours truly.
+
+Example usage of this class would be:
+
+		$cache = Yii::app()->cache;
+		$cache->set(
+			'12', 
+			'dfgdfgf', 
+			30,
+			new EMongoCacheDependency('t', [
+				[],
+				'limit' => 5
+			])
+		);
+		var_dump($cache->get('12'));
+
+would return `dfgdfgf` when the cache is not invalid but if you invalidate it it will return `false` per the documentation.
+
+As such if I were then to run:
+
+		$cache = Yii::app()->cache;
+		Yii::app()->mongodb->t->insert(['g' => 1]);
+		var_dump($cache->get('12'));
+
+I would get false as the return value.
+
+The constructor for this cache class accepts two parameters, one being the collection name and the other being the query.
+
+The first (`0`) index of the query parameter will always be the `find()` query, this is in fact how the query parameter is parsed by the class:
+
+	$query = [];
+	if(isset($this->query[0])){
+		$query = $this->query[0];
+	}
+		
+	$cursor = $this->getDbConnection()->{$this->collection}->find($query);
+		
+	if(isset($this->query['sort'])){
+		$cursor->sort($this->query['sort']);
+	}
+		
+	if(isset($this->query['skip'])){
+		$cursor->limit($this->query['skip']);
+	}
+		
+	if(isset($this->query['limit'])){
+		$cursor->limit($this->query['limit']);
+	}
+
+currently the quey parameter of this class only accepts the parts to be shown as parsed above, it does not currently allow you to actually grab the cursor directly.
+
+**Note:** Do not put a cursor into this class, it will not save to your datastore in a manner that the PHP driver for MongoDB will be able to use it. Instead you will be 
+told that the `MongoCursor` wass not correctly inited by its parent class(es).
 
 ## Versioning
 
