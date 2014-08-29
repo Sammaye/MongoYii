@@ -1081,8 +1081,6 @@ It uses the same API as `CPagination` and requires no extra documentation (outsi
 
 This is to enable MongoYiis edition of [caching](http://www.yiiframework.com/doc/guide/1.1/en/caching.data).
 
-Similar in kind to `CDbCacheDependency` only it does not take a `sql` parameter but intead an `EMongoCursor`. Created by yours truly.
-
 Example usage of this class would be:
 
 		$cache = Yii::app()->cache;
