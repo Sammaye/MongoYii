@@ -192,6 +192,15 @@ class EMongoClient extends CApplicationComponent
 	 */
 	public function connect()
 	{
+		if(!extension_loaded('mongo')){
+			throw new EMongoException(
+				yii::t(
+					'yii', 
+					'We could not find the MongoDB extension ( http://php.net/manual/en/mongo.installation.php ), please install it'
+				)
+			);
+		}
+		
 		// We don't need to throw useless exceptions here, the MongoDB PHP Driver has its own checks and error reporting
 		// Yii will easily and effortlessly display the errors from the PHP driver, we should only catch its exceptions if
 		// we wanna add our own custom messages on top which we don't, the errors are quite self explanatory
