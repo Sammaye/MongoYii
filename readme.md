@@ -86,7 +86,7 @@ If you wish to setup the log to insert entries into MongoDB (like in `CDbLogRout
 			),
 		),
 
-### Providing a custom mongodb component
+### Providing a custom mongodb component/multiple connections
 
 Each `EMongoDocument` or `EMongoModel` inherited class, i.e. your models will have a overrideable function called `getMongoComponent()`. You can simply override this to 
 return your custom application component, for example:
