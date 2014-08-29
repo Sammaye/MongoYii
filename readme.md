@@ -1083,25 +1083,25 @@ This is to enable MongoYiis edition of [caching](http://www.yiiframework.com/doc
 
 Example usage of this class would be:
 
-		$cache = Yii::app()->cache;
-		$cache->set(
-			'12', 
-			'dfgdfgf', 
-			30,
-			new EMongoCacheDependency('t', [
-				[],
-				'limit' => 5
-			])
-		);
-		var_dump($cache->get('12'));
+	$cache = Yii::app()->cache;
+	$cache->set(
+		'12', 
+		'dfgdfgf', 
+		30,
+		new EMongoCacheDependency('t', [
+			[],
+			'limit' => 5
+		])
+	);
+	var_dump($cache->get('12'));
 
 would return `dfgdfgf` when the cache is not invalid but if you invalidate it it will return `false` per the documentation.
 
 As such if I were then to run:
 
-		$cache = Yii::app()->cache;
-		Yii::app()->mongodb->t->insert(['g' => 1]);
-		var_dump($cache->get('12'));
+	$cache = Yii::app()->cache;
+	Yii::app()->mongodb->t->insert(['g' => 1]);
+	var_dump($cache->get('12'));
 
 I would get false as the return value.
 
