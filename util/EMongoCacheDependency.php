@@ -68,7 +68,7 @@ class EMongoCacheDependency extends CCacheDependency
 	
 	protected function createCursor()
 	{
-		$query = [];
+		$query = array();
 		if(isset($this->query[0])){
 			$query = $this->query[0];
 		}
