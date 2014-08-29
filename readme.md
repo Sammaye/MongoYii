@@ -86,6 +86,18 @@ If you wish to setup the log to insert entries into MongoDB (like in `CDbLogRout
 			),
 		),
 
+### Providing a custom mongodb component
+
+Each `EMongoDocument` or `EMongoModel` inherited class, i.e. your models will have a overrideable function called `getMongoComponent()`. You can simply override this to 
+return your custom application component, for example:
+
+	public function getMongoComponent()
+	{
+		return Yii::app()->someweirddbconnectionINIT;
+	}
+
+and that model will now use that new application component to source its information. This is also helpful if you are using different databases for different models.
+
 ### Composer
 
 MongoYii fully supports Composer and is listed on [packagist](https://packagist.org/packages/sammaye/mongoyii).
@@ -1109,7 +1121,7 @@ The constructor for this cache class accepts two parameters, one being the colle
 
 The first (`0`) index of the query parameter will always be the `find()` query, this is in fact how the query parameter is parsed by the class:
 
-	$query = array();
+	$query = [];
 	if(isset($this->query[0])){
 		$query = $this->query[0];
 	}

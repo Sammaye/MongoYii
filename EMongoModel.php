@@ -560,10 +560,18 @@ class EMongoModel extends CModel{
 	{
 		if(self::$db!==null)
 			return self::$db;
-		self::$db=Yii::app()->mongodb;
+		self::$db=$this->getMongoComponent();
 		if(self::$db instanceof EMongoClient)
 			return self::$db;
 		throw new EMongoException(Yii::t('yii','MongoDB Active Record requires a "mongodb" EMongoClient application component.'));
+	}
+	
+	/**
+	 * This allows you to define a custom override by default for models and the such
+	 */
+	public function getMongoComponent()
+	{
+		return Yii::app()->mongodb;
 	}
 
 	/**
