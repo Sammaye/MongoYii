@@ -58,21 +58,7 @@ class EMongoCacheDependency extends CCacheDependency
 				$result = iterator_to_array($this->createCursor());
 				$db->queryCachingDuration = $duration;
 			}else{
-				
 				$result = iterator_to_array($this->createCursor());
-				/*
-				try{
-				$result = iterator_to_array($this->cursor);
-				}catch(MongoException $e){
-					var_dump($this->cursor);
-					exit();
-					//var_dump($e);
-				}
-				//var_dump($result);
-				//exit();
-				//$result = iterator_to_array($this->cursor);
-				 * 
-				 */
 			}
 			return $result;
 		}else{
