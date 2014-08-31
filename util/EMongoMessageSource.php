@@ -38,11 +38,8 @@
  */
 class EMongoMessageSource extends CMessageSource
 {
-	const CACHE_KEY_PREFIX='Yii.EMongoMessageSource.';
-	/**
-	 * @var string the ID of the database connection application component. Defaults to 'mongodb'.
-	 */
-	public $mongoConnectionId;
+	const CACHE_KEY_PREFIX = 'Yii.EMongoMessageSource.';
+
 	public $connectionID;
 
 	/**
@@ -54,13 +51,14 @@ class EMongoMessageSource extends CMessageSource
 	 * @var integer the time in seconds that the messages can remain valid in cache.
 	 * Defaults to 0, meaning the caching is disabled.
 	 */
-	public $cachingDuration=0;
+	public $cachingDuration = 0;
+	
 	/**
 	 * @var string the ID of the cache application component that is used to cache the messages.
 	 * Defaults to 'cache' which refers to the primary cache application component.
 	 * Set this property to false if you want to disable caching the messages.
 	 */
-	public $cacheID='cache';
+	public $cacheID = 'cache';
 
 	/**
 	 * @var EMongoClient the DB connection instance
@@ -75,18 +73,18 @@ class EMongoMessageSource extends CMessageSource
 	 */
 	protected function loadMessages($category,$language)
 	{
-		if($this->cachingDuration>0 && $this->cacheID!==false && ($cache=Yii::app()->getComponent($this->cacheID))!==null)
-		{
-			$key=self::CACHE_KEY_PREFIX.'.messages.'.$category.'.'.$language;
-			if(($data=$cache->get($key))!==false)
+		if($this->cachingDuration > 0 && $this->cacheID !== false && ($cache = Yii::app()->getComponent($this->cacheID)) !== null){
+			$key = self::CACHE_KEY_PREFIX . '.messages.' . $category . '.' . $language;
+			if(($data = $cache->get($key)) !== false){
 				return unserialize($data);
+			}
 		}
 
-		$messages=$this->loadMessagesFromDb($category,$language);
+		$messages = $this->loadMessagesFromDb($category, $language);
 
-		if(isset($cache))
-			$cache->set($key,serialize($messages),$this->cachingDuration);
-
+		if(isset($cache)){
+			$cache->set($key, serialize($messages), $this->cachingDuration);
+		}
 		return $messages;
 	}
 	 
@@ -96,17 +94,22 @@ class EMongoMessageSource extends CMessageSource
 	 */
 	protected function getDbConnection()
 	{
-		if ($this->_db !== null) {
+		if($this->_db !== null){
 			return $this->_db;
-		} elseif (($id=$this->connectionID) !==null) {
-			if (($this->_db=Yii::app()->getComponent($id)) instanceof CDbConnection) {
+		}elseif(($id = $this->connectionID) !== null){
+			if(($this->_db = Yii::app()->getComponent($id)) instanceof CDbConnection){
 				return $this->_db;
-			} else {
-				throw new CException(Yii::t('yii','EMongoCache.connectionID "{id}" is invalid. Please make sure it refers to the ID of a EMongoClient application component.',
-						array('{id}'=>$id)));
+			}else{
+				throw new CException(
+					Yii::t(
+						'yii', 
+						'EMongoCache.connectionID "{id}" is invalid. Please make sure it refers to the ID of a EMongoClient application component.',
+						array('{id}' => $id)
+					)
+				);
 			}
-		} else {
-			return $this->_db=Yii::app()->getComponent('mongodb');
+		}else{
+			return $this->_db = Yii::app()->getComponent('mongodb');
 		}
 	}
 
@@ -130,14 +133,14 @@ class EMongoMessageSource extends CMessageSource
 	 */
 	protected function loadMessagesFromDb($category,$language)
 	{
-		$criteria = array('category'=>$category, "translations.language"=>$language);
-		$fields = array('message'=>true, 'translations.message'=>true);
+		$criteria = array('category' => $category, "translations.language" => $language);
+		$fields = array('message' => true, 'translations.message' => true);
 		$messages = $this->getCollection()->find($criteria, $fields);
 		 
-		$result=array();
-		foreach($messages as $message)
+		$result = array();
+		foreach($messages as $message){
 			$result[$message['message']] = $message['translations'][0]['message'];
-
+		}
 		return $result;
 	}
 }

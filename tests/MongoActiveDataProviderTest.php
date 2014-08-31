@@ -2,9 +2,10 @@
 
 require_once 'bootstrap.php';
 
-class MongoActiveDataProviderTest extends CTestCase{
-
-	function tearDown(){
+class MongoActiveDataProviderTest extends CTestCase
+{
+	public function tearDown()
+	{
 		// drop the database after every test
 		Yii::app()->mongodb->drop();
 	}
@@ -13,8 +14,8 @@ class MongoActiveDataProviderTest extends CTestCase{
 	 * I am only testing my public API, not that of the CActiveDataProvider in general
 	 * @covers EMongoDataProvider
 	 */
-	function testFetchData(){
-
+	public function testFetchData()
+	{
 		for($i=0;$i<=4;$i++){
 			$u = new User();
 			$u->username = 'sammaye';
@@ -28,9 +29,9 @@ class MongoActiveDataProviderTest extends CTestCase{
 			)
 		));
 
-		$this->assertTrue($d->getTotalItemCount()==5);
+		$this->assertTrue($d->getTotalItemCount() == 5);
 		$data = $d->fetchData();
-		$this->assertTrue($d->getTotalItemCount()==5);
+		$this->assertTrue($d->getTotalItemCount() == 5);
 
 		// default page size is ten which means the skip and limit become useless atm
 		// However that does not matter because there is only 5 there lol

@@ -19,17 +19,10 @@
  * EMongoDBCache stores cache data in a collection named {@link collectionName}.
  * If the collection does not exist, it will be automatically created.
  *
- * You can also specify {@link mongoConnectionId} to select a mongoDb
- *
  * See {@link CCache} manual for common cache operations that are supported by EMongoCache.
  */
 class EMongoCache extends CCache
 {
-	/**
-	 * @var string the ID of a {@link CDbConnection} application component.
-	 */
-	public $mongoConnectionId='mongodb'; // public $mongoConnectionId = 'mongodb';
-
 	public $connectionID;
 
 	/**
@@ -42,6 +35,7 @@ class EMongoCache extends CCache
 	 * </pre>
 	 */
 	public $collectionName = 'YiiCache';
+	
 	public $ensureIndex = true;  //set to false after first use of the cache
 
 	/**
@@ -49,8 +43,9 @@ class EMongoCache extends CCache
 	 */
 	private $_db;
 
-	private $_gcProbability=100;
-	private $_gced=false;
+	private $_gcProbability = 100;
+	
+	private $_gced = false;
 
 	/**
 	 * Initializes this application component.
@@ -65,7 +60,7 @@ class EMongoCache extends CCache
 	{
 		parent::init();
 
-		if ($this->ensureIndex) {
+		if($this->ensureIndex){
 			$this->getCollection()->ensureIndex( array('key' => 1));  // create index on "key"
 		}
 	}
@@ -76,17 +71,22 @@ class EMongoCache extends CCache
 	 */
 	protected function getDbConnection()
 	{
-		if ($this->_db !== null) {
+		if($this->_db !== null){
 			return $this->_db;
-		} elseif (($id=$this->connectionID) !==null) {
-			if (($this->_db=Yii::app()->getComponent($id)) instanceof EMongoClient) {
+		}elseif(($id = $this->connectionID) !== null){
+			if(($this->_db = Yii::app()->getComponent($id)) instanceof EMongoClient){
 				return $this->_db;
-			} else {
-				throw new CException(Yii::t('yii','EMongoCache.connectionID "{id}" is invalid. Please make sure it refers to the ID of a EMongoClient application component.',
-						array('{id}'=>$id)));
+			}else{
+				throw new CException(
+					Yii::t(
+						'yii', 
+						'EMongoCache.connectionID "{id}" is invalid. Please make sure it refers to the ID of a EMongoClient application component.',
+						array('{id}'=>$id)
+					)
+				);
 			}
-		} else {
-			return $this->_db=Yii::app()->getComponent('mongodb');
+		}else{
+			return $this->_db = Yii::app()->getComponent('mongodb');
 		}
 	}
 
@@ -120,10 +120,10 @@ class EMongoCache extends CCache
 	{
 		$value=(int)$value;
 
-		if ($value < 0) {
-			$value=0;
-		} elseif ($value > 1000000) {
-			$value=1000000;
+		if($value < 0){
+			$value = 0;
+		}elseif($value > 1000000){
+			$value = 1000000;
 		}
 
 		$this->_gcProbability=$value;
@@ -137,19 +137,19 @@ class EMongoCache extends CCache
 	 */
 	protected function getValue($key)
 	{
-		$time=time();
+		$time = time();
 
 		$criteria = array(
-				'key' => (string)$key,
-				'$or' =>  array(
-						array('expire' => 0),
-						array('expire' => array('$gt'=> $time)),
-		  ),
+			'key' => (string)$key,
+			'$or' =>  array(
+				array('expire' => 0),
+				array('expire' => array('$gt'=> $time)),
+			),
 		);
 
 		$data = $this->getCollection()->findOne($criteria);
 
-		return $data===null?'':$data['value'];
+		return $data === null ? '' : $data['value'];
 	}
 
 	/**
@@ -159,27 +159,26 @@ class EMongoCache extends CCache
 	 */
 	protected function getValues($keys)
 	{
-		if (empty($keys)) {
+		if(empty($keys)){
 			return array();
 		}
 
-		$results=array();
-		$time=time();
+		$results = array();
+		$time = time();
 
 		$criteria = array(
-				'key' => array('$in'=>$keys),
-				'$or' => array(
-						array('expire' => 0),
-						array('expire' => array('$gt'=> $time)),
-		  ),
+			'key' => array('$in' => $keys),
+			'$or' => array(
+				array('expire' => 0),
+				array('expire' => array('$gt'=> $time)),
+			),
 		);
-
 
 		$data = $this->getCollection()->find($criteria);
 
-		if (!empty($data) && $data->count()) {
-			foreach ($data as $id => $value) {
-				$results[$value['key']] =  $value['value'];
+		if(!empty($data) && $data->count()){
+			foreach($data as $id => $value){
+				$results[$value['key']] = $value['value'];
 			}
 		}
 
@@ -213,30 +212,30 @@ class EMongoCache extends CCache
 	 */
 	protected function addValue($key, $value, $expire)
 	{
-		if (!$this->_gced && mt_rand(0,1000000) < $this->_gcProbability)	{
+		if(!$this->_gced && mt_rand(0,1000000) < $this->_gcProbability){
 			$this->gc();
-			$this->_gced=true;
+			$this->_gced = true;
 		}
 
-		if ($expire > 0) {
-			$expire+=time();
-		} else {
-			$expire=0;
+		if($expire > 0){
+			$expire += time();
+		}else{
+			$expire = 0;
 		}
 
 		$criteria = array('key' => (string)$key);
 
 		$data = array(
-				'key' => (string)$key,
-				'value' => (string)$value,
-				'expire' => (int)$expire,
+			'key' => (string)$key,
+			'value' => (string)$value,
+			'expire' => (int)$expire,
 		);
 
-		$options = array('upsert'=>true);
+		$options = array('upsert' => true);
 
-		try {
+		try{
 			return $this->getCollection()->update($criteria, $data, $options);
-		} catch(Exception $e)	{
+		}catch(Exception $e){
 			return false;
 		}
 	}
@@ -261,12 +260,11 @@ class EMongoCache extends CCache
 	{
 		//delete expired entries
 		$criteria = array(
-				'expired' => array('$gt' => 0),
-				'expired' => array('$lt' => time()),
+			'expired' => array('$gt' => 0),
+			'expired' => array('$lt' => time()),
 		);
 
 		$this->getCollection()->remove($criteria);
-
 	}
 
 	/**

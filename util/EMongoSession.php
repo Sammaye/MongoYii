@@ -1,4 +1,5 @@
 <?php
+
 /**
  * EMongoSession extends {@link CHttpSession} by using database as session data storage.
  *
@@ -13,10 +14,12 @@ class EMongoSession extends CHttpSession
 	 * @var string the ID of a {@link CDbConnection} application component.
 	 */
 	public $connectionID;
+	
 	/**
 	 * @var string the name of the DB table to store session content.
 	 */
-	public $sessionTableName='YiiSession';
+	public $sessionTableName = 'YiiSession';
+	
 	/**
 	 * @var EMongoClient the DB connection instance
 	 */
@@ -38,35 +41,32 @@ class EMongoSession extends CHttpSession
 	 * @param boolean $deleteOldSession Whether to delete the old associated session file or not.
 	 * @since 1.1.8
 	 */
-	public function regenerateID($deleteOldSession=false)
+	public function regenerateID($deleteOldSession = false)
 	{
 		$oldID=session_id();
 
 		// if no session is started, there is nothing to regenerate
-		if(empty($oldID))
+		if(empty($oldID)){
 			return;
-
+		}
+		
 		parent::regenerateID(false);
-		$newID=session_id();
-		$db=$this->getDbConnection();
+		$newID = session_id();
+		$db = $this->getDbConnection();
 
-		$row = $db->{$this->sessionTableName}->findOne(array('id'=>$oldID));
-		if($row) // $row should either be a truey value or a falsey value
-		{
-			if($deleteOldSession)
-				$db->{$this->sessionTableName}->update(array('id'=>$oldID),array('$set'=>array('id'=>$newID)));
-			else
-			{
-				$row['id']=$newID;
+		$row = $db->{$this->sessionTableName}->findOne(array('id' => $oldID));
+		if($row){ // $row should either be a truey value or a falsey value
+			if($deleteOldSession){
+				$db->{$this->sessionTableName}->update(array('id' => $oldID), array('$set' => array('id' => $newID)));
+			}else{
+				$row['id'] = $newID;
 				$db->{$this->sessionTableName}->insert($row);
 			}
-		}
-		else
-		{
+		}else{
 			// shouldn't reach here normally
 			$db->{$this->sessionTableName}->insert(array(
-				'id'=>$newID,
-				'expire'=>time()+$this->getTimeout()
+				'id' => $newID,
+				'expire' => time() + $this->getTimeout()
 			));
 		}
 	}
@@ -77,19 +77,22 @@ class EMongoSession extends CHttpSession
 	 */
 	protected function getDbConnection()
 	{
-		if($this->_db!==null)
+		if($this->_db !== null){
 			return $this->_db;
-		elseif(($id=$this->connectionID)!==null)
-		{
-			if(($this->_db=Yii::app()->getComponent($id)) instanceof EMongoClient)
+		}elseif(($id = $this->connectionID) !== null){
+			if(($this->_db = Yii::app()->getComponent($id)) instanceof EMongoClient){
 				return $this->_db;
-			else
-				throw new CException(Yii::t('yii','EMongoSession.connectionID "{id}" is invalid. Please make sure it refers to the ID of a EMongoClient application component.',
-					array('{id}'=>$id)));
-		}
-		else
-		{
-			return $this->_db=Yii::app()->getComponent('mongodb');
+			}else{
+				throw new CException(
+					Yii::t(
+						'yii', 
+						'EMongoSession.connectionID "{id}" is invalid. Please make sure it refers to the ID of a EMongoClient application component.',
+						array('{id}' => $id)
+					)
+				);
+			}
+		}else{
+			return $this->_db = Yii::app()->getComponent('mongodb');
 		}
 	}
 
@@ -100,7 +103,7 @@ class EMongoSession extends CHttpSession
 	 * @param string $sessionName session name
 	 * @return boolean whether session is opened successfully
 	 */
-	public function openSession($savePath,$sessionName)
+	public function openSession($savePath, $sessionName)
 	{
 		return true; // Do not need to explicitly create tables in MongoDB
 	}
@@ -113,11 +116,11 @@ class EMongoSession extends CHttpSession
 	 */
 	public function readSession($id)
 	{
-		$data=$this->getDbConnection()->{$this->sessionTableName}->findOne(array(
+		$data = $this->getDbConnection()->{$this->sessionTableName}->findOne(array(
 			'expire' => array('$gt' => time()),
 			'id' => $id
 		));
-		return $data===null?'':$data['data'];
+		return $data === null ? '' : $data['data'];
 	}
 
 	/**
@@ -127,24 +130,22 @@ class EMongoSession extends CHttpSession
 	 * @param string $data session data
 	 * @return boolean whether session write is successful
 	 */
-	public function writeSession($id,$data)
+	public function writeSession($id, $data)
 	{
 		// exception must be caught in session write handler
 		// http://us.php.net/manual/en/function.session-set-save-handler.php
-		try
-		{
-			$expire=time()+$this->getTimeout();
-			$db=$this->getDbConnection();
-			$res=$db->{$this->sessionTableName}->update(array('id'=>$id), array('$set' => array(
-				'data'=>$data,
-				'expire'=>$expire
-			)), array('upsert'=>true));
-			return ((isset($res['upserted'])&&$res['upserted'])||(isset($res['updatedExisting'])&&$res['updatedExisting']));
-		}
-		catch(Exception $e)
-		{
-			if(YII_DEBUG)
+		try{
+			$expire = time() + $this->getTimeout();
+			$db = $this->getDbConnection();
+			$res = $db->{$this->sessionTableName}->update(array('id' => $id), array('$set' => array(
+				'data' => $data,
+				'expire' => $expire
+			)), array('upsert' => true));
+			return ((isset($res['upserted']) && $res['upserted']) || (isset($res['updatedExisting']) && $res['updatedExisting']));
+		}catch(Exception $e){
+			if(YII_DEBUG){
 				echo $e->getMessage();
+			}
 			// it is too late to log an error message here
 			return false;
 		}
@@ -159,7 +160,7 @@ class EMongoSession extends CHttpSession
 	 */
 	public function destroySession($id)
 	{
-		$this->getDbConnection()->{$this->sessionTableName}->remove(array('id'=>$id));
+		$this->getDbConnection()->{$this->sessionTableName}->remove(array('id' => $id));
 		return true;
 	}
 
@@ -171,7 +172,7 @@ class EMongoSession extends CHttpSession
 	 */
 	public function gcSession($maxLifetime)
 	{
-		$this->getDbConnection()->{$this->sessionTableName}->remove(array('expire'=>array('$lt'=>time())));
+		$this->getDbConnection()->{$this->sessionTableName}->remove(array('expire' => array('$lt' => time())));
 		return true;
 	}
 }

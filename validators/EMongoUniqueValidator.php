@@ -1,4 +1,5 @@
 <?php
+
 /**
  * EMongoUniqueValidator validates that the attribute value is unique in the corresponding database table.
  *
@@ -16,12 +17,14 @@ class EMongoUniqueValidator extends CValidator
 	 * @var boolean whether the comparison is case sensitive. Defaults to true.
 	 * Note, by setting it to false, you are assuming the attribute type is string.
 	 */
-	public $caseSensitive=true;
+	public $caseSensitive = true;
+	
 	/**
 	 * @var boolean whether the attribute value can be null or empty. Defaults to true,
 	 * meaning that if the attribute is empty, it is considered valid.
 	 */
-	public $allowEmpty=true;
+	public $allowEmpty = true;
+	
 	/**
 	 * @var string the ActiveRecord class name that should be used to
 	 * look for the attribute value being validated. Defaults to null, meaning using
@@ -30,6 +33,7 @@ class EMongoUniqueValidator extends CValidator
 	 * @see attributeName
 	 */
 	public $className;
+	
 	/**
 	 * @var string the ActiveRecord class attribute name that should be
 	 * used to look for the attribute value being validated. Defaults to null,
@@ -37,24 +41,26 @@ class EMongoUniqueValidator extends CValidator
 	 * @see className
 	 */
 	public $attributeName;
+	
 	/**
 	 * @var mixed additional query criteria. Either an array or CDbCriteria.
 	 * This will be combined with the condition that checks if the attribute
 	 * value exists in the corresponding table column.
 	 * This array will be used to instantiate a {@link CDbCriteria} object.
 	 */
-	public $criteria=array();
+	public $criteria = array();
+	
 	/**
 	 * @var string the user-defined error message. The placeholders "{attribute}" and "{value}"
 	 * are recognized, which will be replaced with the actual attribute name and value, respectively.
 	 */
 	public $message;
+	
 	/**
 	 * @var boolean whether this validation rule should be skipped if when there is already a validation
 	 * error for the current attribute. Defaults to true.
 	 */
-	public $skipOnError=true;
-
+	public $skipOnError = true;
 
 	/**
 	 * Validates the attribute of the object.
@@ -64,23 +70,29 @@ class EMongoUniqueValidator extends CValidator
 	 */
 	protected function validateAttribute($object,$attribute)
 	{
-		$value=$object->$attribute;
-		if($this->allowEmpty && $this->isEmpty($value))
+		$value = $object->$attribute;
+		if($this->allowEmpty && $this->isEmpty($value)){
 			return;
-
-		$className=$this->className===null?get_class($object):Yii::import($this->className);
-		$attributeName=$this->attributeName===null?$attribute:$this->attributeName;
+		}
+		
+		$className = $this->className === null ? get_class($object) : Yii::import($this->className);
+		$attributeName = $this->attributeName === null ? $attribute : $this->attributeName;
 
 		// We get a RAW document here to prevent the need to make yet another active record instance
-		$doc=EMongoDocument::model($className)->
-				getCollection()->findOne(array_merge($this->criteria, array($attributeName => $this->caseSensitive?$value:new MongoRegex('/'.$value.'/i'))));
+		$doc = EMongoDocument::model($className)
+			->getCollection()
+			->findOne(
+				array_merge(
+					$this->criteria, 
+					array($attributeName => $this->caseSensitive ? $value : new MongoRegex('/' . $value . '/i'))
+				)
+			);
 
 		// If a doc was fund and it isn't this doc, as decided by the primnary key
 		if($doc && (string)$doc[$object->primaryKey()] != (string)$object->getPrimaryKey()){
-
 			// Then it ain't unique
-			$message=$this->message!==null?$this->message:Yii::t('yii','{attribute} "{value}" has already been taken.');
-			$this->addError($object,$attribute,$message,array('{value}'=>CHtml::encode($value)));
+			$message = $this->message !== null ? $this->message : Yii::t('yii', '{attribute} "{value}" has already been taken.');
+			$this->addError($object, $attribute, $message, array('{value}' => CHtml::encode($value)));
 		}else{}
 	}
 }

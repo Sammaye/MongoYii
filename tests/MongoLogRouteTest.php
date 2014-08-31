@@ -3,7 +3,6 @@ require_once 'bootstrap.php';
 
 class MongoLogRouteTest extends CTestCase
 {
-
 	public function testLogRouteGetCollection()
 	{
 		$router = new EMongoLogRoute();
@@ -22,29 +21,26 @@ class MongoLogRouteTest extends CTestCase
 
 	public function testInsertIntoLog()
 	{
-			$router = new EMongoLogRoute();
-			$logs = array(
-				array('message1','level1','category1', microtime(true)),
-				array('message2','level2','category2', microtime(true)),
-				array('message3','level3','category3', microtime(true)),
-			);
+		$router = new EMongoLogRoute();
+		$logs = array(
+			array('message1', 'level1', 'category1', microtime(true)),
+			array('message2', 'level2', 'category2', microtime(true)),
+			array('message3', 'level3', 'category3', microtime(true)),
+		);
 
-			$router->processLogs($logs);
+		$router->processLogs($logs);
+		$collection = $router->getMongoConnection();
 
-			$collection = $router->getMongoConnection();
-
-			foreach ($logs as $log) {
-
-				$this->assertNull($collection->findOne(array('message' => 'IAmNotThere')));
-
-				$this->assertArrayHasKey('message', $collection->findOne(array('message' => $log[0])));
-				$this->assertArrayHasKey('level', $collection->findOne(array('level' => $log[1])));
-				$this->assertArrayHasKey('category', $collection->findOne(array('category' => $log[2])));
-			}
-
+		foreach ($logs as $log) {
+			$this->assertNull($collection->findOne(array('message' => 'IAmNotThere')));
+			$this->assertArrayHasKey('message', $collection->findOne(array('message' => $log[0])));
+			$this->assertArrayHasKey('level', $collection->findOne(array('level' => $log[1])));
+			$this->assertArrayHasKey('category', $collection->findOne(array('category' => $log[2])));
+		}
 	}
 
-	function tearDown(){
+	public function tearDown()
+	{
 		Yii::app()->mongodb->drop();
 		parent::tearDown();
 	}

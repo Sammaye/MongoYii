@@ -1,10 +1,11 @@
 <?php
-class Dummy extends EMongoModel{
 
+class Dummy extends EMongoModel
+{
 	public $dum;
 	
-	function rules(){
+	public function rules()
+	{
 		return array();
 	}
-
 }

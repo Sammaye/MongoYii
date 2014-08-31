@@ -2,10 +2,10 @@
 
 require_once 'bootstrap.php';
 
-class MongoCursorTest extends CTestCase{
-
-	function testFind(){
-
+class MongoCursorTest extends CTestCase
+{
+	public function testFind()
+	{
 		for($i=0;$i<=4;$i++){
 			$u = new User();
 			$u->username = 'sammaye';
@@ -29,8 +29,8 @@ class MongoCursorTest extends CTestCase{
 	/**
 	 * @covers EMongoCursor::__construct
 	 */
-	function testDirectInstantiation(){
-
+	public function testDirectInstantiation()
+	{
 		for($i=0;$i<=4;$i++){
 			$u = new User();
 			$u->username = 'sammaye';
@@ -46,8 +46,8 @@ class MongoCursorTest extends CTestCase{
 	/**
 	 * @covers EMongoCriteria
 	 */
-	function testEMongoCriteria(){
-
+	public function testEMongoCriteria()
+	{
 		for($i=0;$i<=4;$i++){
 			$u = new User();
 			$u->username = 'sammaye';
@@ -58,12 +58,13 @@ class MongoCursorTest extends CTestCase{
 		$c = new EMongoCursor('User', $criteria);
 		$this->assertInstanceOf('EMongoCursor', $c);
 		$this->assertTrue($c->count() > 0);
-		// see also $this->testSkip_Limit()
+		// see also $this->testSkipLimit()
 		$this->assertEquals(3, $c->count(true));
 
 	}
 
-	function testSkip_Limit(){
+	public function testSkipLimit()
+	{
 		for($i=0;$i<=4;$i++){
 			$u = new User();
 			$u->username = 'sammaye';
@@ -76,7 +77,8 @@ class MongoCursorTest extends CTestCase{
 		$this->assertTrue($c->count(true) == 3);
 	}
 
-	function tearDown(){
+	public function tearDown()
+	{
 		Yii::app()->mongodb->drop();
 		parent::tearDown();
 	}

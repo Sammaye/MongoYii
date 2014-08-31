@@ -39,13 +39,14 @@
  * Although EMongoTimestampBheaviour attempts to figure out on it's own what value to inject into the timestamp attribute,
  * you may specify a custom value to use instead via {@link timestampExpression}
  */
-
-class EMongoTimestampBehaviour extends CActiveRecordBehavior {
+class EMongoTimestampBehaviour extends CActiveRecordBehavior
+{
 	/**
 	 * @var mixed The name of the attribute to store the creation time.  Set to null to not
 	 * use a timestamp for the creation attribute.  Defaults to 'create_time'
 	 */
 	public $createAttribute = 'create_time';
+	
 	/**
 	 * @var mixed The name of the attribute to store the modification time.  Set to null to not
 	 * use a timestamp for the update attribute.  Defaults to 'update_time'
@@ -84,12 +85,13 @@ class EMongoTimestampBehaviour extends CActiveRecordBehavior {
 	 *
 	 * @param CModelEvent $event event parameter
 	 */
-	public function beforeSave($event) {
-		if ($this->checkScenarios()) {
-			if ($this->getOwner()->getIsNewRecord() && ($this->createAttribute !== null)) {
+	public function beforeSave($event)
+	{
+		if($this->checkScenarios()){
+			if($this->getOwner()->getIsNewRecord() && ($this->createAttribute !== null)){
 				$this->getOwner()->{$this->createAttribute} = $this->getTimestampByAttribute($this->createAttribute);
 			}
-			if ((!$this->getOwner()->getIsNewRecord() || $this->setUpdateOnCreate) && ($this->updateAttribute !== null)) {
+			if((!$this->getOwner()->getIsNewRecord() || $this->setUpdateOnCreate) && ($this->updateAttribute !== null)){
 				$this->getOwner()->{$this->updateAttribute} = $this->getTimestampByAttribute($this->updateAttribute);
 			}
 		}
@@ -101,34 +103,38 @@ class EMongoTimestampBehaviour extends CActiveRecordBehavior {
 	 * @param string $attribute $attribute
 	 * @return mixed timestamp (eg unix timestamp or a mysql function)
 	 */
-	protected function getTimestampByAttribute($attribute) {
-		if($this->timestampExpression instanceof MongoDate)
+	protected function getTimestampByAttribute($attribute)
+	{
+		if($this->timestampExpression instanceof MongoDate){
 			return $this->timestampExpression;
-		elseif ($this->timestampExpression !== null)
-		return @eval('return '.$this->timestampExpression.';');
+		}elseif($this->timestampExpression !== null){
+			return @eval('return '.$this->timestampExpression.';');
+		}
 		return new MongoDate();
 	}
 
-	protected function checkScenarios() {
-		if (!is_array($this->onScenario) or !is_array($this->notOnScenario))
+	protected function checkScenarios()
+	{
+		if(!is_array($this->onScenario) or !is_array($this->notOnScenario)){
 			throw new CException('onScenario and notOnScenario must be an array');
-		if (count($this->onScenario)) {
-			if (count($this->notOnScenario))
+		}
+		if(count($this->onScenario)){
+			if(count($this->notOnScenario)){
 				throw new CException('You can not specify both the parameter and onScenario notOnScenario');
-			//TODO CHECK ENGLISH TEXT VERSION!!!
-			if (in_array($this->getOwner()->getScenario(), $this->onScenario)) {
+			}
+			if(in_array($this->getOwner()->getScenario(), $this->onScenario)){
 				return true;
-			} else {
+			}else{
 				return false;
 			}
 		}
-		if (count($this->notOnScenario)) {
-			if (count($this->onScenario))
+		if(count($this->notOnScenario)){
+			if(count($this->onScenario)){
 				throw new CException('You can not specify both the parameter and onScenario notOnScenario');
-			//TODO CHECK ENGLISH TEXT VERSION!!!
-			if (in_array($this->getOwner()->getScenario(), $this->notOnScenario)) {
+			}
+			if(in_array($this->getOwner()->getScenario(), $this->notOnScenario)){
 				return false;
-			} else {
+			}else{
 				return true;
 			}
 		}

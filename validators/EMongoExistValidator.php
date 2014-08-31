@@ -1,4 +1,5 @@
 <?php
+
 /**
  * EExistValidator validates that the attribute value exists in a table.
  *
@@ -21,7 +22,8 @@ class EMongoExistValidator extends CValidator
 	 * @var boolean whether the comparison is case sensitive. Defaults to true.
 	 * Note, by setting it to false, you are assuming the attribute type is string.
 	 */
-	public $caseSensitive=true;
+	public $caseSensitive = true;
+	
 	/**
 	 * @var string the ActiveRecord class name that should be used to
 	 * look for the attribute value being validated. Defaults to null,
@@ -30,6 +32,7 @@ class EMongoExistValidator extends CValidator
 	 * @see attributeName
 	 */
 	public $className;
+	
 	/**
 	 * @var string the ActiveRecord class attribute name that should be
 	 * used to look for the attribute value being validated. Defaults to null,
@@ -37,20 +40,22 @@ class EMongoExistValidator extends CValidator
 	 * @see className
 	 */
 	public $attributeName;
+	
 	/**
 	 * @var mixed additional query criteria. Either an array or CDbCriteria.
 	 * This will be combined with the condition that checks if the attribute
 	 * value exists in the corresponding table column.
 	 * This array will be used to instantiate a {@link CDbCriteria} object.
 	 */
-	public $criteria=array();
+	public $criteria = array();
+	
 	/**
 	 * @var boolean whether the attribute value can be null or empty. Defaults to true,
 	 * meaning that if the attribute is empty, it is considered valid.
 	 */
-	public $allowEmpty=true;
+	public $allowEmpty = true;
 	
-	public $mongoId=false;
+	public $mongoId = false;
 
 	/**
 	 * Validates the attribute of the object.
@@ -58,21 +63,21 @@ class EMongoExistValidator extends CValidator
 	 * @param CModel $object the object being validated
 	 * @param string $attribute the attribute being validated
 	 */
-	protected function validateAttribute($object,$attribute)
+	protected function validateAttribute($object, $attribute)
 	{
-		$value=$object->$attribute;
-		if($this->allowEmpty && $this->isEmpty($value))
+		$value = $object->$attribute;
+		if($this->allowEmpty && $this->isEmpty($value)){
 			return;
+		}
 
-		$className=$this->className===null?get_class($object):Yii::import($this->className);
-		$attributeName=$this->attributeName===null?$attribute:$this->attributeName;
-		$finder=EMongoDocument::model($className);
+		$className = $this->className === null ? get_class($object) : Yii::import($this->className);
+		$attributeName = $this->attributeName === null ? $attribute : $this->attributeName;
+		$finder = EMongoDocument::model($className);
 
-		$criteria=array($attributeName=>$this->mongoId?new MongoId($value):$value);
-		if(!$finder->exists($criteria))
-		{
-			$message=$this->message!==null?$this->message:Yii::t('yii','{attribute} "{value}" is invalid.');
-			$this->addError($object,$attribute,$message,array('{value}'=>CHtml::encode($value)));
+		$criteria = array($attributeName => $this->mongoId ? new MongoId($value) : $value);
+		if(!$finder->exists($criteria)){
+			$message = $this->message !== null ? $this->message : Yii::t('yii', '{attribute} "{value}" is invalid.');
+			$this->addError($object, $attribute, $message, array('{value}' => CHtml::encode($value)));
 		}
 	}
 }

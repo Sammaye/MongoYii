@@ -2,15 +2,14 @@
 
 require_once 'bootstrap.php';
 
-class MongoClientTest extends CTestCase{
-
+class MongoClientTest extends CTestCase
+{
 	/**
 	 * @covers EMongoClient::getConnection
 	 */
-	function testSettingUpConnection(){
-
+	public function testSettingUpConnection()
+	{
 		$mongo = Yii::app()->mongodb;
-
 		$this->assertInstanceOf('EMongoClient', $mongo);
 
 		if(version_compare(phpversion('mongo'), '1.3.0', '<')){
@@ -23,8 +22,8 @@ class MongoClientTest extends CTestCase{
 	/**
 	 * @covers EMongoClient::selectCollection
 	 */
-	function testSelectCollection(){
-
+	public function testSelectCollection()
+	{
 		$mongo = Yii::app()->mongodb;
 
 		$this->assertTrue($mongo->new_collection instanceof MongoCollection);
@@ -35,7 +34,8 @@ class MongoClientTest extends CTestCase{
 	/**
 	 * @covers EMongoClient::getDB
 	 */
-	function testGetDB(){
+	public function testGetDB()
+	{
 		$mongo = Yii::app()->mongodb;
 		$this->assertInstanceOf('MongoDB', $mongo->getDB());
 	}
@@ -43,15 +43,15 @@ class MongoClientTest extends CTestCase{
 	/**
 	 * @covers EMongoClient::getDefaultWriteConcern
 	 */
-	function testWriteConcern(){
+	public function testWriteConcern()
+	{
 		$mongo = Yii::app()->mongodb;
-
 		$w = $mongo->getDefaultWriteConcern();
 
 		if(version_compare(phpversion('mongo'), '1.3.0', '<')){
 			$this->assertTrue(isset($w['safe']));
 		}else{
-			$this->assertTrue(isset($w['w'],$w['j']));
+			$this->assertTrue(isset($w['w'], $w['j']));
 		}
 
 		$mongo->w = 1;
@@ -61,22 +61,24 @@ class MongoClientTest extends CTestCase{
 		$w = $mongo->getDefaultWriteConcern();
 
 		if(version_compare(phpversion('mongo'), '1.3.0', '<')){
-			$this->assertTrue($w['safe']===true);
+			$this->assertTrue($w['safe'] === true);
 		}else{
-			$this->assertTrue($w['w']==1 && $w['j']===true);
+			$this->assertTrue($w['w'] == 1 && $w['j'] === true);
 		}
 	}
 
 	/**
 	 * @covers EMongoClient::createMongoIdFromTimestamp
 	 */
-	function testCreateMongoIDFromTimestamp(){
+	public function testCreateMongoIDFromTimestamp()
+	{
 		$mongo = Yii::app()->mongodb;
 		$id = $mongo->createMongoIdFromTimestamp(time());
 		$this->assertTrue($id instanceof MongoId);
 	}
 
-	function testArrayMerging(){
+	public function testArrayMerging()
+	{
 		$a = CMap::mergeArray(array('a' => 1, 'b' => array('c' => 2)), array('a' => 1, 'b' => array('c' => 2, 'd' => 3)));
 		$this->assertTrue(isset($a['a'], $a['b'], $a['b']['c'], $a['b']['d']));
 	}

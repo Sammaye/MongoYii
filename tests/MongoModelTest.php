@@ -7,14 +7,16 @@ require_once 'bootstrap.php';
  * Instead I will only test certain validators within the MongoDocumentTest.php file and
  * consider validation working.
  */
-class MongoModelTest extends CTestCase{
-
-	function testModelCreation(){
+class MongoModelTest extends CTestCase
+{
+	public function testModelCreation()
+	{
 		$d = new Dummy();
 		$this->assertInstanceOf('EMongoModel', $d);
 	}
 
-	function testMagics(){
+	public function testMagics()
+	{
 		$d = new Dummy();
 		$d->username = 'sammaye';
 		$this->assertEquals('sammaye', $d->username);
@@ -23,8 +25,8 @@ class MongoModelTest extends CTestCase{
 		$this->assertFalse(isset($d->username));
 	}
 
-	function testAttributes(){
-
+	public function testAttributes()
+	{
 		$d = new Dummy();
 		$d->dum = 'dum-dum';
 		$this->assertTrue($d->hasAttribute('dum'));
@@ -41,7 +43,8 @@ class MongoModelTest extends CTestCase{
 	/**
 	 * @covers EMongoModel::getDbConnection
 	 */
-	function testGetDbConnection(){
+	public function testGetDbConnection()
+	{
 		$d = new Dummy();
 		$dbc = $d->getDbConnection();
 		$this->assertInstanceOf('EMongoClient', $dbc);
@@ -50,7 +53,8 @@ class MongoModelTest extends CTestCase{
 	/**
 	 * @covers EMongoModel::getDocument
 	 */
-	function testGetDocument(){
+	public function testGetDocument()
+	{
 		$d = new Dummy();
 		$d->dum = 'dum-dum';
 		$d->username = 'sammaye';
@@ -63,7 +67,8 @@ class MongoModelTest extends CTestCase{
 	/**
 	 * @covers EMongoModel::getRawDocument
 	 */
-	function testGetRawDocument(){
+	public function testGetRawDocument()
+	{
 		$d = new Dummy();
 		$d->dum = 'dum-dum';
 		$d->username = 'sammaye';
@@ -76,7 +81,8 @@ class MongoModelTest extends CTestCase{
 	/**
 	 * @covers EMongoModel::getJSONDocument
 	 */
-	function testGetJSONDocument(){
+	public function testGetJSONDocument()
+	{
 		$d = new Dummy();
 		$d->dum = 'dum-dum';
 		$d->username = 'sammaye';
@@ -89,7 +95,8 @@ class MongoModelTest extends CTestCase{
 	/**
 	 * @covers EMongoModel::getBSONDocument
 	 */
-	function testGetBSONDocument(){
+	public function testGetBSONDocument()
+	{
 		$d = new Dummy();
 		$d->dum = 'dum-dum';
 		$d->username = 'sammaye';

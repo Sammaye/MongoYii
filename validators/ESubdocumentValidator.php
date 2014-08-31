@@ -6,39 +6,47 @@
  * Warning: This class, if abused, can cause heavy repitition within your application.
  * With great power comes great responsibility.
  */
-class ESubdocumentValidator extends CValidator{
-
+class ESubdocumentValidator extends CValidator
+{
 	public $class;
 
 	public $type;
+	
 	public $rules;
 
 	public $scenario;
 
 	public $preserveKeys = true;
+	
 	public $strict = true;
 
-	public function validateAttribute($object, $attribute){
-
-		if(!$this->type)
-			throw new EMongoException(Yii::t('yii','You must supply a subdocument type of either "many" or "one" in order to validate subdocuments'));
-
-		if(!$this->class && !$this->rules)
-			throw new EMongoException(Yii::t('yii','You must supply either some rules to validate by or a class name to use'));
-
+	public function validateAttribute($object, $attribute)
+	{
+		if(!$this->type){
+			throw new EMongoException(Yii::t('yii', 'You must supply a subdocument type of either "many" or "one" in order to validate subdocuments'));
+		}
+		if(!$this->class && !$this->rules){
+			throw new EMongoException(Yii::t('yii', 'You must supply either some rules to validate by or a class name to use'));
+		}
 		// Lets judge what class we are using
 		// If we are using a pre-defined class then lets just get on with it otherwise
 		// lets instantiate a EMongoModel and fill its rules with what we want
 		if($this->class){
 			$c = new $this->class;
 		}else{
-			$c=new EMongoModel();
+			$c = new EMongoModel();
 			foreach($this->rules as $rule){
-				if(isset($rule[0],$rule[1]))  // attributes, validator name
+				if(isset($rule[0], $rule[1])){ // attributes, validator name
 					$c->validatorList->add(CValidator::createValidator($rule[1],$this,$rule[0],array_slice($rule,2)));
-				else
-					throw new CException(Yii::t('yii','{class} has an invalid validation rule. The rule must specify attributes to be validated and the validator name.',
-						array('{class}'=>get_class($this))));
+				}else{
+					throw new CException(
+						Yii::t(
+							'yii', 
+							'{class} has an invalid validation rule. The rule must specify attributes to be validated and the validator name.',
+							array('{class}' => get_class($this))
+						)
+					);
+				}
 			}
 		}
 
@@ -55,26 +63,29 @@ class ESubdocumentValidator extends CValidator{
 				$fieldValue = array();
 				$newFieldValue = array();
 
-				foreach($object->$attribute as $index=>$row){
+				foreach($object->$attribute as $index => $row){
 					$c->clean();
-					if($this->preserveKeys)
+					if($this->preserveKeys){
 						$val = $fieldValue[$index] = $row instanceof $c ? $row->getRawDocument() : $row;
-					else
+					}else{
 						$val = $fieldValue[] = $row instanceof $c ? $row->getRawDocument() : $row;
+					}
 					$c->setAttributes($val);
 					if(!$c->validate()){
-						if($this->preserveKeys)
+						if($this->preserveKeys){
 							$fieldErrors[$index] = $c->getErrors();
-						else
+						}else{
 							$fieldErrors[] = $c->getErrors();
+						}
 					}
 					
 					// Lets get the field value again to apply filters etc
 					if($this->strict){
-						if($this->preserveKeys)
-						    $newFieldValue[$index] = $c->getRawDocument();
-						else
-						    $newFieldValue[] = $c->getRawDocument();
+						if($this->preserveKeys){
+							$newFieldValue[$index] = $c->getRawDocument();
+						}else{
+							$newFieldValue[] = $c->getRawDocument();
+						}
 					}
 				}
 				
@@ -82,9 +93,9 @@ class ESubdocumentValidator extends CValidator{
 					$newFieldValue = $fieldValue;
 				}
 
-				if($this->message!==null){
-					$this->addError($object,$attribute,$this->message);
-				}elseif(sizeof($fieldErrors)>0){
+				if($this->message !== null){
+					$this->addError($object, $attribute, $this->message);
+				}elseif(sizeof($fieldErrors) > 0){
 					$this->setAttributeErrors($object, $attribute, $fieldErrors);
 				}
 
@@ -96,9 +107,9 @@ class ESubdocumentValidator extends CValidator{
 			$fieldValue = $object->$attribute instanceof $c ? $object->$attribute->getRawDocument() : $object->$attribute;
 			$c->setAttributes($fieldValue);
 			if(!$c->validate()){
-				if($this->message!==null){
+				if($this->message !== null){
 					$this->addError($object,$attribute,$this->message);
-				}elseif(sizeof($c->getErrors())>0){
+				}elseif(sizeof($c->getErrors()) > 0){
 					$this->setAttributeErrors($object, $attribute, $c->getErrors());
 				}
 			}
@@ -119,8 +130,8 @@ class ESubdocumentValidator extends CValidator{
 	 * @param string $attribute the attribute being validated
 	 * @param array $messages the error messages for that attribute
 	 */
-	protected function setAttributeErrors($object,$attribute,$messages)
+	protected function setAttributeErrors($object, $attribute, $messages)
 	{
-		$object->setAttributeErrors($attribute,$messages);
+		$object->setAttributeErrors($attribute, $messages);
 	}
 }

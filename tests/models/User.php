@@ -1,18 +1,24 @@
 <?php
 
-class User extends EMongoDocument{
-
+class User extends EMongoDocument
+{
 	/** @virtual */
 	public $avatar;
 	
 	public $username;
+	
 	public $addresses = array();
+	
 	public $url = null;
+	
 	public $interests = array();
-    public $mainSkill;
-    public $otherSkills;
+	
+	public $mainSkill;
 
-	function scopes(){
+	public $otherSkills;
+
+	public function scopes()
+	{
 		return array(
 			'programmers' => array(
 				'condition' => array('job_title' => 'programmer'),
@@ -23,41 +29,46 @@ class User extends EMongoDocument{
 		);
 	}
 
-	function behaviors(){
+	public function behaviors()
+	{
 		return array(
 			'EMongoTimestampBehaviour'
 		);
 	}
 
-	function rules(){
+	public function rules()
+	{
 		return array(
 			array('username', 'EMongoUniqueValidator', 'className' => 'User', 'attributeName' => 'username', 'on' => 'testUnqiue'),
 			array('addresses', 'subdocument', 'type' => 'many', 'rules' => array(
-				array('road,town,county,post_code', 'safe'),
+				array('road, town, county, post_code', 'safe'),
 				array('telephone', 'numerical', 'integerOnly' => true)
 			)),
-            array('mainSkill,otherSkills','safe'),
+			array('mainSkill, otherSkills', 'safe'),
 			array('url', 'subdocument', 'type' => 'one', 'class' => 'SocialUrl'),
 			array('_id, username, addresses', 'safe', 'on'=>'search'),
 		);
 	}
 
-	function collectionName(){
+	public function collectionName()
+	{
 		return 'users';
 	}
 
-	function relations(){
+	public function relations()
+	{
 		return array(
 			'many_interests' => array('many', 'Interest', 'i_id'),
 			'one_interest' => array('one', 'Interest', 'i_id'),
 			'embedInterest' => array('many', 'Interest', '_id', 'on' => 'interests'),
 			'where_interest' => array('many', 'Interest', 'i_id', 'where' => array('name' => 'jogging'), 'cache' => false),
-            'primarySkill' => array('one', 'Skill', '_id', 'on' => 'mainSkill'),
-            'secondarySkills' => array('many', 'Skill', '_id', 'on' => 'otherSkills'),
+			'primarySkill' => array('one', 'Skill', '_id', 'on' => 'mainSkill'),
+			'secondarySkills' => array('many', 'Skill', '_id', 'on' => 'otherSkills'),
 		);
 	}
 
-	function attributeLabels(){
+	public function attributeLabels()
+	{
 		return array(
 			'username' => 'name'
 		);
@@ -67,15 +78,16 @@ class User extends EMongoDocument{
 	 * Returns the static model of the specified AR class.
 	 * @return User the static model class
 	 */
-	public static function model($className=__CLASS__)
+	public static function model($className = __CLASS__)
 	{
 		return parent::model($className);
 	}
 }
 
-class SocialUrl extends EMongoModel{
-
-	public function rules(){
+class SocialUrl extends EMongoModel
+{
+	public function rules()
+	{
 		return array(
 			array('url, caption', 'numerical', 'integerOnly' => true),
 		);
