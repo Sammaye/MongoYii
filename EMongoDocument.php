@@ -798,27 +798,47 @@ class EMongoDocument extends EMongoModel
 
 		$query = $this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria);
 		$project = $this->mergeCriteria(isset($c['project']) ? $c['project'] : array(), $fields);
-
+		
 		Yii::trace(
-			'Executing findOne: '.'{$query:' . json_encode($query) . ',$project:' . json_encode($project) . '}', 
+			'Executing findOne: '.'{$query:' . json_encode($query) . ',$project:' . json_encode($project) . '}',
 			'extensions.MongoYii.EMongoDocument'
 		);
-
-		if($this->getDbConnection()->enableProfiling){
-			Yii::beginProfile(
-				'extensions.MongoYii.EMongoDocument.query.' . $this->collectionName() . '.findOne(' . '{$query:' . json_encode($query) . ',$project:' . json_encode($project) . '}' . ')',
-				'extensions.MongoYii.EMongoDocument.findOne'
-			);
+		
+		if(
+			$this->getDbConnection()->queryCachingCount > 0 
+			&& $this->getDbConnection()->queryCachingDuration > 0
+			&& $this->getDbConnection()->queryCacheID !== false
+			&& ($cache = Yii::app()->getComponent($this->getDbConnection()->queryCacheID)) !== null
+		){
+			$this->getDbConnection()->queryCachingCount--;
+			$cacheKey = 'yii:dbquery' . $this->getDbConnection()->server . ':' . $this->getDbConnection()->db;
+			$cacheKey .= ':' . $this->getDbConnection()->getSerialisedQuery($query, $project) . ':' . $this->getCollection();
+			if(($result = $cache->get($cacheKey)) !== false){
+				Yii::trace('Query result found in cache', 'extensions.MongoYii.EMongoDocument');
+				$record = $result[0];
+			}
+		}else{
+			if($this->getDbConnection()->enableProfiling){
+				Yii::beginProfile(
+					'extensions.MongoYii.EMongoDocument.query.' . $this->collectionName() . '.findOne(' . '{$query:' . json_encode($query) . ',$project:' . json_encode($project) . '}' . ')',
+					'extensions.MongoYii.EMongoDocument.findOne'
+				);
+			}
+	
+			$record = $this->getCollection()->findOne($query, $project);
+	
+			if($this->getDbConnection()->enableProfiling){
+				Yii::endProfile(
+					'extensions.MongoYii.EMongoDocument.query.' . $this->collectionName() . '.findOne(' . '{$query:' . json_encode($query) . ',$project:' . json_encode($project) . '}' . ')',
+					'extensions.MongoYii.EMongoDocument.findOne'
+				);
+			}
+			
+			if(isset($cache, $cacheKey)){
+				$cache->set($cacheKey, array($record), $this->getDbConnection()->queryCachingDuration, $this->getDbConnection()->queryCachingDependency);
+			}
 		}
-
-		$record = $this->getCollection()->findOne($query, $project);
-
-		if($this->getDbConnection()->enableProfiling){
-			Yii::endProfile(
-				'extensions.MongoYii.EMongoDocument.query.' . $this->collectionName() . '.findOne(' . '{$query:' . json_encode($query) . ',$project:' . json_encode($project) . '}' . ')',
-				'extensions.MongoYii.EMongoDocument.findOne'
-			);
-		}
+		
 		if($record === null){
 			return null;
 		}
@@ -900,7 +920,7 @@ class EMongoDocument extends EMongoModel
 			'extensions.MongoYii.EMongoDocument'
 		);
 		
-		if($this->getDbConnection()->enableProfiling) {
+		if($this->getDbConnection()->enableProfiling){
 			$token = 'extensions.MongoYii.EMongoDocument.query.' . $this->collectionName() . '.find(' . '{$query:' . json_encode($query)
 			 . ',$project:'.json_encode($project)
 			 . (isset($c['sort']) ? ',$sort:'.json_encode($c['sort']).',' : '')

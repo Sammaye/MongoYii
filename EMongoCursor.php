@@ -45,6 +45,12 @@ class EMongoCursor implements Iterator, Countable
 	 * @var boolean
 	 */
 	private $partial = false;
+	
+	private $run = false;
+	
+	private $fromCache = false;
+	
+	private $cachedArray = array();
 
 	/**
 	 * The cursor constructor
@@ -118,8 +124,50 @@ class EMongoCursor implements Iterator, Countable
 	 */
 	public function getNext()
 	{
-		if($c = $this->cursor()->getNext()){
-			return $this->current = $this->model->populateRecord($c, true, $this->partial);
+		if(!$this->run){
+			if(
+				$this->model->getDbConnection()->queryCachingCount > 0
+				&& $this->model->getDbConnection()->queryCachingDuration > 0
+				&& $this->model->getDbConnection()->queryCacheID !== false
+				&& ($cache = Yii::app()->getComponent($this->model->getDbConnection()->queryCacheID)) !== null
+			){
+				$this->model->getDbConnection()->queryCachingCount--;
+				$info = $this->cursor()->info();
+				
+				$cacheKey = 
+					'yii:dbquery' . $this->model->getDbConnection()->server . ':' . $this->model->getDbConnection()->db
+					. ':' . $this->model->getDbConnection()->getSerialisedQuery($info['query'], $info['fields'], $info['sort'], $info['skip'], $info['limit']) 
+					. ':' . $this->model->getCollection();
+				
+				if(($result = $cache->get($cacheKey)) !== false){
+					Yii::trace('Query result found in cache', 'extensions.MongoYii.EMongoDocument');
+					$this->cachedArray = $result;
+				}else{
+					$this->cachedArray = iterator_to_array($this->cursor);
+				}
+			}
+			
+			if(isset($cache, $cacheKey)){
+				$cache->set(
+					$cacheKey, 
+					$this->cachedArray, 
+					$this->model->getDbConnection()->queryCachingDuration, 
+					$this->model->getDbConnection()->queryCachingDependency
+				);
+				$this->fromCache = true;
+			}
+			
+			$this->run = true;
+		}
+		
+		if(!$this->fromCache){
+			if($c = $this->cursor()->getNext()){
+				return $this->current = $this->model->populateRecord($c, true, $this->partial);
+			}
+		}else{
+			if($c = $this->next()){
+				return $this->current = $this->model->populateRecord($c, true, $this->partial);
+			}
 		}
 		return null;
 	}
@@ -134,6 +182,9 @@ class EMongoCursor implements Iterator, Countable
 		if($this->model === null){
 			throw new EMongoException(Yii::t('yii', 'The MongoCursor must have a model'));
 		}
+		if($this->fromCache){
+			return $this->current = $this->model->populateRecord(current($this->cachedArray), true, $this->partial);
+		}
 		return $this->current = $this->model->populateRecord($this->cursor()->current(), true, $this->partial);
 	}
 
@@ -147,6 +198,9 @@ class EMongoCursor implements Iterator, Countable
 	 */
 	public function count($takeSkip = false /* Was true originally but it was to change the way the driver worked which seemed wrong */)
 	{
+		if($this->fromCache){
+			return count($this->cachedArray);
+		}
 		return $this->cursor()->count($takeSkip);
 	}
 
@@ -206,6 +260,7 @@ class EMongoCursor implements Iterator, Countable
 	 */
 	public function rewind()
 	{
+		$this->run = false;
 		$this->cursor()->rewind();
 		return $this;
 	}
@@ -216,6 +271,9 @@ class EMongoCursor implements Iterator, Countable
 	 */
 	public function key()
 	{
+		if($this->fromCache){
+			return key($this->cachedArray);
+		}
 		return $this->cursor()->key();
 	}
 
@@ -224,6 +282,9 @@ class EMongoCursor implements Iterator, Countable
 	 */
 	public function next()
 	{
+		if($this->fromCache){
+			return next($this->cachedArray);
+		}
 		$this->cursor()->next();
 	}
 
@@ -233,6 +294,9 @@ class EMongoCursor implements Iterator, Countable
 	 */
 	public function valid()
 	{
+		if($this->fromCache){
+			return array_key_exists(key($this->cachedArray), $this->cachedArray);
+		}
 		return $this->cursor()->valid();
 	}
 }

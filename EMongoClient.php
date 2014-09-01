@@ -473,6 +473,18 @@ class EMongoClient extends CApplicationComponent
 		return $this;
 	}
 	
+	public function getSerialisedQuery($criteria = [], $fields = [], $sort = [], $skip = 0, $limit = null)
+	{
+		$query = array(
+			'$query' => $criteria,
+			'$fields' => $fields,
+			'$sort' => $sort,
+			'$skip' => $skip,
+			'$limit' => $limit
+		);
+		return json_encode($query);
+	}
+	
 	/**
 	 *
 	 * @return array the first element indicates the number of query statements executed,
