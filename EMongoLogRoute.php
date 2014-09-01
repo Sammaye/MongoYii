@@ -8,7 +8,6 @@
 
 class EMongoLogRoute extends CLogRoute
 {
-
 	/**
 	 * @var string the connectionId of the EMongoClient component
 	 */
@@ -29,7 +28,6 @@ class EMongoLogRoute extends CLogRoute
 		return Yii::app()->{$this->connectionId}->{$this->logCollectionName};
 	}
 
-
 	/**
 	 * Stores log messages into database.
 	 * @param array $logs list of log messages
@@ -37,14 +35,13 @@ class EMongoLogRoute extends CLogRoute
 	public function processLogs($logs)
 	{
 		$collection = $this->getMongoConnection();
-		foreach($logs as $log)
-		{
+		foreach($logs as $log){
 			$collection->insert(
 				array(
-					'level'=>$log[1],
-					'category'=>$log[2],
-					'logtime'=>(int)$log[3],
-					'message'=>$log[0],
+					'level' => $log[1],
+					'category' => $log[2],
+					'logtime' => (int)$log[3],
+					'message' => $log[0],
 				)
 			);
 		}

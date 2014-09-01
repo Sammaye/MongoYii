@@ -11,19 +11,23 @@
  * @property int $limit
  * @property array $project
  */
-class EMongoCriteria extends CComponent {
+class EMongoCriteria extends CComponent
+{
 	/**
 	 * @var array
 	 */
 	private $_condition = array();
+	
 	/**
 	 * @var array
 	 */
 	private $_sort = array();
+	
 	/**
 	 * @var int
 	*/
 	private $_skip = 0;
+	
 	/**
 	 * @var int
 	 */
@@ -41,9 +45,11 @@ class EMongoCriteria extends CComponent {
 	 * Constructor.
 	 * @param array $data - criteria initial property values (indexed by property name)
 	*/
-	public function __construct($data = array()){
-		foreach($data as $name => $value)
+	public function __construct($data = array())
+	{
+		foreach($data as $name => $value){
 			$this->$name = $value;
+		}
 	}
 
 	/**
@@ -51,7 +57,8 @@ class EMongoCriteria extends CComponent {
 	 * @param array $condition
 	 * @return EMongoCriteria
 	 */
-	public function setCondition(array $condition=array()) {
+	public function setCondition(array $condition=array())
+	{
 		$this->_condition = CMap::mergeArray($condition, $this->_condition);
 		return $this;
 	}
@@ -60,7 +67,8 @@ class EMongoCriteria extends CComponent {
 	 * Gets the condition
 	 * @return array
 	 */
-	public function getCondition() {
+	public function getCondition()
+	{
 		return $this->_condition;
 	}
 
@@ -69,8 +77,8 @@ class EMongoCriteria extends CComponent {
 	 * @param array $sort
 	 * @return EMongoCriteria
 	 */
-	public function setSort(array $sort) {
-		
+	public function setSort(array $sort)
+	{
 		foreach($sort as $field => $order){
 			if($order === 'asc'){
 				$sort[$field] = 1;
@@ -87,7 +95,8 @@ class EMongoCriteria extends CComponent {
 	 * Gets the sort
 	 * @return array
 	 */
-	public function getSort() {
+	public function getSort()
+	{
 		return $this->_sort;
 	}
 
@@ -96,7 +105,8 @@ class EMongoCriteria extends CComponent {
 	 * @param int $skip
 	 * @return EMongoCriteria
 	 */
-	public function setSkip($skip) {
+	public function setSkip($skip)
+	{
 		$this->_skip = (int)$skip;
 		return $this;
 	}
@@ -105,7 +115,8 @@ class EMongoCriteria extends CComponent {
 	 * Gets the skip
 	 * @return int
 	 */
-	public function getSkip() {
+	public function getSkip()
+	{
 		return $this->_skip;
 	}
 
@@ -114,17 +125,18 @@ class EMongoCriteria extends CComponent {
 	 * @param int $limit
 	 * @return EMongoCriteria
 	 */
-	public function setLimit($limit) {
+	public function setLimit($limit)
+	{
 		$this->_limit = (int)$limit;
 		return $this;
 	}
-
 
 	/**
 	 * Gets the limit
 	 * @return int
 	 */
-	public function getLimit() {
+	public function getLimit()
+	{
 		return $this->_limit;
 	}
 
@@ -133,7 +145,8 @@ class EMongoCriteria extends CComponent {
 	 * @param array $document - The document specification for projection
 	 * @return EMongoCriteria
 	 */
-	public function setProject($document){
+	public function setProject($document)
+	{
 		$this->_project = $document;
 		return $this;
 	}
@@ -143,7 +156,8 @@ class EMongoCriteria extends CComponent {
 	 * $c->project(array('c'=>1,'d'=>0));
 	 * @return array
 	 */
-	public function getProject(){
+	public function getProject()
+	{
 		return $this->_project;
 	}
 
@@ -153,7 +167,8 @@ class EMongoCriteria extends CComponent {
 	 * @param array $document
 	 * @return EMongoCriteria
 	 */
-	public function setSelect($document){
+	public function setSelect($document)
+	{
 		return $this->setProject($document);
 	}
 
@@ -162,7 +177,8 @@ class EMongoCriteria extends CComponent {
 	 * @see EMongoCriteria::getProject()
 	 * @return array
 	 */
-	public function getSelect(){
+	public function getSelect()
+	{
 		return $this->getProject();
 	}
 
@@ -174,7 +190,8 @@ class EMongoCriteria extends CComponent {
 	 * @param string $operator
 	 * @return EMongoCriteria
 	 */
-	public function addCondition($column, $value, $operator = null) {
+	public function addCondition($column, $value, $operator = null)
+	{
 		$this->_condition[$column] = $operator === null ? $value : array($operator => $value);
 		return $this;
 	}
@@ -184,7 +201,8 @@ class EMongoCriteria extends CComponent {
 	 * @param array $condition
 	 * @return EMongoCriteria
 	 */
-	public function addOrCondition($condition){
+	public function addOrCondition($condition)
+	{
 		$this->_condition['$and'][] = array('$or' => $condition);
 		return $this;
 	}
@@ -196,7 +214,8 @@ class EMongoCriteria extends CComponent {
 	 * @param boolean $partialMatch
 	 * @return EMongoCriteria
 	 */
-	public function compare($column, $value = null, $partialMatch = false) {
+	public function compare($column, $value = null, $partialMatch = false)
+	{
 		$query = array();
 		
 		if($value === null){
@@ -207,18 +226,21 @@ class EMongoCriteria extends CComponent {
 			$query[$column] = $value;
 		}elseif(is_bool($value)){
 			$query[$column] = $value;
-		}elseif(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)) {
+		}elseif(preg_match('/^(?:\s*(<>|<=|>=|<|>|=))?(.*)$/', $value, $matches)){
 			$value = $matches[2];
 			$op = $matches[1];
-			if ($partialMatch === true)
+			if($partialMatch === true){
 				$value = new MongoRegex("/$value/i");
-			else {
+			}else{
 				if(
-				!is_bool($value) && !is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0
-				&& ( (PHP_INT_MAX > 2147483647 && (string)$value < '9223372036854775807') /* If it is a 64 bit system and the value is under the long max */
-						|| (string)$value < '2147483647' /* value is under 32bit limit */)
-				)
+					!is_bool($value) && !is_array($value) && preg_match('/^([0-9]|[1-9]{1}\d+)$/' /* Will only match real integers, unsigned */, $value) > 0
+					&& ( 
+						(PHP_INT_MAX > 2147483647 && (string)$value < '9223372036854775807') /* If it is a 64 bit system and the value is under the long max */
+						|| (string)$value < '2147483647' /* value is under 32bit limit */
+					)
+				){
 					$value = (int)$value;
+				}
 			}
 
 			switch($op){
@@ -243,8 +265,9 @@ class EMongoCriteria extends CComponent {
 					break;
 			}
 		}
-		if (!$query)
+		if(!$query){
 			$query[$column] = $value;
+		}
 		$this->addCondition($column,  $query[$column]);
 		return $this;
 	}
@@ -254,24 +277,27 @@ class EMongoCriteria extends CComponent {
 	 * @param array|EMongoCriteria $criteria
 	 * @return EMongoCriteria
 	 */
-	public function mergeWith($criteria) {
-		if ($criteria instanceof EMongoCriteria)
+	public function mergeWith($criteria)
+	{
+		if($criteria instanceof EMongoCriteria){
 			return $this->mergeWith($criteria->toArray());
-		if (is_array($criteria)) {
-			if (isset($criteria['condition']) && is_array($criteria['condition']))
+		}
+		if(is_array($criteria)){
+			if(isset($criteria['condition']) && is_array($criteria['condition'])){
 				$this->setCondition(CMap::mergeArray($this->condition, $criteria['condition']));
-
-			if (isset($criteria['sort']) && is_array($criteria['sort']))
+			}
+			if(isset($criteria['sort']) && is_array($criteria['sort'])){
 				$this->setSort(CMap::mergeArray($this->sort, $criteria['sort']));
-
-			if (isset($criteria['skip']) && is_numeric($criteria['skip']))
+			}
+			if(isset($criteria['skip']) && is_numeric($criteria['skip'])){
 				$this->setSkip($criteria['skip']);
-
-			if (isset($criteria['limit']) && is_numeric($criteria['limit']))
+			}
+			if(isset($criteria['limit']) && is_numeric($criteria['limit'])){
 				$this->setLimit($criteria['limit']);
-
-			if (isset($criteria['project']) && is_array($criteria['project']))
+			}
+			if(isset($criteria['project']) && is_array($criteria['project'])){
 				$this->setProject(CMap::mergeArray($this->project, $criteria['project']));
+			}
 		}
 		return $this;
 	}
@@ -281,13 +307,15 @@ class EMongoCriteria extends CComponent {
 	 * Should be "true" if the criteria is used in EMongoDocument::find() and other common find methods.
 	 * @return array - native representation of the criteria
 	 */
-	public function toArray($onlyCondition = false) {
+	public function toArray($onlyCondition = false)
+	{
 		$result = array();
-		if ($onlyCondition === true) {
+		if($onlyCondition === true){
 			$result = $this->condition;
-		} else {
-			foreach (array('_condition', '_limit', '_skip', '_sort', '_project') as $name)
+		}else{
+			foreach(array('_condition', '_limit', '_skip', '_sort', '_project') as $name){
 				$result[substr($name, 1)] = $this->$name;
+			}
 		}
 		return $result;
 	}
