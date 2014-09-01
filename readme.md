@@ -437,6 +437,20 @@ If you access an array magically you cannot, in the same breath, manipulate it s
 Querying attempts to expose the native MongoDB querying language as much as possible. A `EMongoCriteria` class is provided, however, it is not required and does not provide any more functionality
 than just doing it via arrays. The `EMongoCriteria` class is not relied on anywhere and is not needed.
 
+### Caching
+
+MongoYii, as well supporting full caching through EMongoCacheDependency (see towards the bottom of this documentation), supports active model query caching as 
+defined in the [documentation](http://www.yiiframework.com/doc/guide/1.1/en/caching.data#cache-dependency).
+
+An example of this can be shown by:
+
+	$dep = new EMongoCacheDependency('article', [['_id' => new MongoId('540477726803fad51b8b4568')], 'sort' => ['a' => 1]]);
+	$c = Article::model()->cache(4, $dep)->findAll();
+
+The results of `$c` will be drawn from the cache table into your application until the dependency is considered to expire.
+
+Just like in normal Yii active record you can also say how many queries after the dependency should actually be cached.
+
 ### find()
 
 `find()` is really simple. It is essentially a 1-1 to the drivers own `find()` function and implements the same specifics. Just like the drivers edition, it also returns a cursor
