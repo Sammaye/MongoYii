@@ -440,7 +440,7 @@ than just doing it via arrays. The `EMongoCriteria` class is not relied on anywh
 ### Caching
 
 MongoYii, as well supporting full caching through EMongoCacheDependency (see towards the bottom of this documentation), supports active model query caching as 
-defined in the [documentation](http://www.yiiframework.com/doc/guide/1.1/en/caching.data#cache-dependency).
+defined in the [documentation](http://www.yiiframework.com/doc/guide/1.1/en/caching.data).
 
 An example of this can be shown by:
 
