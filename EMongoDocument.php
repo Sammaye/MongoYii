@@ -1340,6 +1340,24 @@ class EMongoDocument extends EMongoModel
 		}
 		return true;
 	}
+	
+	/**
+	 * Sets the parameters for query caching.
+	 * This is a shortcut method to {@link CDbConnection::cache()}.
+	 * It changes the query caching parameter of the {@link dbConnection} instance.
+	 * @param integer $duration the number of seconds that query results may remain valid in cache.
+	 * If this is 0, the caching will be disabled.
+	 * @param CCacheDependency|ICacheDependency $dependency the dependency that will be used when saving
+	 * the query results into cache.
+	 * @param integer $queryCount number of MongoDB queries that need to be cached after calling this method. Defaults to 1,
+	 * meaning that the next MongoDB query will be cached.
+	 * @return EMongoDocument the active record instance itself.
+	 */
+	public function cache($duration, $dependency=null, $queryCount=1)
+	{
+		$this->getDbConnection()->cache($duration, $dependency, $queryCount);
+		return $this;
+	}
 
 	/**
 	 * Refreshes the data from the database
