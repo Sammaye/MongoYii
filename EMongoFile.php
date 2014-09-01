@@ -205,12 +205,12 @@ class EMongoFile extends EMongoDocument
 	 * @see EMongoDocument::insert()
 	 * @param array $attributes
 	 * @return bool
-	 * @throws CDbException
+	 * @throws EMongoException
 	 */
 	public function insert($attributes = null)
 	{
 		if(!$this->getIsNewRecord()){
-			throw new CDbException(Yii::t('yii','The active record cannot be inserted to database because it is not new.'));
+			throw new EMongoException(Yii::t('yii','The active record cannot be inserted to database because it is not new.'));
 		}
 		if(!$this->beforeSave()){
 			return false;

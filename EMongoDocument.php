@@ -566,12 +566,12 @@ class EMongoDocument extends EMongoModel
 	 * Saves only a specific subset of attributes as defined by the param
 	 * @param array $attributes
 	 * @return bool
-	 * @throws CDbException
+	 * @throws EMongoException
 	 */
 	public function saveAttributes($attributes)
 	{
 		if($this->getIsNewRecord()){
-			throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
+			throw new EMongoException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
 		}
 		
 		$this->trace(__FUNCTION__);
@@ -597,12 +597,12 @@ class EMongoDocument extends EMongoModel
 	 * Inserts this record
 	 * @param array $attributes
 	 * @return bool
-	 * @throws CDbException
+	 * @throws EMongoException
 	 */
 	public function insert($attributes = null)
 	{
 		if(!$this->getIsNewRecord()){
-			throw new CDbException(Yii::t('yii', 'The active record cannot be inserted to database because it is not new.'));
+			throw new EMongoException(Yii::t('yii', 'The active record cannot be inserted to database because it is not new.'));
 		}
 		if(!$this->beforeSave()){
 			return false;
@@ -653,20 +653,20 @@ class EMongoDocument extends EMongoModel
 	 * Updates this record
 	 * @param array $attributes
 	 * @return bool
-	 * @throws CDbException
+	 * @throws EMongoException
 	 * @throws EMongoException
 	 */
 	public function update($attributes = null)
 	{
 		if($this->getIsNewRecord()){
-			throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
+			throw new EMongoException(Yii::t('yii', 'The active record cannot be updated because it is new.'));
 		}
 		if(!$this->beforeSave()){
 			return false;
 		}
 		$this->trace(__FUNCTION__);
 		if($this->getPrimaryKey() === null){ // An _id is required
-			throw new CDbException(Yii::t('yii', 'The active record cannot be updated because it has primary key set.'));
+			throw new EMongoException(Yii::t('yii', 'The active record cannot be updated because it has primary key set.'));
 		}
 
 		$partial = false;
@@ -721,12 +721,12 @@ class EMongoDocument extends EMongoModel
 	/**
 	 * Deletes this record
 	 * @return bool
-	 * @throws CDbException
+	 * @throws EMongoException
 	 */
 	public function delete()
 	{
 		if($this->getIsNewRecord()){
-			throw new CDbException(Yii::t('yii', 'The active record cannot be deleted because it is new.'));
+			throw new EMongoException(Yii::t('yii', 'The active record cannot be deleted because it is new.'));
 		}
 		$this->trace(__FUNCTION__);
 		if(!$this->beforeDelete()){
@@ -853,7 +853,7 @@ class EMongoDocument extends EMongoModel
 	 * @param mixed $pk - String, MongoID or array of strings or MongoID values (one can mix strings and MongoID in the array)
 	 * @param array|string[] $fields
 	 * @return EMongoCursor|EMongoDocument[]
-	 * @throws CDbException
+	 * @throws EMongoException
 	 */
 	public function findAllByPk($pk, $fields = array())
 	{
@@ -861,7 +861,7 @@ class EMongoDocument extends EMongoModel
 			return $this->find(array($this->primaryKey() => $this->getPrimaryKey($pk)), $fields);
 		}
 		if(!is_array($pk)){
-			throw new CDbException(Yii::t('yii', 'Set an incorrect primary key.'));
+			throw new EMongoException(Yii::t('yii', 'Set an incorrect primary key.'));
 		}
 		foreach($pk as $key => $value){
 			$pk[$key] = $this->getPrimaryKey($value);

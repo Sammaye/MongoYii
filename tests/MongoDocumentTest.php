@@ -340,7 +340,7 @@ class MongoDocumentTest extends CTestCase
 		$c = new User;
 		$c->username = 'radagast';
 		$c->job_title = 'wizard';
-		$this->setExpectedException('CDbException');
+		$this->setExpectedException('EMongoException');
 		$c->saveAttributes(array('job_title'));
 	}
 
