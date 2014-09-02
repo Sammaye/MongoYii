@@ -128,6 +128,19 @@ make your default (master) connection be a component called <code>mongodb</code>
     ),
 </code></pre>
 
+<h3>Providing a custom mongodb component/multiple connections</h3>
+
+<p>Each <code>EMongoDocument</code> or <code>EMongoModel</code> inherited class, i.e. your models will have a overrideable function called <code>getMongoComponent()</code>. You can simply override this to 
+return your custom application component, for example:</p>
+
+<pre><code>public function getMongoComponent()
+{
+    return Yii::app()-&gt;someweirddbconnectionINIT;
+}
+</code></pre>
+
+<p>and that model will now use that new application component to source its information. This is also helpful if you are using different databases for different models.</p>
+
 <h3>Composer</h3>
 
 <p>MongoYii fully supports Composer and is listed on <a href="https://packagist.org/packages/sammaye/mongoyii">packagist</a>.</p>
@@ -483,6 +496,21 @@ are needed.</p>
 
 <p>Querying attempts to expose the native MongoDB querying language as much as possible. A <code>EMongoCriteria</code> class is provided, however, it is not required and does not provide any more functionality
 than just doing it via arrays. The <code>EMongoCriteria</code> class is not relied on anywhere and is not needed.</p>
+
+<h3>Caching</h3>
+
+<p>MongoYii, as well supporting full caching through EMongoCacheDependency (see towards the bottom of this documentation), supports active model query caching as 
+defined in the <a href="http://www.yiiframework.com/doc/guide/1.1/en/caching.data">documentation</a>.</p>
+
+<p>An example of this can be shown by:</p>
+
+<pre><code>$dep = new EMongoCacheDependency('article', [['_id' =&gt; new MongoId('540477726803fad51b8b4568')], 'sort' =&gt; ['a' =&gt; 1]]);
+$c = Article::model()-&gt;cache(4, $dep)-&gt;findAll();
+</code></pre>
+
+<p>The results of <code>$c</code> will be drawn from the cache table into your application until the dependency is considered to expire.</p>
+
+<p>Just like in normal Yii active record you can also say how many queries after the dependency should actually be cached.</p>
 
 <h3>find()</h3>
 
@@ -1181,7 +1209,62 @@ $arr = Yii::app()-&gt;cache-&gt;mget(array('apple', 1, 'two'));
 
 <h3>EMongoCacheDependency</h3>
 
-<p>Similar in kind to <code>CDbCacheDependency</code> only it does not take a <code>sql</code> parameter but intead an <code>EMongoCursor</code>. Created by yours truly.</p>
+<p>This is to enable MongoYiis edition of <a href="http://www.yiiframework.com/doc/guide/1.1/en/caching.data">caching</a>.</p>
+
+<p>Example usage of this class would be:</p>
+
+<pre><code>$cache = Yii::app()-&gt;cache;
+$cache-&gt;set(
+    '12', 
+    'dfgdfgf', 
+    30,
+    new EMongoCacheDependency('t', [
+        [],
+        'limit' =&gt; 5
+    ])
+);
+var_dump($cache-&gt;get('12'));
+</code></pre>
+
+<p>would return <code>dfgdfgf</code> when the cache is not invalid but if you invalidate it it will return <code>false</code> per the documentation.</p>
+
+<p>As such if I were then to run:</p>
+
+<pre><code>$cache = Yii::app()-&gt;cache;
+Yii::app()-&gt;mongodb-&gt;t-&gt;insert(['g' =&gt; 1]);
+var_dump($cache-&gt;get('12'));
+</code></pre>
+
+<p>I would get false as the return value.</p>
+
+<p>The constructor for this cache class accepts two parameters, one being the collection name and the other being the query.</p>
+
+<p>The first (<code>0</code>) index of the query parameter will always be the <code>find()</code> query, this is in fact how the query parameter is parsed by the class:</p>
+
+<pre><code>$query = array();
+if(isset($this-&gt;query[0])){
+    $query = $this-&gt;query[0];
+}
+
+$cursor = $this-&gt;getDbConnection()-&gt;{$this-&gt;collection}-&gt;find($query);
+
+if(isset($this-&gt;query['sort'])){
+    $cursor-&gt;sort($this-&gt;query['sort']);
+}
+
+if(isset($this-&gt;query['skip'])){
+    $cursor-&gt;limit($this-&gt;query['skip']);
+}
+
+if(isset($this-&gt;query['limit'])){
+    $cursor-&gt;limit($this-&gt;query['limit']);
+}
+</code></pre>
+
+<p>currently the quey parameter of this class only accepts the parts to be shown as parsed above, it does not currently allow you to actually grab the cursor directly.</p>
+
+<p><strong>Note:</strong> Do not put a cursor into this class, it will not save to your datastore in a manner that the PHP driver for MongoDB will be able to use it. Instead you will be 
+told that the <code>MongoCursor</code> was not correctly inited by its parent class(es).</p>
 
 <h2>Versioning</h2>
 
