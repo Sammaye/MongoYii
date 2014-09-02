@@ -14,7 +14,7 @@ class EMongoCacheDependency extends CCacheDependency
 	
 	public $collection = null;
 	
-	public $query = [];
+	public $query = array();
 	
 	private $_db;
 
