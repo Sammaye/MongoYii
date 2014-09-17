@@ -10,6 +10,9 @@
             "homepage": "http://sammaye.wordpress.com"
         }
     ],
+	"require": {
+        "ext-mongo": "*",
+	},
     "autoload": {
     	"classmap": [
     		"./behaviors",
