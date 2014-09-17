@@ -11,7 +11,7 @@
         }
     ],
 	"require": {
-        "ext-mongo": "*",
+		"ext-mongo": "*"
 	},
     "autoload": {
     	"classmap": [
