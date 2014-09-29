@@ -473,7 +473,7 @@ class EMongoClient extends CApplicationComponent
 		return $this;
 	}
 	
-	public function getSerialisedQuery($criteria = [], $fields = [], $sort = [], $skip = 0, $limit = null)
+	public function getSerialisedQuery($criteria = array(), $fields = array(), $sort = array(), $skip = 0, $limit = null)
 	{
 		$query = array(
 			'$query' => $criteria,
