@@ -250,6 +250,17 @@ class EMongoClient extends CApplicationComponent
 	}
 	
 	/**
+	 * Selects a different database
+	 * @param $name
+	 * @return MongoDB
+	 */
+	public function selectDB($name)
+	{
+		$this->setDB($name);
+		return $this->getDB();
+	}
+	
+	/**
 	 * Gets the raw Database
 	 * @return MongoDB
 	 */
