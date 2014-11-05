@@ -838,11 +838,11 @@ class EMongoDocument extends EMongoModel
 				$cache->set($cacheKey, array($record), $this->getDbConnection()->queryCachingDuration, $this->getDbConnection()->queryCachingDependency);
 			}
 		}
-		
+
+        $this->resetScope(false);
 		if($record === null){
 			return null;
 		}
-		$this->resetScope(false);
 		return $this->populateRecord($record, true, $project === array() ? false : true);
 	}
 
