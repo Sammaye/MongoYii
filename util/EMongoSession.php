@@ -59,6 +59,7 @@ class EMongoSession extends CHttpSession
 			if($deleteOldSession){
 				$db->{$this->sessionTableName}->update(array('id' => $oldID), array('$set' => array('id' => $newID)));
 			}else{
+				unset($row['_id']);
 				$row['id'] = $newID;
 				$db->{$this->sessionTableName}->insert($row);
 			}
