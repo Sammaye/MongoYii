@@ -298,7 +298,7 @@ class EMongoModel extends CModel
 	 */
 	public function populateRecord($attributes, $runEvent = true)
 	{
-		if($attributes === false){
+		if($attributes === false || $attributes === null){
 			return null;
 		}
 		
@@ -404,10 +404,15 @@ class EMongoModel extends CModel
 				$result = array();
 				foreach($pk as $singleReference){
 					$row = $this->populateReference($singleReference, $cname);
-					if($row){
-						array_push($result, $row);
-					}
+					
+					// When $row does not exists it will return null. It will not add it to $result
+					array_push($result, $row);
 				}
+				
+				// When $row is null count($result) will be 0 and $result will be an empty array
+				// Because we are a one relation we want to return null when a row does not exists
+				// Currently it was returning an empty array
+				
 				if($relation[0] === 'one' && count($result) > 0){
 					$result = $result[0];
 				}
