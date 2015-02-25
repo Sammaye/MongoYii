@@ -389,9 +389,10 @@ class EMongoDocument extends EMongoModel
 	 */
 	public function populateRecord($attributes, $callAfterFind = true, $partial = false)
 	{
-		if($attributes === false){
+		if($attributes === false || $attributes === null){
 			return null;
 		}
+		
 		$record = $this->instantiate($attributes);
 		$record->setScenario('update');
 		$record->setIsNewRecord(false);
