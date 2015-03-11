@@ -22,7 +22,7 @@ class EMongoCacheDependency extends CCacheDependency
 	 * Constructor.
 	 * @param string $cursor the Mongo Cursor whose result is used to determine if the dependency has been changed.
 	 */
-	public function __construct($collection, $query = null)
+	public function __construct($collection=null, $query = null)
 	{
 		$this->collection = $collection;
 		$this->query = $query;
@@ -72,7 +72,9 @@ class EMongoCacheDependency extends CCacheDependency
 		if(isset($this->query[0])){
 			$query = $this->query[0];
 		}
-		
+		if (empty($this->collection)) {
+			throw new EMongoException(Yii::t('yii','EMongoCacheDependency.collection cannot be empty.'));
+		}
 		$cursor = $this->getDbConnection()->{$this->collection}->find($query);
 		
 		if(isset($this->query['sort'])){
