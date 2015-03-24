@@ -804,20 +804,18 @@ class EMongoDocument extends EMongoModel
 			'Executing findOne: '.'{$query:' . json_encode($query) . ',$project:' . json_encode($project) . '}',
 			'extensions.MongoYii.EMongoDocument'
 		);
-		
+
 		if(
-			$this->getDbConnection()->queryCachingCount > 0 
+			$this->getDbConnection()->queryCachingCount > 0
 			&& $this->getDbConnection()->queryCachingDuration > 0
 			&& $this->getDbConnection()->queryCacheID !== false
-			&& ($cache = Yii::app()->getComponent($this->getDbConnection()->queryCacheID)) !== null
+			&& ($cache = Yii::app()->getComponent($this->getDbConnection()->queryCacheID))
+			&& ($cacheKey = 'yii:dbquery'.$this->getDbConnection()->server.':'.$this->getDbConnection()->db .':'.$this->getDbConnection()->getSerialisedQuery($query, $project).':'.$this->getCollection())
+			&& ($result = $cache->get($cacheKey)) !== false
 		){
 			$this->getDbConnection()->queryCachingCount--;
-			$cacheKey = 'yii:dbquery' . $this->getDbConnection()->server . ':' . $this->getDbConnection()->db;
-			$cacheKey .= ':' . $this->getDbConnection()->getSerialisedQuery($query, $project) . ':' . $this->getCollection();
-			if(($result = $cache->get($cacheKey)) !== false){
-				Yii::trace('Query result found in cache', 'extensions.MongoYii.EMongoDocument');
-				$record = $result[0];
-			}
+			Yii::trace('Query result found in cache', 'extensions.MongoYii.EMongoDocument');
+			$record = $result[0];
 		}else{
 			if($this->getDbConnection()->enableProfiling){
 				Yii::beginProfile(
