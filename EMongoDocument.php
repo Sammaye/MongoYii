@@ -1284,7 +1284,7 @@ class EMongoDocument extends EMongoModel
 		return Yii::app()->mongodb->command(array(
 			'distinct' => $this->collectionName(),
 			'key' => $key,
-			'query' => $query
+			'query' => $query ? $query : null
 		));
 	}
 
