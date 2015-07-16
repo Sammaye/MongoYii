@@ -908,11 +908,11 @@ creators of MongoDB describing its addition to Mongoose](http://aaronheckmann.tu
 To setup a versioned document you can simply create a model implementing `version()` which returns `true` and, optionally, `versionField()`:
 
 	class versioned extends EMongoDocument{
-		public versioned(){
+		public function versioned(){
 			return true;
 		}
 		
-		public versionField(){
+		public function versionField(){
 			return '_v'; // This is actually the default value in EMongoDocument
 		}
 		
