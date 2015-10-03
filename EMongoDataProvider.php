@@ -13,7 +13,7 @@ class EMongoDataProvider extends CActiveDataProvider
 	 * @var string
 	 */
 	public $modelClass;
-	
+
 	/**
 	 * The AR finder instance (eg <code>Post::model()</code>).
 	 * This property can be set by passing the finder instance as the first parameter
@@ -21,25 +21,25 @@ class EMongoDataProvider extends CActiveDataProvider
 	 * @var EMongoModel
 	 */
 	public $model;
-	
+
 	/**
 	 * The name of key attribute for {@link modelClass}. If not set,
 	 * it means the primary key of the corresponding database table will be used.
 	 * @var string
 	 */
 	public $keyAttribute = '_id';
-	
+
 	/**
 	 * @var array The criteria array
 	 */
 	private $_criteria;
-	
+
 	/**
 	 * The internal MongoDB cursor as a MongoCursor instance
 	 * @var EMongoCursor|MongoCursor
 	 */
 	private $_cursor;
-	
+
 	/**
 	 * @var EMongoSort
 	 */
@@ -99,7 +99,7 @@ class EMongoDataProvider extends CActiveDataProvider
 		// I have not refactored this line considering that the condition may have changed from total item count to here, maybe.
 		$this->_cursor = $this->model->find(
 			isset($criteria['condition']) && is_array($criteria['condition']) ? $criteria['condition'] : array(),
-			isset($criteria['project']) && !empty($criteria['project']) ? $criteria['project'] : array() 
+			isset($criteria['project']) && !empty($criteria['project']) ? $criteria['project'] : array()
 		);
 
 		// If we have sort and limit and skip setup within the incoming criteria let's set it
@@ -157,6 +157,25 @@ class EMongoDataProvider extends CActiveDataProvider
 			$this->_cursor = $this->model->find(isset($criteria['condition']) && is_array($criteria['condition']) ? $criteria['condition'] : array());
 		}
 		return $this->_cursor->count();
+	}
+
+	public function setSort($value)
+	{
+		if(is_array($value))
+		{
+			if(isset($value['class']))
+			{
+				$sort=$this->getSort($value['class']);
+				unset($value['class']);
+			}
+			else
+				$sort=$this->getSort();
+
+			foreach($value as $k=>$v)
+				$sort->$k=$v;
+		}
+		else
+			$this->_sort=$value;
 	}
 
 	/**
