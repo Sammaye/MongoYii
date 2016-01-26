@@ -88,8 +88,17 @@ class EMongoUniqueValidator extends CValidator
 				)
 			);
 
-		// If a doc was fund and it isn't this doc, as decided by the primnary key
-		if($doc && (string)$doc[$object->primaryKey()] != (string)$object->getPrimaryKey()){
+		// If a doc was found first test if the unique attribute is the primaryKey
+		// If we are uniquely id'ing the pk then check this is a new record and not
+		// an old one and check to see if the pks are the same
+		// If the found doc is not evaledd onm pk then make sure the two pks are not the same
+		if(
+			$doc && 
+			(
+				($attributeName === $object->primaryKey() && $object->getIsNewRecord() && (string)$doc[$object->primaryKey()] == (string)$object->getPrimaryKey()) || 
+				((string)$doc[$object->primaryKey()] != (string)$object->getPrimaryKey())
+			)
+		){
 			// Then it ain't unique
 			$message = $this->message !== null ? $this->message : Yii::t('yii', '{attribute} "{value}" has already been taken.');
 			$this->addError($object, $attribute, $message, array('{value}' => CHtml::encode($value)));
