@@ -384,7 +384,37 @@ class EMongoModel extends CModel
 		$cname = $relation[1];
 		$fkey = $relation[2];
 		$pk = isset($relation['on']) ? $this->{$relation['on']} : $this->getPrimaryKey();
+		$pkName = isset($relation['on']) ? $relation['on'] : $this->primaryKey();
 
+		// This will detect . notation key names like AuthorName.id
+		if(strpos($pkName, '.') !== false){
+			
+			$pk = [];
+			
+			$parts = explode('.', $pkName);
+			
+			if($this->hasAttribute($parts[0])){
+			
+				$val = $this->{$parts[0]};
+			
+				if(!is_array($val) && !is_object($val)){
+					// continue
+				}elseif(is_object($val) && isset($val->{$parts[1]})){
+					$pk[] = $val->{$parts[1]};
+				}elseif(is_array($val) && isset($val[$parts[1]])){
+					$pk[] = $val[$parts[1]];
+				}else{
+					foreach($val as $k => $v){
+						if(is_array($v) && isset($v[$parts[1]])){
+							$pk[] = $v[$parts[1]];
+						}elseif(is_object($v) && isset($v->{$parts[1]})){
+							$pk[] = $v->{$parts[1]};
+						}
+					}
+				}
+			}
+		}
+		
 		// This takes care of cases where the PK is an DBRef and only one DBRef, where it could 
 		// be mistaken as a multikey field 
         if($relation[0] === 'one' && is_array($pk) && array_key_exists('$ref', $pk)){
