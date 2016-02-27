@@ -399,7 +399,7 @@ class EMongoModel extends CModel
 			
 				if(!is_array($val) && !is_object($val)){
 					// continue
-				}elseif(is_object($val) && isset($val->{$parts[1]})){
+				}elseif(is_object($val) && property_exists($val, $parts[1])){
 					$pk[] = $val->{$parts[1]};
 				}elseif(is_array($val) && isset($val[$parts[1]])){
 					$pk[] = $val[$parts[1]];
@@ -407,7 +407,7 @@ class EMongoModel extends CModel
 					foreach($val as $k => $v){
 						if(is_array($v) && isset($v[$parts[1]])){
 							$pk[] = $v[$parts[1]];
-						}elseif(is_object($v) && isset($v->{$parts[1]})){
+						}elseif(is_object($v) && property_exists($v, $parts[1])){
 							$pk[] = $v->{$parts[1]};
 						}
 					}
