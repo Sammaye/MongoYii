@@ -845,6 +845,44 @@ class EMongoDocument extends EMongoModel
 		return $this->populateRecord($record, true, $project === array() ? false : true);
 	}
 
+    /**
+     * Find one record, modifies, and returns it.
+     * @return null|EMongoDocument
+     */
+    public function findAndModify($criteria = array(), $updateDoc = array(), $fields = array(), $options = array())
+    {
+        $this->trace(__FUNCTION__);
+
+        if ($criteria instanceof EMongoCriteria) {
+            $criteria = $criteria->getCondition();
+        }
+        $c = $this->getDbCriteria();
+
+        $criteria = $this->mergeCriteria(isset($c['condition']) ? $c['condition'] : array(), $criteria);
+        $fields   = $this->mergeCriteria(isset($c['project']) ? $c['project'] : array(), $fields);
+        $options  = array_merge($this->getDbConnection()->getDefaultWriteConcern(), $options);
+
+        if (YII_DEBUG) {
+            Yii::trace('Executing findAndModify: { $query: ' . json_encode($criteria) . ', $document: ' . json_encode($updateDoc) . ', $fields: ' . json_encode($fields) . ', $options: ' . json_encode($options) . '}', 'extensions.MongoYii.EMongoDocument');
+        }
+
+        if ($this->getDbConnection()->enableProfiling) {
+            $token = 'extensions.MongoYii.EMongoDocument.query.' . $this->collectionName() . '.findAndModify({ $query: ' . json_encode($criteria) . ', $document: ' . json_encode($updateDoc) . ', $fields: ' . json_encode($fields) . ', $options: ' . json_encode($options) . '})';
+            Yii::beginProfile($token, 'extensions.MongoYii.EMongoDocument.findAndModify');
+        }
+
+        $result = $this->getCollection()->findAndModify($criteria, $updateDoc, $fields, $options);
+
+        if ($this->getDbConnection()->enableProfiling) {
+            Yii::enableProfile($token, 'extensions.MongoYii.EMongoDocument.findAndModify');
+        }
+
+        if ($result === null) {
+            return null;
+        }
+        return $this->populateRecord($result, true, $fields === array() ? false : true);
+    }
+
 	/**
 	 * Alias of find
 	 * @param array $criteria
