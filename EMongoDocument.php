@@ -1336,7 +1336,7 @@ class EMongoDocument extends EMongoModel
 	 * @param array $options // All other options for input to the command
 	 * @return mixed
 	 */
-	public function mapreduce($map, $reduce, $finalize = null, $out, $query = array(), $options = array())
+	public function mapreduce($map, $reduce, $finalize = null, $out = array(), $query = array(), $options = array())
 	{
 		return $this->getDbConnection()->getDB()->command(array_merge(array(
 			'mapreduce' => $this->collectionName(),
