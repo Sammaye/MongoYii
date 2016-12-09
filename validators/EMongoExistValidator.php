@@ -74,7 +74,9 @@ class EMongoExistValidator extends CValidator
 		$attributeName = $this->attributeName === null ? $attribute : $this->attributeName;
 		$finder = EMongoDocument::model($className);
 
-		$criteria = array($attributeName => $this->mongoId ? new MongoId($value) : $value);
+		$criteria = $this->criteria;
+        	$criteria[$attributeName] = $this->mongoId ? new MongoId($value) : $value;
+		
 		if(!$finder->exists($criteria)){
 			$message = $this->message !== null ? $this->message : Yii::t('yii', '{attribute} "{value}" is invalid.');
 			$this->addError($object, $attribute, $message, array('{value}' => CHtml::encode($value)));
